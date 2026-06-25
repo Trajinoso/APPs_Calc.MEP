@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora CTE DB-SUA 8 - Pararrayos</title>
+    <title>Calculadora Avanzada CTE SUA 8 y Dimensionado PDC</title>
     <script>
         window.MathJax = {
             tex: {
@@ -24,6 +24,7 @@
             --border-color: #cccccc;
             --danger-color: #dc3545;
             --success-color: #28a745;
+            --warning-color: #ffc107;
         }
 
         body {
@@ -190,24 +191,18 @@
             color: var(--elecnor-blue);
             border-bottom: 2px solid var(--elecnor-orange);
             padding-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         .formula-display {
             background: #ffffff;
-            padding: 14px;
-            border-left: 5px solid var(--elecnor-blue);
+            padding: 12px;
+            border-left: 4px solid var(--elecnor-blue);
             margin: 10px 0;
             font-family: monospace;
             overflow-x: auto;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
-        .results-box p strong {
-            font-size: 0.95rem;
-            color: var(--dark-text);
-        }
-
-        /* Box de Demostración Visual Ne > Na */
         .comparison-card {
             background: #ffffff;
             border: 1px solid var(--border-color);
@@ -242,7 +237,6 @@
             font-size: 1.8rem;
             font-weight: bold;
             padding: 0 10px;
-            transition: color 0.3s ease;
         }
 
         .badge {
@@ -255,8 +249,8 @@
 
         .badge-danger { background-color: var(--danger-color); color: white; }
         .badge-success { background-color: var(--success-color); color: white; }
+        .badge-warning { background-color: var(--warning-color); color: #212529; }
 
-        /* Estilos del Informe / Formato de Impresión */
         .document-page {
             max-width: 210mm;
             margin: 0 auto;
@@ -317,14 +311,13 @@
             padding: 20px;
             border-radius: 5px;
             text-align: center;
-            font-size: 1.2em;
+            font-size: 1.1em;
             font-weight: bold;
             background-color: #e6f7ff;
             border: 2px solid var(--elecnor-blue);
             color: var(--elecnor-blue);
         }
 
-        /* Box de Nivel de Protección en Informe */
         .report-protection-box {
             margin: 20px 0;
             padding: 15px;
@@ -356,17 +349,19 @@
             background-color: #e07200;
         }
 
-        .markdown-container {
-            background: #333;
-            color: #f8f9fa;
+        .normativa-box {
+            background-color: var(--light-bg);
+            border-left: 5px solid var(--elecnor-blue);
             padding: 20px;
-            border-radius: 6px;
-            font-family: 'Courier New', Courier, monospace;
-            white-space: pre-wrap;
-            overflow-x: auto;
+            margin-bottom: 25px;
+            border-radius: 0 4px 4px 0;
         }
 
-        /* Reglas de impresión estructuradas */
+        .normativa-box h4 {
+            margin-top: 0;
+            color: var(--elecnor-blue);
+        }
+
         @media print {
             body { background: none; color: #000; }
             .navbar, .nav-tabs, .btn-print, #calc-tab, #doc-tab { display: none !important; }
@@ -380,14 +375,14 @@
 <body>
 
     <div class="navbar">
-        <h1>Módulo MEP - Protección contra el Rayo CTE SUA 8</h1>
-        <div style="font-size: 0.85rem; font-weight: bold;">v1.2 | Control de Riesgo Reactivo</div>
+        <h1>Módulo MEP - Protección contra el Rayo Avanzada (CTE & UNE)</h1>
+        <div style="font-size: 0.85rem; font-weight: bold;">v1.3 | Ingeniería de Cobertura de Radio</div>
     </div>
 
     <ul class="nav-tabs">
         <li class="tab-link active" onclick="switchTab(event, 'calc-tab')">Panel de Cálculo</li>
         <li class="tab-link" onclick="switchTab(event, 'report-tab')">Informe Técnico Regulado</li>
-        <li class="tab-link" onclick="switchTab(event, 'doc-tab')">Documentación del Código (ITR)</li>
+        <li class="tab-link" onclick="switchTab(event, 'doc-tab')">Explicación Técnica y Normativa</li>
     </ul>
 
     <div class="container">
@@ -403,7 +398,7 @@
                         </div>
                         <div class="form-group">
                             <label for="p_ubicacion">Ubicación / Municipio:</label>
-                            <input type="text" id="p_ubicacion" class="form-control" value="Marbella">
+                            <input text" id="p_ubicacion" class="form-control" value="Marbella">
                         </div>
                         <div class="form-group">
                             <label for="p_expediente">Referencia / Expediente:</label>
@@ -412,7 +407,7 @@
                     </fieldset>
 
                     <fieldset>
-                        <legend>Parámetros Geométricos y Locales</legend>
+                        <legend>Parámetros Geométricos de la Estructura</legend>
                         <div class="form-group">
                             <label for="g_largo">Longitud Máxima ($L$) [m]:</label>
                             <input type="number" id="g_largo" class="form-control" value="50.00" step="0.01" min="0.01">
@@ -435,14 +430,33 @@
                     </fieldset>
 
                     <fieldset>
+                        <legend>Dimensionado Geométrico del Mástil (UNE 21186)</legend>
+                        <div class="form-group">
+                            <label for="g_h_mastil">Altura del Mástil Comercial ($h$) [m] (Min: 2m):</label>
+                            <input type="number" id="g_h_mastil" class="form-control" value="5.00" step="0.10" min="2.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="g_delta_t">Tiempo de Cebado del Cabezal ($\Delta t$) [$\mu$s] (Max: 60$\mu$s):</label>
+                            <input type="number" id="g_delta_t" class="form-control" value="60" step="1" min="10" max="100">
+                            <div id="alert-cebado" class="alert-warning" style="display:none;">
+                                ⚠️ El tiempo de cebado se ha limitado normativamente a 60 $\mu$s conforme a la directriz UNE 21186.
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="g_r_max">Radio Máximo de Cubierta a Proteger ($R_{max}$) [m]:</label>
+                            <input type="number" id="g_r_max" class="form-control" value="40.00" step="0.01" min="0.10">
+                            <small style="color:#666;">Distancia horizontal máxima desde el eje del pararrayos al punto más alejado del edificio.</small>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
                         <legend>Factores de Riesgo Normativos (Coeficientes C)</legend>
-                        
                         <div class="form-group">
                             <label for="c1_sel">$C_1$: Factor de Emplazamiento</label>
                             <select id="c1_sel" class="form-control">
                                 <option value="0.50" selected>Próximo a otros edificios o árboles de igual o mayor altura (0.50)</option>
                                 <option value="0.75">Rodeado de edificios más bajos (0.75)</option>
-                                <option value="1.00">Aislado en terrain llano (1.00)</option>
+                                <option value="1.00">Aislado en terreno llano (1.00)</option>
                                 <option value="2.00">Aislado sobre una colina o promontorio (2.00)</option>
                             </select>
                         </div>
@@ -467,7 +481,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="c4_sel">$C_4$: Ocupación del Edificio</label>
+                            <label for="c4_sel">$C4$: Ocupación del Edificio</label>
                             <select id="c4_sel" class="form-control">
                                 <option value="0.50">Edificios no ocupados normalmente (0.50)</option>
                                 <option value="1.00" selected>Resto de edificios / Uso residencial estándar (1.00)</option>
@@ -479,31 +493,24 @@
                             <label for="c5_sel">$C_5$: Continuidad y Consecuencias</label>
                             <select id="c5_sel" class="form-control">
                                 <option value="1.00" selected>Resto de edificios sin implicación crítica (1.00)</option>
-                                <option value="5.00">Servicios imprescindibles (Hospitales, Bomberos) o alto impacto ambiental (5.00)</option>
+                                <option value="5.00">Servicios imprescindibles o alto impacto ambiental (5.00)</option>
                             </select>
                         </div>
 
                         <div class="checkbox-group">
                             <input type="checkbox" id="quimicos_check">
-                            <label for="quimicos_check"><strong>Riesgo Crítico Especial:</strong> El edificio manipula sustancias tóxicas, explosivas o altamente inflamables.</label>
+                            <label for="quimicos_check"><strong>Riesgo Crítico Especial:</strong> Manipulación de sustancias inflamables o explosivas.</label>
                         </div>
                     </fieldset>
                 </div>
 
                 <div>
                     <div class="results-box">
-                        <h3>Análisis Técnico en Tiempo Real</h3>
-                        
+                        <h3>Análisis de Riesgo Analítico (CTE)</h3>
                         <p><strong>Superficie de Captura Equivalente ($A_e$):</strong></p>
                         <div id="ae_val" class="formula-display">Cargando...</div>
 
-                        <p><strong>Frecuencia Esperada de Impactos ($N_e$):</strong></p>
-                        <div id="ne_val" class="formula-display">Cargando...</div>
-
-                        <p><strong>Frecuencia de Riesgo Admisible ($N_a$):</strong></p>
-                        <div id="na_val" class="formula-display">Cargando...</div>
-
-                        <p><strong>Evaluación de la Inecuación de Riesgo ($N_e > N_a$):</strong></p>
+                        <p><strong>Evaluación de Caídas de Rayos ($N_e \le N_a$):</strong></p>
                         <div class="comparison-card">
                             <div class="comparison-metric">
                                 <div>Esperada ($N_e$)</div>
@@ -517,15 +524,40 @@
                         </div>
 
                         <div style="margin-top: 15px; text-align: center;">
-                            <div style="font-weight: bold; margin-bottom: 10px;">Dictamen Normativo CTE:</div>
+                            <div style="font-weight: bold; margin-bottom: 10px;">Dictamen de Necesidad:</div>
                             <div id="dictamen_badge" class="badge">Evaluando...</div>
                         </div>
 
-                        <div id="eficiencia_wrapper" style="margin-top: 20px; display: none;">
-                            <p><strong>Eficiencia del Sistema Requerida ($E$):</strong></p>
+                        <div id="eficiencia_wrapper" style="margin-top: 15px; display: none;">
+                            <p><strong>Eficiencia Requerida ($E$):</strong></p>
                             <div id="e_val" class="formula-display"></div>
-                            <p><strong>Nivel de Protección Exigido (Tabla 2.1):</strong></p>
-                            <div id="nivel_val" style="font-weight: bold; color: var(--elecnor-blue); font-size: 1.1rem; text-align: center; background: #fff; padding: 10px; border: 1px dashed var(--elecnor-blue);"></div>
+                            <p><strong>Nivel de Protección Exigido:</strong></p>
+                            <div id="nivel_val" style="font-weight: bold; color: var(--elecnor-blue); font-size: 1rem; text-align: center; background: #fff; padding: 10px; border: 1px dashed var(--elecnor-blue);"></div>
+                        </div>
+
+                        <h3 style="margin-top: 25px;">Verificación de Cobertura Mástil (UNE 21186)</h3>
+                        <p><strong>Avance del Trazador ($\Delta L$):</strong></p>
+                        <div id="dl_val" class="formula-display">Cargando...</div>
+
+                        <p><strong>Radio de Protección Calculado ($R_p$):</strong></p>
+                        <div id="rp_formula_val" class="formula-display">Cargando...</div>
+
+                        <p><strong>Validación Geométrica ($R_p \ge R_{max}$):</strong></p>
+                        <div class="comparison-card">
+                            <div class="comparison-metric">
+                                <div>Radio Pararrayos ($R_p$)</div>
+                                <div id="comp_rp" style="color: var(--elecnor-blue);">0.00 m</div>
+                            </div>
+                            <div class="comparison-operator" id="comp_geo_op">≥</div>
+                            <div class="comparison-metric">
+                                <div>Radio Crítico ($R_{max}$)</div>
+                                <div id="comp_rmax" style="color: #555;">0.00 m</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 15px; text-align: center;">
+                            <div style="font-weight: bold; margin-bottom: 10px;">Dictamen de Cobertura:</div>
+                            <div id="cobertura_badge" class="badge">Evaluando...</div>
                         </div>
                     </div>
                 </div>
@@ -534,30 +566,28 @@
 
         <div id="report-tab" class="tab-content">
             <button class="btn-print" onclick="window.print()">
-                🖨️ Imprimir / Exportar a PDF Técnico
+                🖨️ Imprimir / Exportar Memoria Técnica a PDF
             </button>
             
             <div class="document-page">
                 <div class="report-header">
                     <div>
                         <div style="font-size: 16pt; font-weight: bold; color: var(--elecnor-blue);">INGENIERÍA MEP</div>
-                        <div style="font-size: 9px; color: #555; text-transform: uppercase; letter-spacing: 0.5px;">Cálculo de Ingeniería Conforme a Normativa</div>
+                        <div style="font-size: 9px; color: #555; text-transform: uppercase; letter-spacing: 0.5px;">Cálculo Conforme a Estándares Nacionales e Internacionales</div>
                     </div>
                     <div style="text-align: right; font-size: 11px; color: var(--elecnor-blue);">
                         <strong>Proyecto:</strong> <span id="r_p_nombre"></span><br>
                         <strong>Referencia:</strong> <span id="r_p_expediente"></span><br>
                         <strong>Ubicación:</strong> <span id="r_p_ubicacion"></span><br>
-                        <strong>Fecha de Emisión:</strong> 24 de junio de 2026
+                        <strong>Fecha de Emisión:</strong> 25 de junio de 2026
                     </div>
                 </div>
 
                 <div class="report-title">Memoria Justificativa de Protección Frente al Rayo</div>
                 
-                <p>Este documento constituye el informe justificativo oficial según las exigencias impuestas por el Código Técnico de la Edificación, de acuerdo con el <strong>Documento Básico SUA 8 (Seguridad frente al riesgo causado por la acción del rayo)</strong>. Los parámetros han sido auditados mediante herramientas informáticas MEP de cálculo reactivo.</p>
+                <p>Este documento constituye el informe justificativo oficial según las exigencias de seguridad del Código Técnico de la Edificación de España, <strong>Documento Básico SUA 8</strong>, y el diseño de la instalación bajo la norma **UNE 21186** para sistemas dotados de Dispositivos de Cebado (PDC).</p>
 
-                <div class="report-section-title">1. Bases Técnicas y Formulación</div>
-                <p>De conformidad con el protocolo normativo establecido en el artículo 1.3 de la sección SUA 8, la necesidad de pararrayos se dictamina mediante la confrontación analítica de la tasa esperada de caídas de rayos frente al margen de vulnerabilidad intrínseco de la edificación.</p>
-                
+                <div class="report-section-title">1. Marco Matemático y Formulación de Riesgo</div>
                 <table style="width:100%;">
                     <thead>
                         <tr><th>Concepto Métrico</th><th>Modelo Matemático de Simulación</th></tr>
@@ -575,32 +605,33 @@
                             <td><strong>Umbral de Riesgo Tolerable ($N_a$)</strong></td>
                             <td>$$N_a = \frac{5,5 \cdot 10^{-3}}{C_2 \cdot C_3 \cdot C_4 \cdot C_5}$$</td>
                         </tr>
-                        <tr>
-                            <td><strong>Eficiencia del Sistema ($E$)</strong></td>
-                            <td>$$E = 1 - \frac{N_a}{N_e}$$</td>
-                        </tr>
                     </tbody>
                 </table>
 
-                <div class="report-section-title">2. Variables de Entrada Computadas</div>
+                <div class="report-section-title">2. Formulación Geométrica de Cobertura (UNE 21186)</div>
+                <p>El radio de protección ($R_p$) para dispositivos de cebado se encuentra condicionado por la altura efectiva del mástil ($h$) y el radio de la esfera rodante teórica ($r$), evaluándose bajo dos regímenes físicos:</p>
+                <ul>
+                    <li>Para alturas de mástil $h \ge 5\text{ m}$: $$R_p = \sqrt{2rh - h^2 + \Delta L(2r + \Delta L)}$$</li>
+                    <li>Para alturas críticas intermedias $2\text{ m} \le h < 5\text{ m}$: $$R_p = h \cdot \frac{R_p(5)}{5}$$</li>
+                </ul>
+
+                <div class="report-section-title">3. Variables de Entrada Computadas</div>
                 <table style="width:100%;">
                     <thead>
                         <tr><th>Variable / Coeficiente</th><th>Valor Nominal</th><th>Descripción Funcional de Diseño</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td>Largo ($L$)</td><td><span id="r_largo"></span> m</td><td>Longitud ortogonal en planta del contorno perimetral.</td></tr>
-                        <tr><td>Ancho ($W$)</td><td><span id="r_ancho"></span> m</td><td>Anchura transversal en planta de la envolvente.</td></tr>
-                        <tr><td>Altura ($H$)</td><td><span id="r_altura"></span> m</td><td>Altura máxima del edificio medida desde la rasante del suelo.</td></tr>
-                        <tr><td>Densidad de Impactos ($N_g$)</td><td><span id="r_ng"></span></td><td>Frecuencia regional de rayos sobre el terreno en la zona física.</td></tr>
-                        <tr><td>Emplazamiento ($C_1$)</td><td><span id="r_c1"></span></td><td>Ajuste por relieve, topografía y apantallamiento circundante.</td></tr>
-                        <tr><td>Estructura ($C_2$)</td><td><span id="r_c2"></span></td><td>Comportamiento de la matriz portante y los planos de cubierta.</td></tr>
-                        <tr><td>Contenido ($C_3$)</td><td><span id="r_c3"></span></td><td>Grado de inflamabilidad o reactividad interna de la edificación.</td></tr>
-                        <tr><td>Ocupación ($C_4$)</td><td><span id="r_c4"></span></td><td>Intensidad de uso del inmueble y criticidad de evacuación.</td></tr>
-                        <tr><td>Consecuencias ($C_5$)</td><td><span id="r_c5"></span></td><td>Evaluación del impacto por interrupción del servicio o daño ambiental.</td></tr>
+                        <tr><td>Largo ($L$) / Ancho ($W$) / Altura ($H$)</td><td><span id="r_largo"></span> m / <span id="r_ancho"></span> m / <span id="r_altura"></span> m</td><td>Dimensiones ortogonales de la envolvente de la edificación.</td></tr>
+                        <tr><td>Densidad de Impactos ($N_g$)</td><td><span id="r_ng"></span> imp/km²·año</td><td>Frecuencia regional de rayos registrada en la zona física del proyecto.</td></tr>
+                        <tr><td>Factores de Entorno ($C_1$ a $C_5$)</td><td>$C_1$=<span id="r_c1"></span>, $C_2$=<span id="r_c2"></span>, $C_3$=<span id="r_c3"></span>, $C_4$=<span id="r_c4"></span>, $C_5$=<span id="r_c5"></span></td><td>Coeficientes normativos de emplazamiento, uso y estructura.</td></tr>
+                        <tr><td>Altura del Mástil ($h$)</td><td><span id="r_h_mastil"></span> m</td><td>Altura de la punta del captador sobre el plano horizontal superior.</td></tr>
+                        <tr><td>Tiempo de Cebado ($\Delta t$)</td><td><span id="r_delta_t"></span> $\mu$s</td><td>Parámetro de anticipación de descarga certificado en laboratorio.</td></tr>
+                        <tr><td>Radio de Esfera Rodante ($r$)</td><td><span id="r_r_esfera"></span> m</td><td>Radio del modelo geométrico impuesto por el Nivel de Protección.</td></tr>
+                        <tr><td>Radio Máximo Requerido ($R_{max}$)</td><td><span id="r_rmax_solicitado"></span> m</td><td>Semidiagonal máxima de la zona de protección en planta.</td></tr>
                     </tbody>
                 </table>
 
-                <div class="report-section-title">3. Desglose Numérico y Solución Analítica</div>
+                <div class="report-section-title">4. Desglose del Análisis Numérico</div>
                 <table style="width:100%;">
                     <thead>
                         <tr><th>Parámetro de Control</th><th>Ecuación Operada con Valores Reales</th><th>Magnitud Resultante</th></tr>
@@ -621,50 +652,60 @@
                             <td><span id="r_na_calc"></span></td>
                             <td><strong><span id="r_na_res"></span> imp/año</strong></td>
                         </tr>
+                        <tr>
+                            <td><strong>Radio de Cobertura ($R_p$)</strong></td>
+                            <td><span id="r_rp_calc"></span></td>
+                            <td><strong><span id="r_rp_res"></span> m</strong></td>
+                        </tr>
                     </tbody>
                 </table>
 
-                <div class="report-section-title">4. Nivel de Protección Requerido</div>
+                <div class="report-section-title">5. Dictamen Técnico y Conclusión de Ingeniería</div>
                 <div id="r_protection_box" class="report-protection-box">
-                    Nivel de Protección Evaluado: Pendiente de cálculo
+                    Evaluando nivel de protección normativo...
                 </div>
-
-                <div class="report-section-title">5. Conclusión Técnico Oficial</div>
                 <div id="r_conclusion_box" class="conclusion-final">
-                    Calculando dictamen definitivo...
+                    Calculando dictamen de ingeniería definitivo...
                 </div>
                 
                 <div style="margin-top: 50px; display: flex; justify-content: space-between; font-size: 10px; color: #555;">
-                    <div>Calculador Homologado CTE SUA 8<br>Unidades Técnicas bajo Estándar Internacional SI</div>
+                    <div>Calculador MEP Homologado CTE SUA 8 / UNE 21186<br>Unidades Técnicas bajo Estándar Internacional SI</div>
                     <div style="text-align: right;">Firma Responsable Autorizado<br>Departamento de Proyectos MEP</div>
                 </div>
             </div>
         </div>
 
         <div id="doc-tab" class="tab-content">
-            <h3>Informe Técnico de Requisitos (ITR) Encontrado</h3>
-            <p>Este bloque contiene el Readme normativo que sirvió de base para la programación del código:</p>
-            <div class="markdown-container" id="itr-markdown-box"></div>
+            <h3>Fundamentos de Ingeniería y Bases Normativas</h3>
+            <p>El diseño de un sistema de protección contra el rayo mediante terminales con dispositivo de cebado se rige por un procedimiento analítico bietápico: la evaluación del riesgo físico intrínseco de la estructura y la verificación volumétrica de la zona protegida.</p>
+            
+            <div class="normativa-box">
+                <h4>1. Evaluación de Riesgo Analítico (CTE DB-SUA 8)</h4>
+                <p>El Código Técnico de la Edificación establece el principio de balance de frecuencias de impacto. La instalación de un sistema de pararrayos es de carácter obligatorio siempre que la frecuencia esperada de impactos por año ($N_e$) sea estrictamente mayor que el riesgo admisible tolerado por la norma ($N_a$).</p>
+                <p>Cuando la edificación presenta una altura superior a 43 metros o se manipulan sustancias con riesgo de explosión, la norma elimina el proceso analítico y prescribe de manera directa la obligatoriedad de la instalación, asignándole la máxima exigencia de eficiencia.</p>
+            </div>
+
+            <div class="normativa-box">
+                <h4>2. Teoría de los Dispositivos de Cebado (PDC) y Norma UNE 21186</h4>
+                <p>A diferencia de las puntas Franklin pasivas, los sistemas PDC están equipados con un dispositivo electrónico que ioniza el aire circundante de manera anticipada. Este tiempo de adelanto se denomina <strong>tiempo de cebado ($\Delta t$)</strong> y permite lanzar el trazador ascendente antes de que lo haga cualquier otra estructura adyacente.</p>
+                <p>Físicamente, este tiempo se traduce en un incremento en la longitud del trazador ($\Delta L = v \cdot \Delta t$). El marco regulatorio fija de manera conservadora la velocidad de propagación de este trazador en la atmósfera como $v = 1\text{ m}/\mu\text{s}$, limitando además el valor aplicable de $\Delta t$ a un máximo de $60\ \mu\text{s}$ para mitigar los efectos de inestabilidad geométrica en el laboratorio.</p>
+            </div>
+
+            <div class="normativa-box">
+                <h4>3. El Método de la Esfera Rodante y la Inecuación de Cobertura</h4>
+                <p>La geometría de protección se deriva matemáticamente del modelo electrogeométrico o de la esfera rodante teórica, cuyo radio ($r$) disminuye a medida que el nivel de protección se vuelve más exigente (un radio menor exige una malla de protección más tupida y segura):</p>
+                <ul>
+                    <li><strong>Nivel I ($r = 20\text{ m}$):</strong> Diseñado para proteger estructuras con riesgo crítico o consecuencias severas.</li>
+                    <li><strong>Nivel IV ($r = 60\text{ m}$):</strong> Estructuras con baja tasa de ocupación o contenidos estándar.</li>
+                </ul>
+                <p>Para asegurar que la estructura se encuentra completamente resguardada bajo el volumen cónico proyectado por el pararrayos, la ingeniería del proyecto debe verificar en todo momento que el radio horizontal de protección calculado en planta ($R_p$) supere a la diagonal máxima real de la cubierta ($R_{max}$). Si $R_p < R_{max}$, existirán zonas vulnerables propensas a recibir impactos laterales directos.</p>
+            </div>
         </div>
 
     </div>
 
     <script>
-        const itrMarkdownText = `# INFORME TÉCNICO DE REQUISITOS: CALCULADORA PARARRAYOS CTE SUA 8
-ID_INFORME: ITR.SUA8_260624-01 | VERSIÓN: v1.2  
-ESTADO: ACEPTADO
-
-1. ESPECIFICACIONES TÉCNICAS
-- Normativa: Código Técnico de la Edificación (CTE), Documento Básico SUA 8.
-- Parámetros Validados: Geometría, Ng local y matriz de coeficientes adimensionales C1-C5.
-- Interfaz: Desglose analítico explícito replicando la estructura de imagen técnica real.
-
-2. LÓGICA DE INGENIERÍA Y CÁLCULOS
-- Expresión del desarrollo numérico con puntos de multiplicación alineados con el estándar técnico.
-- Box dinámico de inecuación de riesgo y nivel de protección estructurado para memorias descriptivas.`;
-
-        document.getElementById('itr-markdown-box').textContent = itrMarkdownText;
-
+        // Gestión de la navegación por pestañas de la single-page app
         function switchTab(evt, tabId) {
             const contents = document.querySelectorAll('.tab-content');
             contents.forEach(content => content.classList.remove('active'));
@@ -680,9 +721,11 @@ ESTADO: ACEPTADO
             }
         }
 
+        // Recuperación automática de variables de diseño de localStorage o valores por defecto
         const inputsToTrack = [
             'p_nombre', 'p_ubicacion', 'p_expediente',
             'g_largo', 'g_ancho', 'g_altura', 'g_ng',
+            'g_h_mastil', 'g_delta_t', 'g_r_max',
             'c1_sel', 'c2_sel', 'c3_sel', 'c4_sel', 'c5_sel',
             'quimicos_check'
         ];
@@ -690,6 +733,7 @@ ESTADO: ACEPTADO
         function initLocalStorage() {
             inputsToTrack.forEach(id => {
                 const element = document.getElementById(id);
+                if (!element) return;
                 const cachedValue = localStorage.getItem(id);
                 if (cachedValue !== null) {
                     if (element.type === 'checkbox') {
@@ -707,6 +751,7 @@ ESTADO: ACEPTADO
         function runCalculationsAndSync() {
             inputsToTrack.forEach(id => {
                 const element = document.getElementById(id);
+                if (!element) return;
                 if (element.type === 'checkbox') {
                     localStorage.setItem(id, element.checked);
                 } else {
@@ -714,17 +759,31 @@ ESTADO: ACEPTADO
                 }
             });
 
+            // Recuperación de variables MEP numéricas
             const L = parseFloat(document.getElementById('g_largo').value) || 0;
             const W = parseFloat(document.getElementById('g_ancho').value) || 0;
             const H = parseFloat(document.getElementById('g_altura').value) || 0;
             const Ng = parseFloat(document.getElementById('g_ng').value) || 0;
             
+            const h_mastil = parseFloat(document.getElementById('g_h_mastil').value) || 2;
+            let delta_t = parseFloat(document.getElementById('g_delta_t').value) || 0;
+            const R_max = parseFloat(document.getElementById('g_r_max').value) || 0;
+
             const C1 = parseFloat(document.getElementById('c1_sel').value);
             const C2 = parseFloat(document.getElementById('c2_sel').value);
             const C3 = parseFloat(document.getElementById('c3_sel').value);
             const C4 = parseFloat(document.getElementById('c4_sel').value);
             const C5 = parseFloat(document.getElementById('c5_sel').value);
             const quimicosCriticos = document.getElementById('quimicos_check').checked;
+
+            // Validación normativa estricta de tiempo de cebado (UNE 21186 cap. C.2.2)
+            const alertCebado = document.getElementById('alert-cebado');
+            if (delta_t > 60) {
+                alertCebado.style.display = 'block';
+                delta_t = 60;
+            } else {
+                alertCebado.style.display = 'none';
+            }
 
             const alertAltura = document.getElementById('alert-altura');
             if (H > 43) {
@@ -733,7 +792,7 @@ ESTADO: ACEPTADO
                 alertAltura.style.display = 'none';
             }
 
-            // --- RESOLUCIÓN MATEMÁTICA ---
+            // --- RESOLUCIÓN MATEMÁTICA DE RIESGO (CTE DB-SUA 8) ---
             const Ae = (L * W) + (6 * H * (L + W)) + (9 * Math.PI * Math.pow(H, 2));
             const Ne = Ng * Ae * C1 * Math.pow(10, -6);
             const Na = (5.5 / (C2 * C3 * C4 * C5)) * Math.pow(10, -3);
@@ -747,14 +806,59 @@ ESTADO: ACEPTADO
             }
             if (H > 43) {
                 pararrayosObligatorio = true;
-                causaExigencia = "Altura del edificio superior a 43 m (Exigencia directa del artículo SUA 8.1.2)";
+                causaExigencia = "Altura del edificio superior a 43 m (Exigencia directa SUA 8.1.2)";
             }
             if (quimicosCriticos) {
                 pararrayosObligatorio = true;
-                causaExigencia = "Presencia de sustancias altamente inflamables, explosivas o tóxicas (Exigencia directa del artículo SUA 8.1.2)";
+                causaExigencia = "Presencia de sustancias inflamables o explosivas (Exigencia directa SUA 8.1.2)";
             }
 
-            // --- ACTUALIZACIÓN BOX COMPARATIVO VISUAL (Ne > Na) ---
+            // --- DETERMINACIÓN DE NIVEL DE PROTECCIÓN Y RADIO DE ESFERA (r) ---
+            let r_esfera = 60; // Por defecto Nivel IV para simulación libre voluntaria
+            let txtNivelProteccion = "No requerido por cálculo analítico (Baseline Nivel IV)";
+            let E = 0;
+
+            if (pararrayosObligatorio) {
+                E = 1 - (Na / Ne);
+                if (H > 43 || quimicosCriticos) {
+                    if (E < 0.98) E = 0.98;
+                }
+
+                if (E >= 0.98) {
+                    txtNivelProteccion = "NIVEL 1 (Eficiencia Máxima Extra Alta: E ≥ 0,98)";
+                    r_esfera = 20;
+                } else if (E >= 0.95) {
+                    txtNivelProteccion = "NIVEL 2 (Eficiencia Alta: 0,95 ≤ E < 0,98)";
+                    r_esfera = 30;
+                } else if (E >= 0.80) {
+                    txtNivelProteccion = "NIVEL 3 (Eficiencia Media: 0,80 ≤ E < 0,95)";
+                    r_esfera = 45;
+                } else {
+                    txtNivelProteccion = "NIVEL 4 (Eficiencia Baja: 0 ≤ E < 0,80)";
+                    r_esfera = 60;
+                }
+            }
+
+            // --- RESOLUCIÓN MATEMÁTICA DE GEOMETRÍA (UNE 21186) ---
+            const delta_L = 1.0 * delta_t; // v = 1 m/microsegundo
+            
+            // Cálculo del Rp para h=5 como pivote de escala para alturas bajas
+            const rp_5 = Math.sqrt((2 * r_esfera * 5) - Math.pow(5, 2) + (delta_L * ((2 * r_esfera) + delta_L)));
+            
+            let Rp = 0;
+            let formulaUsadaText = "";
+
+            if (h_mastil >= 5) {
+                Rp = Math.sqrt((2 * r_esfera * h_mastil) - Math.pow(h_mastil, 2) + (delta_L * ((2 * r_esfera) + delta_L)));
+                formulaUsadaText = `$$R_p = \\sqrt{2(${r_esfera})(${h_mastil.toFixed(1)}) - {${h_mastil.toFixed(1)}}^2 + ${delta_L}(2(${r_esfera}) + ${delta_L})} = ${Rp.toFixed(2)}\\text{ m}$$`;
+            } else {
+                Rp = h_mastil * (rp_5 / 5.0);
+                formulaUsadaText = `$$R_p = {${h_mastil.toFixed(1)}} \\cdot \\frac{${rp_5.toFixed(2)}}{5} = ${Rp.toFixed(2)}\\text{ m} \\quad [h < 5\\text{m}]$$`;
+            }
+
+            const cumpleCobertura = Rp >= R_max;
+
+            // --- ACTUALIZACIÓN DE INTERFAZ EN TIEMPO REAL (BLOQUE RIESGO) ---
             document.getElementById('comp_ne').textContent = Ne.toFixed(6);
             document.getElementById('comp_na').textContent = Na.toFixed(6);
             const compOp = document.getElementById('comp_op');
@@ -769,52 +873,47 @@ ESTADO: ACEPTADO
                 document.getElementById('comp_ne').style.color = "var(--elecnor-blue)";
             }
 
-            // --- ACTUALIZACIÓN DE FORMULAS (FORMATO EXACTO IMAGE_CC9EDF.PNG) ---
             document.getElementById('ae_val').innerHTML = `$$A_e = (${L.toFixed(2)} \\cdot ${W.toFixed(2)}) + 6 \\cdot ${H.toFixed(2)} \\cdot (${L.toFixed(2)} + ${W.toFixed(2)}) + 9\\pi \\cdot ${H.toFixed(2)}^2 = ${Ae.toFixed(2)}\\text{ m}^2$$`;
-            document.getElementById('ne_val').innerHTML = `$$N_e = ${Ng.toFixed(2)} \\cdot ${Ae.toFixed(2)} \\cdot ${C1.toFixed(2)} \\cdot 10^{-6} = ${Ne.toFixed(6)}\\text{ imp/año}$$`;
-            document.getElementById('na_val').innerHTML = `$$N_a = \\frac{5,5}{${C2.toFixed(2)} \\cdot ${C3.toFixed(2)} \\cdot ${C4.toFixed(2)} \\cdot ${C5.toFixed(2)}} \\cdot 10^{-3} = ${Na.toFixed(6)}\\text{ imp/año}$$`;
 
             const dictamenBadge = document.getElementById('dictamen_badge');
             const eficienciaWrapper = document.getElementById('eficiencia_wrapper');
-            const reportProtectionBox = document.getElementById('r_protection_box');
-
-            let txtNivelProteccion = "No requerido por cálculo analítico";
 
             if (pararrayosObligatorio) {
                 dictamenBadge.textContent = "INSTALACIÓN OBLIGATORIA";
                 dictamenBadge.className = "badge badge-danger";
                 eficienciaWrapper.style.display = 'block';
-
-                let E = 1 - (Na / Ne);
-                if (H > 43 || quimicosCriticos) {
-                    if (E < 0.98) E = 0.98;
-                }
-
-                if (E >= 0.98) {
-                    txtNivelProteccion = "NIVEL 1 (Eficiencia Máxima Extra Alta: E ≥ 0,98)";
-                } else if (E >= 0.95) {
-                    txtNivelProteccion = "NIVEL 2 (Eficiencia Alta: 0,95 ≤ E < 0,98)";
-                } else if (E >= 0.80) {
-                    txtNivelProteccion = "NIVEL 3 (Eficiencia Media: 0,80 ≤ E < 0,95)";
-                } else {
-                    txtNivelProteccion = "NIVEL 4 (Eficiencia Baja: 0 ≤ E < 0,80)";
-                }
-
                 document.getElementById('e_val').innerHTML = `$$E = 1 - \\frac{${Na.toFixed(6)}}{${Ne.toFixed(6)}} = ${E.toFixed(4)}$$`;
                 document.getElementById('nivel_val').innerHTML = txtNivelProteccion.replace("E ≥", "$E \\ge$").replace("≤ E <", "$\\le E <$");
-                
-                reportProtectionBox.style.color = "var(--danger-color)";
-                reportProtectionBox.textContent = `SISTEMA EXIGIDO: ${txtNivelProteccion}`;
             } else {
                 dictamenBadge.textContent = "PROTECCIÓN NO REQUERIDA";
                 dictamenBadge.className = "badge badge-success";
                 eficienciaWrapper.style.display = 'none';
-                
-                reportProtectionBox.style.color = "var(--success-color)";
-                reportProtectionBox.textContent = `NIVEL DE PROTECCIÓN: ${txtNivelProteccion}`;
             }
 
-            // --- VINCULACIÓN CON LA PESTAÑA DEL INFORME TÉCNICO ---
+            // --- ACTUALIZACIÓN DE INTERFAZ EN TIEMPO REAL (BLOQUE GEOMETRÍA) ---
+            document.getElementById('dl_val').innerHTML = `$$\\Delta L = 1 \\text{ m}/\\mu\\text{s} \\cdot ${delta_t}\\ \\mu\\text{s} = ${delta_L.toFixed(0)}\\text{ m}$$`;
+            document.getElementById('rp_formula_val').innerHTML = formulaUsadaText;
+            
+            document.getElementById('comp_rp').textContent = `${Rp.toFixed(2)} m`;
+            document.getElementById('comp_rmax').textContent = `${R_max.toFixed(2)} m`;
+            const compGeoOp = document.getElementById('comp_geo_op');
+            const coberturaBadge = document.getElementById('cobertura_badge');
+
+            if (cumpleCobertura) {
+                compGeoOp.textContent = "≥";
+                compGeoOp.style.color = "var(--success-color)";
+                document.getElementById('comp_rp').style.color = "var(--success-color)";
+                coberturaBadge.textContent = "COBERTURA COMPLETA (CUMPLE)";
+                coberturaBadge.className = "badge badge-success";
+            } else {
+                compGeoOp.textContent = "<";
+                compGeoOp.style.color = "var(--danger-color)";
+                document.getElementById('comp_rp').style.color = "var(--danger-color)";
+                coberturaBadge.textContent = "ZONAS VULNERABLES (NO CUMPLE)";
+                coberturaBadge.className = "badge badge-danger";
+            }
+
+            // --- VINCULACIÓN DE VISTA Y CONTENIDOS DEL INFORME TÉCNICO ---
             document.getElementById('r_p_nombre').textContent = document.getElementById('p_nombre').value;
             document.getElementById('r_p_ubicacion').textContent = document.getElementById('p_ubicacion').value;
             document.getElementById('r_p_expediente').textContent = document.getElementById('p_expediente').value;
@@ -830,6 +929,11 @@ ESTADO: ACEPTADO
             document.getElementById('r_c4').textContent = C4.toFixed(2);
             document.getElementById('r_c5').textContent = C5.toFixed(2);
 
+            document.getElementById('r_h_mastil').textContent = h_mastil.toFixed(2);
+            document.getElementById('r_delta_t').textContent = delta_t;
+            document.getElementById('r_r_esfera').textContent = r_esfera;
+            document.getElementById('r_rmax_solicitado').textContent = R_max.toFixed(2);
+
             document.getElementById('r_ae_calc').textContent = `(${L.toFixed(2)} * ${W.toFixed(2)}) + 6 * ${H.toFixed(2)} * (${L.toFixed(2)} + ${W.toFixed(2)}) + 9 * π * ${H.toFixed(2)}²`;
             document.getElementById('r_ae_res').textContent = Ae.toFixed(2);
 
@@ -839,20 +943,47 @@ ESTADO: ACEPTADO
             document.getElementById('r_na_calc').textContent = `0.0055 / (${C2.toFixed(2)} * ${C3.toFixed(2)} * ${C4.toFixed(2)} * ${C5.toFixed(2)})`;
             document.getElementById('r_na_res').textContent = Na.toFixed(6);
 
+            if (h_mastil >= 5) {
+                document.getElementById('r_rp_calc').textContent = `√[2 * ${r_esfera} * ${h_mastil.toFixed(1)} - ${h_mastil.toFixed(1)}² + ${delta_L} * (2 * ${r_esfera} + ${delta_L})]`;
+            } else {
+                document.getElementById('r_rp_calc').textContent = `${h_mastil.toFixed(1)} * (${rp_5.toFixed(2)} / 5)`;
+            }
+            document.getElementById('r_rp_res').textContent = Rp.toFixed(2);
+
+            const reportProtectionBox = document.getElementById('r_protection_box');
             const rConclusionBox = document.getElementById('r_conclusion_box');
+
             if (pararrayosObligatorio) {
-                let E_rep = 1 - (Na / Ne);
-                if (H > 43 || quimicosCriticos) if (E_rep < 0.98) E_rep = 0.98;
-                
+                reportProtectionBox.style.color = "var(--danger-color)";
+                reportProtectionBox.style.borderColor = "var(--danger-color)";
+                reportProtectionBox.textContent = `SISTEMA EXIGIDO: ${txtNivelProteccion} | ESFERA r = ${r_esfera}m`;
+            } else {
+                reportProtectionBox.style.color = "var(--success-color)";
+                reportProtectionBox.style.borderColor = "var(--success-color)";
+                reportProtectionBox.textContent = `SISTEMA VOLUNTARIO: El análisis de riesgo no exige protección. Evaluación geométrica en base a Nivel IV (r = 60m).`;
+            }
+
+            // Dictamen final cruzado (Riesgo + Cobertura geométrica)
+            if (pararrayosObligatorio && !cumpleCobertura) {
+                rConclusionBox.style.backgroundColor = '#f8d7da';
+                rConclusionBox.style.borderColor = 'var(--danger-color)';
+                rConclusionBox.style.color = '#721c24';
+                rConclusionBox.innerHTML = `❌ DIMENSIONADO INSUFICIENTE: La instalación del sistema es obligatoria por CTE DB-SUA 8 (${causaExigencia}), pero el mástil de ${h_mastil.toFixed(1)}m seleccionado NO CUMPLE con el radio de cobertura necesario de la edificación ($R_p = ${Rp.toFixed(2)}\\text{ m} < R_{max} = ${R_max.toFixed(2)}\\text{ m}$). Incremente la cota del mástil o seleccione un cabezal de mayor adelanto temporal.`;
+            } else if (pararrayosObligatorio && cumpleCobertura) {
                 rConclusionBox.style.backgroundColor = '#fff3cd';
                 rConclusionBox.style.borderColor = 'var(--elecnor-orange)';
-                rConclusionBox.style.color = 'var(--dark-text)';
-                rConclusionBox.innerHTML = `❌ SE REQUIERE INSTALACIÓN OBLIGATORIA DE PARARRAYOS<br><span style='font-size:11px; font-weight:normal;'>Justificación: ${causaExigencia}. Eficiencia requerida calculada de E = ${E_rep.toFixed(4)}. Se debe estructurar un anillo de protección bajo las directrices técnicas del Anexo SUA B del Código Técnico.</span>`;
-            } else {
+                rConclusionBox.style.color = '#856404';
+                rConclusionBox.innerHTML = `⚠️ VALIDACIÓN TÉCNICA CORRECTA: Pararrayos obligatorio según CTE (${causaExigencia}). El diseño propuesto con mástil de ${h_mastil.toFixed(1)}m CUMPLE los requisitos de cobertura volumétrica ($R_p = ${Rp.toFixed(2)}\\text{ m} \\ge R_{max} = ${R_max.toFixed(2)}\\text{ m}$). Se autoriza el replanteo conforme a la norma UNE 21186.`;
+            } else if (!pararrayosObligatorio && cumpleCobertura) {
                 rConclusionBox.style.backgroundColor = '#e6f7ff';
                 rConclusionBox.style.borderColor = 'var(--elecnor-blue)';
                 rConclusionBox.style.color = 'var(--elecnor-blue)';
-                rConclusionBox.innerHTML = `✅ EL NIVEL DE RIESGO SE CONSIDERA TOLERABLE: NO SE REQUIERE INSTALACIÓN DE PARARRAYOS ($N_e \\le N_a$)`;
+                rConclusionBox.innerHTML = `✅ PROYECTO CON RIESGO TOLERABLE: No se requiere instalación obligatoria de pararrayos ($N_e \\le N_a$). La simulación del mástil propuesto verifica cobertura completa frente a descargas estadísticas ordinarias de Nivel IV.`;
+            } else {
+                rConclusionBox.style.backgroundColor = '#f8f9fa';
+                rConclusionBox.style.borderColor = 'var(--border-color)';
+                rConclusionBox.style.color = '#333';
+                rConclusionBox.innerHTML = `💡 INSTALACIÓN NO REQUERIDA / COBERTURA VOLUNTARIA INSUFICIENTE: El análisis normativo no exige pararrayos. Si desea instalar el sistema de forma voluntaria, considere elevar el mástil para asegurar el radio de protección estipulado.`;
             }
 
             if (window.MathJax && typeof MathJax.typeset === 'function') {
