@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<!--
+  BASADO EN INFORME ACEPTADO: ITR.CPSC_260410-01 v1.3
+  PROYECTO: CalcPisc — Calculadora Hidráulica de Piscinas
+  VERSIÓN: v1.3
+  FECHA: 2026-04-10
+  NORMATIVA: RD 742/2013 | CTE DB-HS4 | UNE-EN 13451 | UNE-EN 16713-1
+  CAMBIOS v1.3:
+    - M4: Eliminado campo modelo comercial bomba
+    - M3: Descripciones de velocidad recomendada por tramo
+    - Nueva pestaña: Tablas de Referencia (velocidades, filtros, PVC PN10)
+    - Nueva pestaña: Informe Resumen con exportación PDF
+-->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CalcPisc v1.3 — Cálculo Hidráulico de Piscinas</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg:      #0d1117;
+  --panel:   #161b22;
+  --panel2:  #1c2330;
+  --border:  #30363d;
+  --accent:  #1e7fcb;
+  --accent2: #00c8a0;
+  --accent3: #f0a500;
+  --warn:    #e05252;
+  --text:    #e6edf3;
+  --muted:   #8b949e;
+  --mono:    'IBM Plex Mono', monospace;
+  --sans:    'IBM Plex Sans', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.6; min-height: 100vh; }
+
+/* ── HEADER ── */
+header {
+  background: var(--panel); border-bottom: 1px solid var(--border);
+  padding: 14px 28px; display: flex; align-items: center;
+  justify-content: space-between; position: sticky; top: 0; z-index: 200;
+}
+.logo { display: flex; align-items: center; gap: 12px; }
+.logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg,var(--accent),var(--accent2)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
+.logo-text { font-family: var(--mono); font-size: 15px; font-weight: 600; letter-spacing: .04em; }
+.logo-text span { color: var(--accent2); }
+.logo-sub { font-size: 10px; color: var(--muted); font-family: var(--mono); }
+.v-badge { display: inline-block; background: var(--accent3); color: #000; font-family: var(--mono); font-size: 10px; font-weight: 700; border-radius: 3px; padding: 1px 6px; margin-left: 6px; }
+.header-meta { font-family: var(--mono); font-size: 10px; color: var(--muted); text-align: right; line-height: 1.7; }
+.header-meta b { color: var(--accent3); }
+
+/* ── TABS ── */
+.tab-bar {
+  background: var(--panel); border-bottom: 1px solid var(--border);
+  display: flex; gap: 0; padding: 0 28px; position: sticky; top: 65px; z-index: 190;
+}
+.tab-btn {
+  padding: 11px 20px; font-family: var(--mono); font-size: 12px; font-weight: 500;
+  color: var(--muted); background: none; border: none; border-bottom: 2px solid transparent;
+  cursor: pointer; transition: color .2s, border-color .2s; letter-spacing: .04em;
+  display: flex; align-items: center; gap: 7px; white-space: nowrap;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent2); border-bottom-color: var(--accent2); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ── LAYOUT ── */
+.wrapper { max-width: 1300px; margin: 0 auto; padding: 22px 20px 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.full-width { grid-column: 1 / -1; }
+
+/* ── CARD ── */
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.card-header { background: var(--panel2); border-bottom: 1px solid var(--border); padding: 10px 18px; display: flex; align-items: center; gap: 10px; }
+.card-header .num { background: var(--accent); color: #fff; font-family: var(--mono); font-size: 10px; font-weight: 700; border-radius: 4px; padding: 2px 7px; letter-spacing: .06em; }
+.card-header h2 { font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; }
+.card-header .tag { margin-left: auto; font-family: var(--mono); font-size: 10px; color: var(--muted); background: rgba(255,255,255,.05); border-radius: 3px; padding: 2px 6px; }
+.card-body { padding: 16px; }
+
+/* ── FORMS ── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
+.form-grid.triple { grid-template-columns: 1fr 1fr 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 3px; }
+.form-group.span2 { grid-column: span 2; }
+label { font-size: 11px; font-weight: 500; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+label .unit { color: var(--accent3); font-weight: 400; text-transform: none; letter-spacing: 0; }
+/* descripción bajo el input */
+.vel-desc { font-size: 10px; color: #556068; line-height: 1.4; margin-top: 2px; font-family: var(--sans); }
+.vel-desc b { color: var(--accent3); }
+input[type="number"], input[type="text"], select {
+  width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+  color: var(--text); font-family: var(--mono); font-size: 13px; padding: 7px 11px;
+  transition: border-color .2s; appearance: none;
+}
+input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(30,127,203,.15); }
+select { cursor: pointer; }
+select option { background: var(--panel); }
+.sep { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+.section-label { font-family: var(--mono); font-size: 10px; color: var(--accent2); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── FILTRO SELECTOR ── */
+.filtro-select-wrap { background: rgba(0,200,160,.05); border: 1px solid rgba(0,200,160,.2); border-radius: 8px; padding: 12px; margin-top: 10px; }
+.filtro-select-wrap label { color: var(--accent2); }
+.filtro-sel-row { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-top: 10px; }
+.filtro-info-chip { background: var(--panel2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; text-align: center; }
+.filtro-info-chip .val { font-family: var(--mono); font-size: 15px; font-weight: 600; color: var(--accent2); display: block; }
+.filtro-info-chip .lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+#warn-filtro-bajo { display: none; margin-top: 8px; background: rgba(224,82,82,.1); border: 1px solid rgba(224,82,82,.3); border-radius: 5px; padding: 6px 12px; font-size: 11px; color: var(--warn); font-family: var(--mono); }
+
+/* ── BUTTONS ── */
+.btn-calc { width: 100%; padding: 12px; background: linear-gradient(135deg,var(--accent),#1565a8); border: none; border-radius: 8px; color: #fff; font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: .08em; cursor: pointer; transition: opacity .2s,transform .1s; margin-top: 16px; }
+.btn-calc:hover { opacity: .92; transform: translateY(-1px); }
+.btn-reset { width: 100%; padding: 9px; background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--muted); font-family: var(--mono); font-size: 11px; cursor: pointer; margin-top: 6px; transition: border-color .2s,color .2s; }
+.btn-reset:hover { border-color: var(--warn); color: var(--warn); }
+
+/* ── RESULTS ── */
+#results-panel { display: none; }
+#results-panel.visible { display: block; }
+.result-block { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 12px; }
+.result-block h3 { font-size: 11px; font-weight: 600; color: var(--accent2); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.result-block h3::before { content: ''; width: 3px; height: 12px; background: var(--accent2); border-radius: 2px; }
+.kpi-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 8px; }
+.kpi-row.four { grid-template-columns: repeat(4,1fr); }
+.kpi-row.five { grid-template-columns: repeat(5,1fr); }
+.kpi { background: var(--panel2); border: 1px solid var(--border); border-radius: 6px; padding: 9px 10px; text-align: center; }
+.kpi.hl  { border-color: rgba(0,200,160,.4); background: rgba(0,200,160,.06); }
+.kpi.hlw { border-color: rgba(240,165,0,.4);  background: rgba(240,165,0,.06); }
+.kpi .val { font-family: var(--mono); font-size: 18px; font-weight: 600; color: var(--accent); display: block; line-height: 1.2; }
+.kpi .val.g { color: var(--accent2); }
+.kpi .val.a { color: var(--accent3); }
+.kpi .val.r { color: var(--warn); }
+.kpi .lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-top: 3px; display: block; }
+.kpi .sub { font-size: 9px; color: #555; display: block; font-family: var(--mono); }
+
+/* ── TABLE ── */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--mono); }
+th { background: var(--panel2); color: var(--muted); font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; padding: 7px 9px; text-align: left; border-bottom: 1px solid var(--border); }
+td { padding: 7px 9px; border-bottom: 1px solid rgba(48,54,61,.5); color: var(--text); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,.03); }
+td.nc { text-align: right; color: var(--accent); }
+td.dn { color: var(--accent2); font-weight: 600; }
+td.ok { color: var(--accent2); }
+td.wn { color: var(--accent3); }
+td.er { color: var(--warn); }
+
+/* ── FORMULA BOX ── */
+.fbox { background: rgba(30,127,203,.07); border: 1px solid rgba(30,127,203,.2); border-radius: 6px; padding: 9px 13px; font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 8px; line-height: 1.9; }
+.fbox b { color: var(--text); }
+.fbox .corr { color: var(--accent2); font-weight: 600; }
+
+/* ── ALERTS ── */
+.alert { border-radius: 6px; padding: 8px 12px; font-size: 12px; margin-bottom: 8px; }
+.alert.info { background: rgba(30,127,203,.09); border: 1px solid rgba(30,127,203,.25); color: #7ab8e8; }
+.alert.ok   { background: rgba(0,200,160,.08);  border: 1px solid rgba(0,200,160,.2);  color: #5ce0c0; }
+.alert.warn { background: rgba(240,165,0,.08);  border: 1px solid rgba(240,165,0,.2);  color: #f0c060; }
+.alert.err  { background: rgba(224,82,82,.08);  border: 1px solid rgba(224,82,82,.25); color: var(--warn); }
+
+.norm-chip { display: inline-flex; align-items: center; background: rgba(240,165,0,.08); border: 1px solid rgba(240,165,0,.22); border-radius: 4px; padding: 3px 8px; font-size: 10px; font-family: var(--mono); color: var(--accent3); margin: 2px; }
+
+/* ══════════════════════════════════
+   PESTAÑA TABLAS DE REFERENCIA
+══════════════════════════════════ */
+.ref-wrapper { max-width: 1300px; margin: 0 auto; padding: 22px 20px 60px; display: flex; flex-direction: column; gap: 20px; }
+.ref-card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.ref-card-header { background: var(--panel2); border-bottom: 1px solid var(--border); padding: 10px 18px; display: flex; align-items: center; gap: 10px; }
+.ref-card-header h2 { font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; }
+.ref-card-body { padding: 16px; }
+.ref-tag { margin-left: auto; font-family: var(--mono); font-size: 10px; color: var(--muted); background: rgba(255,255,255,.05); border-radius: 3px; padding: 2px 6px; }
+
+/* ══════════════════════════════════
+   PESTAÑA INFORME PDF
+══════════════════════════════════ */
+.rpt-wrapper { max-width: 900px; margin: 0 auto; padding: 22px 20px 60px; }
+.rpt-placeholder { background: var(--panel); border: 1px dashed var(--border); border-radius: 10px; padding: 48px; text-align: center; color: var(--muted); font-family: var(--mono); font-size: 13px; }
+.rpt-placeholder .icon { font-size: 40px; display: block; margin-bottom: 12px; }
+.btn-pdf {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 24px; background: linear-gradient(135deg,#c0392b,#922b21);
+  border: none; border-radius: 8px; color: #fff; font-family: var(--mono);
+  font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity .2s;
+  margin-bottom: 18px;
+}
+.btn-pdf:hover { opacity: .88; }
+
+/* Informe imprimible */
+#informe-contenido { display: none; }
+#informe-contenido.visible { display: block; }
+.rpt-doc {
+  background: #fff; color: #1a1a2e;
+  border-radius: 8px; overflow: hidden;
+  box-shadow: 0 4px 32px rgba(0,0,0,.4);
+  font-family: var(--sans);
+}
+.rpt-doc .rpt-head {
+  background: #1a2744; color: #fff; padding: 28px 32px 22px;
+}
+.rpt-doc .rpt-head h1 { font-size: 20px; font-weight: 600; letter-spacing: .02em; }
+.rpt-doc .rpt-head .meta { font-family: var(--mono); font-size: 11px; color: #8eacd0; margin-top: 8px; line-height: 1.9; }
+.rpt-doc .rpt-head .meta b { color: #c8d8f0; }
+.rpt-body { padding: 28px 32px; }
+.rpt-section { margin-bottom: 24px; }
+.rpt-section h2 {
+  font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+  color: #1a2744; border-bottom: 2px solid #1e7fcb; padding-bottom: 5px; margin-bottom: 12px;
+}
+.rpt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; }
+.rpt-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+.rpt-row { display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0; border-bottom: 1px solid #eef0f4; font-size: 13px; }
+.rpt-row .rk { color: #555; font-size: 12px; }
+.rpt-row .rv { font-family: var(--mono); font-weight: 600; color: #1a2744; }
+.rpt-row .rv.ok  { color: #0a7a5c; }
+.rpt-row .rv.warn{ color: #b8630a; }
+.rpt-row .rv.err { color: #c0392b; }
+.rpt-tbl { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 4px; }
+.rpt-tbl th { background: #1a2744; color: #fff; padding: 6px 10px; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; text-align: left; }
+.rpt-tbl td { padding: 6px 10px; border-bottom: 1px solid #eef0f4; }
+.rpt-tbl tr:last-child td { border-bottom: none; }
+.rpt-tbl tr:nth-child(even) td { background: #f7f9fc; }
+.rpt-footer { background: #f0f4fa; padding: 16px 32px; font-size: 11px; color: #666; line-height: 1.7; border-top: 1px solid #d8e0ec; }
+.rpt-footer .norms { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.rpt-footer .nc { background: #dce8f8; border-radius: 3px; padding: 2px 8px; font-family: var(--mono); font-size: 10px; color: #1a2744; }
+.rpt-alert-ok   { background: #e8faf4; border-left: 3px solid #0a7a5c; padding: 6px 12px; margin-top: 6px; font-size: 12px; color: #0a5c44; border-radius: 0 4px 4px 0; }
+.rpt-alert-warn { background: #fff8e6; border-left: 3px solid #b8630a; padding: 6px 12px; margin-top: 6px; font-size: 12px; color: #7a4200; border-radius: 0 4px 4px 0; }
+.rpt-alert-err  { background: #fdecea; border-left: 3px solid #c0392b; padding: 6px 12px; margin-top: 6px; font-size: 12px; color: #7a1010; border-radius: 0 4px 4px 0; }
+
+footer { text-align: center; font-family: var(--mono); font-size: 10px; color: #444c56; padding: 16px; border-top: 1px solid var(--border); }
+
+/* ══════════════════════════════════
+   PRINT — solo informe
+══════════════════════════════════ */
+@media print {
+  body { background: #fff !important; }
+  header, .tab-bar, .rpt-wrapper > .btn-pdf, footer { display: none !important; }
+  .tab-content { display: block !important; }
+  .wrapper, .ref-wrapper { display: none !important; }
+  #tab-informe { display: block !important; }
+  .rpt-placeholder { display: none !important; }
+  #informe-contenido { display: block !important; }
+  .rpt-doc { box-shadow: none; }
+  .rpt-wrapper { padding: 0; max-width: 100%; }
+}
+
+@media (max-width: 900px) {
+  .wrapper { grid-template-columns: 1fr; }
+  .full-width { grid-column: 1; }
+  .kpi-row.four, .kpi-row.five { grid-template-columns: repeat(2,1fr); }
+  .filtro-sel-row { grid-template-columns: repeat(3,1fr); }
+  .rpt-grid, .rpt-grid.three { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🏊</div>
+    <div>
+      <div class="logo-text">Calc<span>Pisc</span><span class="v-badge">v1.3</span></div>
+      <div class="logo-sub">Cálculo Hidráulico de Piscinas</div>
+    </div>
+  </div>
+  <div class="header-meta">
+    <div>ITR <b>CPSC_260410-01</b> v1.3</div>
+    <div>RD 742/2013 · CTE DB-HS4 · UNE-EN 13451 · UNE-EN 16713-1</div>
+  </div>
+</header>
+
+<!-- ── TAB BAR ── -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('calculadora',this)">⚙️ Calculadora</button>
+  <button class="tab-btn" onclick="switchTab('tablas',this)">📊 Tablas de Referencia</button>
+  <button class="tab-btn" onclick="switchTab('informe',this)">📄 Informe Resumen</button>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     TAB 1 — CALCULADORA
+════════════════════════════════════════════════════ -->
+<div id="tab-calculadora" class="tab-content active">
+<div class="wrapper">
+
+  <!-- M1 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="num">M1</span><h2>Geometría y Volúmenes</h2>
+      <span class="tag">RD 742/2013</span>
+    </div>
+    <div class="card-body">
+      <div class="section-label">Dimensiones del vaso</div>
+      <div class="form-grid triple">
+        <div class="form-group">
+          <label>Largo <span class="unit">[m]</span></label>
+          <input type="number" id="largo" value="25" min="1" step="0.1">
+        </div>
+        <div class="form-group">
+          <label>Ancho <span class="unit">[m]</span></label>
+          <input type="number" id="ancho" value="10" min="0.5" step="0.1">
+        </div>
+        <div class="form-group">
+          <label>Tipo de piscina</label>
+          <select id="tipo_piscina">
+            <option value="privada">Privada / Residencial</option>
+            <option value="publica" selected>Pública / Polivalente</option>
+            <option value="deportiva">Deportiva</option>
+            <option value="infantil">Infantil</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Prof. mínima h <span class="unit">[m]</span></label>
+          <input type="number" id="h_min" value="1.4" min="0.5" max="5" step="0.05">
+        </div>
+        <div class="form-group">
+          <label>Prof. máxima H <span class="unit">[m]</span></label>
+          <input type="number" id="h_max" value="1.8" min="0.5" max="5" step="0.05">
+        </div>
+        <div class="form-group">
+          <label>Vaso compensación <span class="unit">[%]</span></label>
+          <input type="number" id="pct_comp" value="10" min="0" max="30" step="1">
+        </div>
+      </div>
+      <hr class="sep">
+      <div class="section-label">Renovación</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Tiempo renovación <span class="unit">[h]</span></label>
+          <input type="number" id="t_renov" value="4" min="1" max="24" step="0.5">
+        </div>
+        <div class="form-group">
+          <label>Volumen base</label>
+          <select id="tipo_renov">
+            <option value="completa" selected>V total (vaso + compensación)</option>
+            <option value="circulacion">Solo vaso principal</option>
+          </select>
+        </div>
+      </div>
+      <div class="fbox">
+        <b>V_vaso</b> = L × A × (h_min + h_max) / 2 &nbsp;[m³]<br>
+        <b>V_comp</b> = V_vaso × %comp / 100 &nbsp;[m³]<br>
+        <b>Q_total</b> = V_total / T_renov &nbsp;[m³/h]
+      </div>
+    </div>
+  </div>
+
+  <!-- M2 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="num">M2</span><h2>Filtración</h2>
+      <span class="tag">UNE-EN 16713-1</span>
+    </div>
+    <div class="card-body">
+      <div class="section-label">Parámetros</div>
+      <div class="form-grid triple">
+        <div class="form-group">
+          <label>N.º filtros <span class="unit">[ud]</span></label>
+          <input type="number" id="n_filtros" value="2" min="1" max="10" step="1" onchange="actualizarSelectorFiltro()">
+        </div>
+        <div class="form-group">
+          <label>Vel. diseño <span class="unit">[m/h·m²]</span></label>
+          <input type="number" id="v_filtr" value="40" min="20" max="50" step="1" onchange="actualizarSelectorFiltro()">
+        </div>
+        <div class="form-group">
+          <label>Vel. máx. <span class="unit">[m/h·m²]</span></label>
+          <input type="number" id="v_filtr_max" value="50" min="30" max="60" step="1" onchange="actualizarSelectorFiltro()">
+        </div>
+        <div class="form-group">
+          <label>Tipo de filtro</label>
+          <select id="tipo_filtro">
+            <option value="vidrio" selected>Vidrio filtrante</option>
+            <option value="arena">Arena</option>
+            <option value="diatomeas">Diatomeas</option>
+            <option value="cartucho">Cartucho</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Material</label>
+          <select id="mat_filtro">
+            <option value="fibra" selected>Fibra de vidrio</option>
+            <option value="poliester">Poliéster</option>
+            <option value="acero">Acero inox.</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Válvulas</label>
+          <select id="tipo_valvula">
+            <option value="bateria" selected>Batería de válvulas</option>
+            <option value="multivias">Multivías</option>
+          </select>
+        </div>
+      </div>
+      <div class="filtro-select-wrap">
+        <label>▶ DIÁMETRO FILTRO COMERCIAL <span class="unit">[UNE-EN 16713-1]</span></label>
+        <div style="margin-top:7px">
+          <select id="sel_filtro" onchange="onCambioFiltro()" style="width:100%">
+            <option value="">— Calcular primero —</option>
+          </select>
+        </div>
+        <div id="warn-filtro-bajo">⚠ Diámetro seleccionado inferior al mínimo calculado. Q_real insuficiente.</div>
+        <div class="filtro-sel-row">
+          <div class="filtro-info-chip"><span class="val" id="chip_scom">—</span><span class="lbl">S [m²]</span></div>
+          <div class="filtro-info-chip"><span class="val" id="chip_qreal">—</span><span class="lbl">Q real [m³/h]</span></div>
+          <div class="filtro-info-chip"><span class="val" id="chip_qmax">—</span><span class="lbl">Q máx [m³/h]</span></div>
+          <div class="filtro-info-chip"><span class="val" id="chip_vreal">—</span><span class="lbl">v real [m/h]</span></div>
+          <div class="filtro-info-chip"><span class="val" id="chip_cnx">—</span><span class="lbl">Conexión</span></div>
+        </div>
+      </div>
+      <div class="fbox" style="margin-top:10px">
+        <span class="corr">▶ v1.2</span> <b>S_com</b> = π×(Ø/2000)² &nbsp;| &nbsp;
+        <b>Q_real</b> = S_com × v_diseño × N &nbsp;| &nbsp;
+        <b>Q_máx</b> = S_com × v_máx × N
+      </div>
+    </div>
+  </div>
+
+  <!-- M3 — CON DESCRIPCIONES v1.3 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="num">M3</span><h2>Velocidades de Diseño en Tuberías</h2>
+      <span class="tag">CTE DB-HS4</span>
+    </div>
+    <div class="card-body">
+      <div class="alert info" style="margin-bottom:12px">⚡ Velocidades editables dentro de los rangos normativos. Los diámetros se calculan sobre tabla PVC PN10.</div>
+      <div class="form-grid triple">
+
+        <div class="form-group">
+          <label>Aspiración <span class="unit">[m/s]</span></label>
+          <input type="number" id="v_asp" value="1.2" min="0.8" max="1.5" step="0.1">
+          <span class="vel-desc"><b>0,8 – 1,5 m/s</b> · Evitar cavitación en bomba. Velocidades altas generan pérdidas y riesgo de golpe de ariete.</span>
+        </div>
+
+        <div class="form-group">
+          <label>Impulsión <span class="unit">[m/s]</span></label>
+          <input type="number" id="v_imp" value="1.8" min="1.5" max="2.5" step="0.1">
+          <span class="vel-desc"><b>1,5 – 2,5 m/s</b> · Equilibrio coste-eficiencia. Evitar ruido y erosión de la tubería.</span>
+        </div>
+
+        <div class="form-group">
+          <label>Recogida superficial <span class="unit">[m/s]</span></label>
+          <input type="number" id="v_recog" value="0.6" min="0.3" max="1.0" step="0.05">
+          <span class="vel-desc"><b>0,3 – 1,0 m/s</b> · Skimmers o canal de rebosadero. Velocidad baja para arrastre eficaz de superficie.</span>
+        </div>
+
+        <div class="form-group">
+          <label>Lavado filtro <span class="unit">[m/s]</span></label>
+          <input type="number" id="v_lavado" value="2.5" min="2.0" max="3.0" step="0.1">
+          <span class="vel-desc"><b>2,0 – 3,0 m/s</b> · Desagüe en contracorriente. Velocidad suficiente para arrastre de sólidos del lecho.</span>
+        </div>
+
+        <div class="form-group">
+          <label>Batería filtros <span class="unit">[m/s]</span></label>
+          <input type="number" id="v_bateria" value="1.7" min="1.0" max="2.5" step="0.1">
+          <span class="vel-desc"><b>1,2 – 2,5 m/s</b> · Tubería de interconexión colector–filtros. Aplicable a tramo de válvulas.</span>
+        </div>
+
+        <div class="form-group">
+          <label>Sumidero fondo <span class="unit">[% Q]</span></label>
+          <input type="number" id="pct_sumidero" value="30" min="10" max="50" step="5">
+          <span class="vel-desc"><b>v ≤ 0,5 m/s</b> · Límite de seguridad RD 742/2013. Protección contra atrapamiento de bañistas.</span>
+        </div>
+
+        <div class="form-group">
+          <label>Caudal boquilla imp. <span class="unit">[m³/h/ud]</span></label>
+          <input type="number" id="q_boquilla" value="10" min="5" max="20" step="1">
+          <span class="vel-desc">Caudal unitario de cada boquilla de retorno. Determina el número mínimo de boquillas.</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- M4 — SIN MODELO COMERCIAL v1.3 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="num">M4</span><h2>Selección de Bomba</h2>
+      <span class="tag">Paralelo</span>
+    </div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>N.º de bombas <span class="unit">[ud]</span></label>
+          <input type="number" id="n_bombas" value="2" min="1" max="4" step="1">
+        </div>
+        <div class="form-group">
+          <label>HMT total sistema <span class="unit">[mca]</span></label>
+          <input type="number" id="hmt" value="12" min="1" max="80" step="0.5">
+        </div>
+        <div class="form-group">
+          <label>η bomba <span class="unit">[%]</span></label>
+          <input type="number" id="eta_bomba" value="70" min="40" max="90" step="1">
+        </div>
+        <div class="form-group">
+          <label>η motor <span class="unit">[%]</span></label>
+          <input type="number" id="eta_motor" value="90" min="80" max="98" step="1">
+        </div>
+      </div>
+      <div class="fbox" style="margin-top:12px">
+        <b>Q_bomba</b> = Q_total / N_bombas &nbsp;[m³/h] &nbsp;← Paralelo<br>
+        <b>P_hid</b> = (ρ·g·Q_bomba·HMT) / (3600·1000) &nbsp;[kW]<br>
+        <b>P_motor</b> = P_hid / (η_bomba · η_motor) &nbsp;[kW → CV]
+      </div>
+      <button class="btn-calc" onclick="calcular()">▶ CALCULAR</button>
+      <button class="btn-reset" onclick="resetear()">↺ Restablecer valores por defecto</button>
+    </div>
+  </div>
+
+  <!-- RESULTADOS -->
+  <div id="results-panel" class="card full-width">
+    <div class="card-header">
+      <span class="num" style="background:var(--accent2)">▶</span>
+      <h2>Resultados del Cálculo</h2>
+    </div>
+    <div class="card-body">
+
+      <div class="result-block">
+        <h3>M1 — Volúmenes y Caudal</h3>
+        <div class="kpi-row four">
+          <div class="kpi"><span class="val" id="r_vvaso">—</span><span class="lbl">V Vaso [m³]</span></div>
+          <div class="kpi"><span class="val" id="r_vcomp">—</span><span class="lbl">V Compensación [m³]</span></div>
+          <div class="kpi hl"><span class="val g" id="r_vtotal">—</span><span class="lbl">V Total [m³]</span></div>
+          <div class="kpi hl"><span class="val g" id="r_qtotal">—</span><span class="lbl">Q Total [m³/h]</span></div>
+        </div>
+        <div id="r_formula_vol" class="fbox"></div>
+      </div>
+
+      <div class="result-block">
+        <h3>M2 — Filtración</h3>
+        <div class="kpi-row four" style="margin-bottom:6px">
+          <div class="kpi"><span class="val" id="r_stotal">—</span><span class="lbl">S Total [m²]</span></div>
+          <div class="kpi"><span class="val" id="r_sfiltro">—</span><span class="lbl">S / Filtro [m²]</span></div>
+          <div class="kpi hlw"><span class="val a" id="r_dmin">—</span><span class="lbl">Ø Mín. [mm]</span></div>
+          <div class="kpi hl"><span class="val g" id="r_dsel">—</span><span class="lbl">Ø Seleccionado</span></div>
+        </div>
+        <div class="kpi-row five">
+          <div class="kpi"><span class="val" id="r_scom">—</span><span class="lbl">S Comercial [m²]</span><span class="sub">por unidad</span></div>
+          <div class="kpi hl"><span class="val g" id="r_qreal">—</span><span class="lbl">Q Real [m³/h]</span><span class="sub">v_diseño · N</span></div>
+          <div class="kpi hlw"><span class="val a" id="r_qmax">—</span><span class="lbl">Q Máx [m³/h]</span><span class="sub">v_máx · N</span></div>
+          <div class="kpi"><span class="val" id="r_vreal_f">—</span><span class="lbl">v Real [m/h·m²]</span><span class="sub">con Q_total</span></div>
+          <div class="kpi"><span class="val" id="r_cnx">—</span><span class="lbl">Conexión</span></div>
+        </div>
+        <div id="r_alerta_filtro" class="alert ok" style="margin-top:8px"></div>
+        <div id="r_formula_filtro" class="fbox"></div>
+      </div>
+
+      <div class="result-block">
+        <h3>M3 — Tuberías PVC PN10</h3>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Tramo</th><th>Q [m³/h]</th><th>v diseño [m/s]</th>
+                <th>Ø teórico [mm]</th><th>DN comercial</th><th>DI [mm]</th>
+                <th>v real [m/s]</th><th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="tabla_tuberias"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="result-block">
+        <h3>Elementos Hidráulicos</h3>
+        <div class="kpi-row">
+          <div class="kpi"><span class="val a" id="r_sumidero_q">—</span><span class="lbl">Q Sumidero [m³/h]</span></div>
+          <div class="kpi"><span class="val" id="r_sumidero_n">—</span><span class="lbl">Uds. Sumideros</span></div>
+          <div class="kpi"><span class="val" id="r_boquillas">—</span><span class="lbl">Boquillas Imp. mín.</span></div>
+        </div>
+        <div id="r_nota_elementos" class="fbox"></div>
+      </div>
+
+      <div class="result-block">
+        <h3>M4 — Bomba (Paralelo)</h3>
+        <div class="kpi-row five">
+          <div class="kpi hl"><span class="val g" id="r_qbomba">—</span><span class="lbl">Q / Bomba [m³/h]</span><span class="sub">operación</span></div>
+          <div class="kpi hlw"><span class="val a" id="r_qmax_bomba">—</span><span class="lbl">Q Máx Filtro/Bomba</span><span class="sub">límite filtro</span></div>
+          <div class="kpi"><span class="val" id="r_hmt">—</span><span class="lbl">HMT [mca]</span></div>
+          <div class="kpi"><span class="val a" id="r_pkw">—</span><span class="lbl">P Motor [kW]</span></div>
+          <div class="kpi hl"><span class="val g" id="r_pcv">—</span><span class="lbl">P Motor [CV]</span></div>
+        </div>
+        <div id="r_alerta_bomba" class="alert ok" style="margin-top:8px"></div>
+        <div id="r_tabla_bomba" class="fbox"></div>
+      </div>
+
+      <div>
+        <span class="norm-chip">📋 RD 742/2013</span>
+        <span class="norm-chip">📋 CTE DB-HS4</span>
+        <span class="norm-chip">📋 UNE-EN 13451</span>
+        <span class="norm-chip">📋 UNE-EN 16713-1</span>
+        <span class="norm-chip">📋 PVC PN10</span>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+</div><!-- /tab-calculadora -->
+
+
+<!-- ════════════════════════════════════════════════════
+     TAB 2 — TABLAS DE REFERENCIA
+════════════════════════════════════════════════════ -->
+<div id="tab-tablas" class="tab-content">
+<div class="ref-wrapper">
+
+  <!-- Velocidades recomendadas -->
+  <div class="ref-card">
+    <div class="ref-card-header">
+      <span class="num" style="background:var(--accent3);color:#000">V</span>
+      <h2>Velocidades Recomendadas en Tuberías</h2>
+      <span class="ref-tag">CTE DB-HS4 · RD 742/2013</span>
+    </div>
+    <div class="ref-card-body">
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>Tramo</th><th>Rango [m/s]</th><th>Criterio principal</th><th>Normativa</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Aspiración (skimmers, sumidero)</td><td class="nc">0,8 – 1,5</td><td>Evitar cavitación. Velocidades altas generan pérdidas y riesgo de golpe de ariete.</td><td class="dn">CTE DB-HS4</td></tr>
+            <tr><td>Impulsión (retorno a piscina)</td><td class="nc">1,5 – 2,5</td><td>Equilibrio coste-eficiencia. Evitar ruido y erosión de la tubería.</td><td class="dn">CTE DB-HS4</td></tr>
+            <tr><td>Recogida superficial (rebosadero)</td><td class="nc">0,3 – 1,0</td><td>Arrastre eficaz de superficie. Velocidad baja para no perturbar lámina de agua.</td><td class="dn">CTE DB-HS4</td></tr>
+            <tr><td>Lavado / desagüe filtro</td><td class="nc">2,0 – 3,0</td><td>Velocidad mínima para arrastre de sólidos del lecho filtrante en contracorriente.</td><td class="dn">UNE-EN 16713-1</td></tr>
+            <tr><td>Batería de válvulas / filtros</td><td class="nc">1,2 – 2,5</td><td>Tubería de interconexión entre colector y cuerpo de filtro.</td><td class="dn">Práctica habitual</td></tr>
+            <tr><td>Sumidero de fondo</td><td class="nc">≤ 0,5</td><td>Límite de seguridad máximo. Protección contra atrapamiento de bañistas.</td><td class="dn ok">RD 742/2013</td></tr>
+            <tr><td>Filtración superficial (diseño)</td><td class="nc">20 – 40 m/h</td><td>Velocidad superficial en lecho filtrante. Arena o vidrio en piscinas públicas.</td><td class="dn">UNE-EN 16713-1</td></tr>
+            <tr><td>Filtración superficial (máximo)</td><td class="nc">50 m/h</td><td>Límite normativo. Superarlo reduce la eficacia de filtración.</td><td class="dn ok">UNE-EN 16713-1</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros normalizados -->
+  <div class="ref-card">
+    <div class="ref-card-header">
+      <span class="num" style="background:var(--accent2);color:#000">F</span>
+      <h2>Filtros Normalizados de Piscina</h2>
+      <span class="ref-tag">UNE-EN 16713-1 · Catálogos fabricantes</span>
+    </div>
+    <div class="ref-card-body">
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>Ø Filtro [mm]</th><th>S filtrante [m²]</th><th>Q a 40 m/h [m³/h]</th><th>Q máx 50 m/h [m³/h]</th><th>Conexión normalizada</th><th>Uso típico</th></tr>
+          </thead>
+          <tbody id="tabla_filtros_ref"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:var(--muted);font-family:var(--mono)">
+        S = π × (Ø/2)² &nbsp;|&nbsp; Superficies calculadas exactamente sobre diámetro nominal
+      </div>
+    </div>
+  </div>
+
+  <!-- PVC PN10 -->
+  <div class="ref-card">
+    <div class="ref-card-header">
+      <span class="num">T</span>
+      <h2>Diámetros Normalizados PVC PN10</h2>
+      <span class="ref-tag">Excel Cal_Piscina_Caudales_v1.xlsx</span>
+    </div>
+    <div class="ref-card-body">
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>DN [mm]</th><th>DI PN10 [mm]</th><th>Área transversal [cm²]</th><th>Q a 1,0 m/s [m³/h]</th><th>Q a 1,5 m/s [m³/h]</th><th>Q a 2,0 m/s [m³/h]</th></tr>
+          </thead>
+          <tbody id="tabla_pvc_ref"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div><!-- /tab-tablas -->
+
+
+<!-- ════════════════════════════════════════════════════
+     TAB 3 — INFORME RESUMEN
+════════════════════════════════════════════════════ -->
+<div id="tab-informe" class="tab-content">
+<div class="rpt-wrapper">
+
+  <div id="rpt-placeholder" class="rpt-placeholder">
+    <span class="icon">📋</span>
+    Todavía no se ha realizado ningún cálculo.<br>
+    <span style="font-size:11px;color:#444c56">Completa los datos en la pestaña <b>Calculadora</b> y pulsa <b>CALCULAR</b> para generar el informe.</span>
+  </div>
+
+  <div id="informe-contenido">
+    <button class="btn-pdf" onclick="window.print()">🖨 Exportar a PDF</button>
+    <div class="rpt-doc" id="rpt-doc">
+      <!-- Cabecera -->
+      <div class="rpt-head">
+        <h1>Cálculo Hidráulico de Piscina</h1>
+        <div class="meta" id="rpt-meta"></div>
+      </div>
+      <!-- Cuerpo -->
+      <div class="rpt-body" id="rpt-body"></div>
+      <!-- Pie -->
+      <div class="rpt-footer">
+        <div><b>Normativa aplicada:</b></div>
+        <div class="norms">
+          <span class="nc">RD 742/2013</span>
+          <span class="nc">CTE DB-HS4</span>
+          <span class="nc">UNE-EN 13451</span>
+          <span class="nc">UNE-EN 16713-1</span>
+          <span class="nc">PVC PN10</span>
+        </div>
+        <div style="margin-top:8px;color:#888">
+          CalcPisc v1.3 · ITR.CPSC_260410-01 v1.3 · Documento generado el <span id="rpt-fecha"></span><br>
+          <i>Los resultados de esta herramienta son orientativos. Verifique siempre con la normativa vigente y criterio de ingeniería.</i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div><!-- /tab-informe -->
+
+<footer>
+  CalcPisc v1.3 &nbsp;|&nbsp; ITR.CPSC_260410-01 v1.3 &nbsp;|&nbsp; RD 742/2013 · CTE DB-HS4 · UNE-EN 13451 · UNE-EN 16713-1
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  DATOS DE REFERENCIA
+// ═══════════════════════════════════════════════════════
+const PVC_PN10 = [
+  {DN:25,DI:22.0},{DN:32,DI:28.4},{DN:40,DI:36.0},{DN:50,DI:45.2},
+  {DN:63,DI:57.0},{DN:75,DI:67.8},{DN:90,DI:81.4},{DN:110,DI:99.4},
+  {DN:125,DI:113.0},{DN:140,DI:126.6},{DN:160,DI:144.6},{DN:180,DI:162.8},
+  {DN:200,DI:180.8},{DN:225,DI:203.4},{DN:250,DI:226.2},{DN:280,DI:253.2},
+  {DN:315,DI:285.0},{DN:355,DI:321.2},{DN:400,DI:361.8},{DN:450,DI:407.0},
+  {DN:500,DI:452.2},
+];
+
+const FILTROS = [
+  {d:400, s:Math.PI*(0.200)**2, cnx:'DN 50',     uso:'Piscinas privadas pequeñas'},
+  {d:450, s:Math.PI*(0.225)**2, cnx:'DN 50',     uso:'Piscinas privadas medianas'},
+  {d:500, s:Math.PI*(0.250)**2, cnx:'DN 50',     uso:'Piscinas privadas grandes'},
+  {d:600, s:Math.PI*(0.300)**2, cnx:'DN 50',     uso:'Piscinas semipúblicas'},
+  {d:750, s:Math.PI*(0.375)**2, cnx:'DN 63',     uso:'Piscinas públicas pequeñas'},
+  {d:900, s:Math.PI*(0.450)**2, cnx:'DN 63',     uso:'Piscinas públicas medianas'},
+  {d:1000,s:Math.PI*(0.500)**2, cnx:'DN 75/90',  uso:'Piscinas públicas estándar'},
+  {d:1200,s:Math.PI*(0.600)**2, cnx:'DN 75/90',  uso:'Piscinas públicas grandes'},
+  {d:1400,s:Math.PI*(0.700)**2, cnx:'DN 100',    uso:'Grandes instalaciones'},
+  {d:1600,s:Math.PI*(0.800)**2, cnx:'DN 100/125',uso:'Grandes instalaciones'},
+  {d:1800,s:Math.PI*(0.900)**2, cnx:'DN 150',    uso:'Instalaciones especiales'},
+];
+
+// ── Helpers ──
+const fmt  = (n,d=2) => isNaN(n)||n===null ? '—' : (+n).toFixed(d);
+const selDN= (dt) => { for(const p of PVC_PN10){if(p.DI>=dt)return p;} return PVC_PN10[PVC_PN10.length-1]; };
+const velR = (q,di) => (q/3600)/(Math.PI*((di/1000)/2)**2);
+const dTeo = (q,v)  => Math.sqrt((4*q)/(Math.PI*v*3600))*1000;
+const calV = (vr,vn,vx) => { const t=0.1; return vr>=vn-t&&vr<=vx+t?'ok':vr>vx+t*3||vr<vn-t*2?'er':'wn'; };
+
+// ── Estado ──
+let _dMin=0, _Qtot=0, _nFilt=2, _vFiltr=40, _vFiltrMax=50;
+let _resultados = null; // guardado para el informe
+
+// ═══════════════════════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════════════════════
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════
+//  POBLAR TABLAS DE REFERENCIA (al cargar)
+// ═══════════════════════════════════════════════════════
+function poblarTablasFiltros() {
+  const tb = document.getElementById('tabla_filtros_ref');
+  FILTROS.forEach(f => {
+    const q40 = f.s*40, q50 = f.s*50;
+    tb.innerHTML += `<tr>
+      <td class="dn">${f.d}</td>
+      <td class="nc">${fmt(f.s,4)}</td>
+      <td class="nc">${fmt(q40,1)}</td>
+      <td class="nc ok">${fmt(q50,1)}</td>
+      <td>${f.cnx}</td>
+      <td style="color:var(--muted)">${f.uso}</td>
+    </tr>`;
+  });
+}
+
+function poblarTablasPVC() {
+  const tb = document.getElementById('tabla_pvc_ref');
+  PVC_PN10.forEach(p => {
+    const A  = Math.PI*((p.DI/1000)/2)**2;
+    const q1 = A*1.0*3600, q15= A*1.5*3600, q2= A*2.0*3600;
+    tb.innerHTML += `<tr>
+      <td class="dn">DN ${p.DN}</td>
+      <td class="nc">${p.DI}</td>
+      <td class="nc">${fmt(A*1e4,2)}</td>
+      <td class="nc">${fmt(q1,1)}</td>
+      <td class="nc">${fmt(q15,1)}</td>
+      <td class="nc">${fmt(q2,1)}</td>
+    </tr>`;
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+//  SELECTOR FILTRO DINÁMICO
+// ═══════════════════════════════════════════════════════
+function actualizarSelectorFiltro(dMin=null, Qtot=null) {
+  if(dMin!==null) _dMin=dMin;
+  if(Qtot!==null) _Qtot=Qtot;
+  _nFilt    = parseInt(document.getElementById('n_filtros').value)||2;
+  _vFiltr   = parseFloat(document.getElementById('v_filtr').value)||40;
+  _vFiltrMax= parseFloat(document.getElementById('v_filtr_max').value)||50;
+
+  const sel=document.getElementById('sel_filtro'), prev=sel.value;
+  sel.innerHTML='';
+  let autoIdx=FILTROS.findIndex(f=>f.d>=_dMin);
+  if(autoIdx<0) autoIdx=FILTROS.length-1;
+
+  FILTROS.forEach((f,i)=>{
+    const qr=f.s*_vFiltr*_nFilt, qm=f.s*_vFiltrMax*_nFilt;
+    const suf=qr>=_Qtot, esAuto=i===autoIdx;
+    const opt=document.createElement('option');
+    opt.value=i;
+    opt.textContent=`Ø${f.d} mm — S=${fmt(f.s,3)} m² — Q_real=${fmt(qr,1)} — Q_máx=${fmt(qm,1)} m³/h${esAuto?' ← AUTO':''}${!suf?' ⚠ insuficiente':''}`;
+    if(esAuto) opt.style.color='#00c8a0';
+    sel.appendChild(opt);
+  });
+  sel.value = (prev!==''&&FILTROS[parseInt(prev)]) ? prev : autoIdx;
+  onCambioFiltro();
+}
+
+function onCambioFiltro() {
+  const idx=parseInt(document.getElementById('sel_filtro').value);
+  if(isNaN(idx)||!FILTROS[idx]) return;
+  const f=FILTROS[idx];
+  const qr=f.s*_vFiltr*_nFilt, qm=f.s*_vFiltrMax*_nFilt;
+  const vr=_Qtot>0?(_Qtot/_nFilt)/f.s:0;
+  const suf=qr>=_Qtot, bajo=f.d<_dMin;
+  document.getElementById('chip_scom').textContent=fmt(f.s,3);
+  document.getElementById('chip_qreal').textContent=fmt(qr,1);
+  document.getElementById('chip_qmax').textContent=fmt(qm,1);
+  document.getElementById('chip_vreal').textContent=fmt(vr,1);
+  document.getElementById('chip_cnx').textContent=f.cnx;
+  document.getElementById('chip_qreal').style.color=suf?'var(--accent2)':'var(--warn)';
+  document.getElementById('chip_vreal').style.color=vr<=_vFiltrMax?'var(--accent2)':'var(--warn)';
+  document.getElementById('warn-filtro-bajo').style.display=bajo?'block':'none';
+}
+
+// ═══════════════════════════════════════════════════════
+//  CÁLCULO PRINCIPAL
+// ═══════════════════════════════════════════════════════
+function calcular() {
+  const L=+document.getElementById('largo').value;
+  const A=+document.getElementById('ancho').value;
+  const hMin=+document.getElementById('h_min').value;
+  const hMax=+document.getElementById('h_max').value;
+  const pComp=+document.getElementById('pct_comp').value;
+  const Tren=+document.getElementById('t_renov').value;
+  const tipRen=document.getElementById('tipo_renov').value;
+  const tipPisc=document.getElementById('tipo_piscina').value;
+
+  const nFilt=+document.getElementById('n_filtros').value;
+  const vFiltr=+document.getElementById('v_filtr').value;
+  const vFiltrMax=+document.getElementById('v_filtr_max').value;
+  const vBat=+document.getElementById('v_bateria').value;
+
+  const vAsp=+document.getElementById('v_asp').value;
+  const vImp=+document.getElementById('v_imp').value;
+  const vRec=+document.getElementById('v_recog').value;
+  const vLav=+document.getElementById('v_lavado').value;
+  const pSum=+document.getElementById('pct_sumidero').value;
+  const qBoq=+document.getElementById('q_boquilla').value;
+
+  const nBombs=+document.getElementById('n_bombas').value;
+  const HMT=+document.getElementById('hmt').value;
+  const etaB=+document.getElementById('eta_bomba').value/100;
+  const etaM=+document.getElementById('eta_motor').value/100;
+
+  // M1
+  const Vvaso = L*A*(hMin+hMax)/2;
+  const Vcomp = Vvaso*pComp/100;
+  const Vtot  = tipRen==='completa'?Vvaso+Vcomp:Vvaso;
+  const Qtot  = Vtot/Tren;
+
+  document.getElementById('r_vvaso').textContent=fmt(Vvaso);
+  document.getElementById('r_vcomp').textContent=fmt(Vcomp);
+  document.getElementById('r_vtotal').textContent=fmt(Vtot);
+  document.getElementById('r_qtotal').textContent=fmt(Qtot);
+  document.getElementById('r_formula_vol').innerHTML=
+    `<b>V_vaso</b> = ${fmt(L)}×${fmt(A)}×(${fmt(hMin)}+${fmt(hMax)})/2 = <b>${fmt(Vvaso)} m³</b><br>`+
+    `<b>V_comp</b> = ${fmt(Vvaso)}×${pComp}% = <b>${fmt(Vcomp)} m³</b><br>`+
+    `<b>Q_total</b> = ${fmt(Vtot)}/${fmt(Tren)} = <b>${fmt(Qtot)} m³/h</b>`;
+
+  // M2
+  const Stot   = Qtot/vFiltr;
+  const Sfilt  = Stot/nFilt;
+  const DminMm = Math.sqrt(4*Sfilt/Math.PI)*1000;
+
+  actualizarSelectorFiltro(DminMm, Qtot);
+
+  const idxSel=parseInt(document.getElementById('sel_filtro').value);
+  const fSel=FILTROS[idxSel];
+  const Scom   = fSel.s;
+  const Qreal  = Scom*vFiltr*nFilt;
+  const Qmax   = Scom*vFiltrMax*nFilt;
+  const vRealF = Qtot/(Scom*nFilt);
+
+  document.getElementById('r_stotal').textContent=fmt(Stot);
+  document.getElementById('r_sfiltro').textContent=fmt(Sfilt);
+  document.getElementById('r_dmin').textContent=fmt(DminMm);
+  document.getElementById('r_dsel').textContent=fSel.d+' mm';
+  document.getElementById('r_scom').textContent=fmt(Scom,3);
+  document.getElementById('r_qreal').textContent=fmt(Qreal);
+  document.getElementById('r_qmax').textContent=fmt(Qmax);
+  document.getElementById('r_vreal_f').textContent=fmt(vRealF,1);
+  document.getElementById('r_cnx').textContent=fSel.cnx;
+  document.getElementById('r_vreal_f').style.color=vRealF<=vFiltrMax?'var(--accent2)':'var(--warn)';
+
+  const sufFilt=Qreal>=Qtot;
+  const mrgFilt=((Qreal-Qtot)/Qtot*100).toFixed(1);
+  const afEl=document.getElementById('r_alerta_filtro');
+  if(sufFilt){
+    afEl.className='alert ok';
+    afEl.innerHTML=`✅ Filtro Ø${fSel.d} mm válido. Q_real=${fmt(Qreal)} ≥ Q_total=${fmt(Qtot)} m³/h (margen +${mrgFilt}%) | Q_máx=${fmt(Qmax)} m³/h`;
+  } else {
+    afEl.className='alert err';
+    afEl.innerHTML=`❌ Filtro Ø${fSel.d} mm INSUFICIENTE. Q_real=${fmt(Qreal)} < Q_total=${fmt(Qtot)} m³/h. Aumentar Ø o N.º filtros.`;
+  }
+  document.getElementById('r_formula_filtro').innerHTML=
+    `<b>S_total</b>=${fmt(Qtot)}/${vFiltr}=<b>${fmt(Stot)} m²</b> | <b>S_filtro</b>=${fmt(Stot)}/${nFilt}=<b>${fmt(Sfilt)} m²</b><br>`+
+    `<b>Ø_mín</b>=√(4×${fmt(Sfilt)}/π)×1000=<b>${fmt(DminMm)} mm</b> → Sel: <b>Ø${fSel.d} mm</b><br>`+
+    `<span class="corr">▶</span> <b>S_com</b>=π×(${fSel.d}/2000)²=<b>${fmt(Scom,4)} m²</b> | `+
+    `<b>Q_real</b>=${fmt(Scom,4)}×${vFiltr}×${nFilt}=<b>${fmt(Qreal)} m³/h</b><br>`+
+    `<b>Q_máx</b>=${fmt(Scom,4)}×${vFiltrMax}×${nFilt}=<b>${fmt(Qmax)} m³/h</b> | `+
+    `<b>v_real</b>=${fmt(Qtot)}/(${fmt(Scom,4)}×${nFilt})=<b>${fmt(vRealF,1)} m/h·m²</b> ${vRealF<=vFiltrMax?'✅':'❌'}`;
+
+  // M3 — Tuberías
+  const tramos=[
+    {n:'Aspiración principal',              q:Qtot,          vd:vAsp,  vn:0.8,vx:1.5},
+    {n:`Aspiración por bomba (×${nBombs})`, q:Qtot/nBombs,  vd:vAsp,  vn:0.8,vx:1.5},
+    {n:'Impulsión principal',               q:Qtot,          vd:vImp,  vn:1.5,vx:2.5},
+    {n:`Batería filtros (×${nFilt})`,       q:Qtot/nFilt,   vd:vBat,  vn:1.2,vx:2.5},
+    {n:'Recogida superficial',              q:Qtot,          vd:vRec,  vn:0.3,vx:1.0},
+    {n:'Lavado / desagüe filtro',           q:Qtot/nFilt,   vd:vLav,  vn:2.0,vx:3.0},
+    {n:'Sumidero fondo',                    q:Qtot*pSum/100, vd:0.5,   vn:0.1,vx:0.5},
+  ];
+  const tbody=document.getElementById('tabla_tuberias');
+  tbody.innerHTML='';
+  const tramosCalc=[];
+  tramos.forEach(t=>{
+    const dt=dTeo(t.q,t.vd), pvc=selDN(dt), vr=velR(t.q,pvc.DI);
+    const cal=calV(vr,t.vn,t.vx);
+    const ico=cal==='ok'?'✅':cal==='wn'?'⚠️':'❌';
+    const lbl=cal==='ok'?'OK':cal==='wn'?'Revisar':'Fuera rango';
+    tbody.innerHTML+=`<tr>
+      <td>${t.n}</td><td class="nc">${fmt(t.q)}</td><td class="nc">${fmt(t.vd)}</td>
+      <td class="nc">${fmt(dt,1)}</td><td class="dn">DN ${pvc.DN}</td>
+      <td class="nc">${pvc.DI}</td><td class="${cal}">${fmt(vr)}</td>
+      <td class="${cal}">${ico} ${lbl}</td>
+    </tr>`;
+    tramosCalc.push({...t, dt, dn:pvc.DN, di:pvc.DI, vr, cal});
+  });
+
+  // Elementos
+  const qSum=Qtot*pSum/100, nBoq=Math.ceil(Qtot/qBoq), nSum=Math.ceil(qSum/13);
+  document.getElementById('r_sumidero_q').textContent=fmt(qSum);
+  document.getElementById('r_sumidero_n').textContent=nSum+' ud';
+  document.getElementById('r_boquillas').textContent=nBoq+' ud';
+  document.getElementById('r_nota_elementos').innerHTML=
+    `<b>Sumidero fondo:</b> ${fmt(Qtot)}×${pSum}%=<b>${fmt(qSum)} m³/h</b> | v_máx=0,5 m/s (RD 742/2013) | Estimado: <b>${nSum} ud</b> (ref. 13 m³/h·Ø2")<br>`+
+    `<b>Boquillas impulsión:</b> ⌈${fmt(Qtot)}/${qBoq}⌉=<b>${nBoq} ud</b>`;
+
+  // M4 — Bomba
+  const Qbomba=Qtot/nBombs, QmaxBomba=Qmax/nBombs;
+  const Phid=(997*9.81*(Qbomba/3600)*HMT)/1000;
+  const Pmot=Phid/(etaB*etaM), Pcv=Pmot*1.36;
+  document.getElementById('r_qbomba').textContent=fmt(Qbomba);
+  document.getElementById('r_qmax_bomba').textContent=fmt(QmaxBomba);
+  document.getElementById('r_hmt').textContent=fmt(HMT);
+  document.getElementById('r_pkw').textContent=fmt(Pmot);
+  document.getElementById('r_pcv').textContent=fmt(Pcv,1);
+
+  const abEl=document.getElementById('r_alerta_bomba');
+  if(Qbomba<=QmaxBomba){
+    abEl.className='alert ok';
+    abEl.innerHTML=`✅ Q_bomba=${fmt(Qbomba)} m³/h ≤ Q_máx_filtro/bomba=${fmt(QmaxBomba)} m³/h. Filtro compatible.`;
+  } else {
+    abEl.className='alert warn';
+    abEl.innerHTML=`⚠ Q_bomba=${fmt(Qbomba)} m³/h > Q_máx_filtro/bomba=${fmt(QmaxBomba)} m³/h. Revisar selección de filtro.`;
+  }
+  document.getElementById('r_tabla_bomba').innerHTML=
+    `<b>Q_bomba</b>=${fmt(Qtot)}/${nBombs}=<b>${fmt(Qbomba)} m³/h</b> (${nBombs} en paralelo) | <b>Q_máx_filtro/bomba</b>=<b>${fmt(QmaxBomba)} m³/h</b><br>`+
+    `<b>P_hid</b>=(997·9,81·${fmt(Qbomba/3600,4)}·${fmt(HMT)})/1000=<b>${fmt(Phid)} kW</b><br>`+
+    `<b>P_motor</b>=${fmt(Phid)}/(${fmt(etaB,2)}·${fmt(etaM,2)})=<b>${fmt(Pmot)} kW = ${fmt(Pcv,1)} CV</b>`;
+
+  // Mostrar resultados
+  document.getElementById('results-panel').classList.add('visible');
+  document.getElementById('results-panel').scrollIntoView({behavior:'smooth',block:'start'});
+
+  // Guardar para informe
+  _resultados = {
+    L,A,hMin,hMax,pComp,Tren,tipRen,
+    tipPisc: document.getElementById('tipo_piscina').options[document.getElementById('tipo_piscina').selectedIndex].text,
+    Vvaso,Vcomp,Vtot,Qtot,
+    nFilt,vFiltr,vFiltrMax,DminMm,
+    fSel,Scom,Qreal,Qmax,vRealF,sufFilt,
+    tramosCalc,
+    qSum,nSum,nBoq,
+    nBombs,HMT,etaB,etaM,Qbomba,QmaxBomba,Phid,Pmot,Pcv,
+    compatible: Qbomba<=QmaxBomba,
+    fecha: new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})
+  };
+  generarInforme(_resultados);
+}
+
+// ═══════════════════════════════════════════════════════
+//  GENERAR INFORME PDF
+// ═══════════════════════════════════════════════════════
+function generarInforme(d) {
+  document.getElementById('rpt-placeholder').style.display='none';
+  document.getElementById('informe-contenido').classList.add('visible');
+  document.getElementById('rpt-fecha').textContent=d.fecha;
+
+  // Cabecera meta
+  document.getElementById('rpt-meta').innerHTML=
+    `<b>Tipo de instalación:</b> ${d.tipPisc} &nbsp;|&nbsp; `+
+    `<b>Dimensiones:</b> ${fmt(d.L)} × ${fmt(d.A)} m, h=${fmt(d.hMin)}–${fmt(d.hMax)} m &nbsp;|&nbsp; `+
+    `<b>Fecha:</b> ${d.fecha}<br>`+
+    `<b>Referencia:</b> ITR.CPSC_260410-01 v1.3 &nbsp;|&nbsp; `+
+    `<b>Herramienta:</b> CalcPisc v1.3`;
+
+  // Cuerpo
+  let html='';
+
+  // S1 — Geometría
+  html+=`<div class="rpt-section"><h2>1. Geometría y Volúmenes</h2>
+    <div class="rpt-grid three">
+      <div class="rpt-row"><span class="rk">Largo</span><span class="rv">${fmt(d.L)} m</span></div>
+      <div class="rpt-row"><span class="rk">Ancho</span><span class="rv">${fmt(d.A)} m</span></div>
+      <div class="rpt-row"><span class="rk">Prof. mínima</span><span class="rv">${fmt(d.hMin)} m</span></div>
+      <div class="rpt-row"><span class="rk">Prof. máxima</span><span class="rv">${fmt(d.hMax)} m</span></div>
+      <div class="rpt-row"><span class="rk">Vaso compensación</span><span class="rv">${d.pComp}%</span></div>
+      <div class="rpt-row"><span class="rk">Tiempo renovación</span><span class="rv">${fmt(d.Tren)} h</span></div>
+    </div>
+  </div>`;
+
+  // S2 — Caudal
+  html+=`<div class="rpt-section"><h2>2. Caudal de Recirculación</h2>
+    <div class="rpt-grid">
+      <div class="rpt-row"><span class="rk">Volumen vaso</span><span class="rv">${fmt(d.Vvaso)} m³</span></div>
+      <div class="rpt-row"><span class="rk">Volumen compensación</span><span class="rv">${fmt(d.Vcomp)} m³</span></div>
+      <div class="rpt-row"><span class="rk">Volumen total</span><span class="rv ok">${fmt(d.Vtot)} m³</span></div>
+      <div class="rpt-row"><span class="rk">Caudal recirculación Q</span><span class="rv ok">${fmt(d.Qtot)} m³/h</span></div>
+    </div>
+  </div>`;
+
+  // S3 — Filtración
+  const vSt=d.vRealF<=d.vFiltrMax?'ok':'err';
+  html+=`<div class="rpt-section"><h2>3. Sistema de Filtración</h2>
+    <div class="rpt-grid three">
+      <div class="rpt-row"><span class="rk">N.º de filtros</span><span class="rv">${d.nFilt} ud</span></div>
+      <div class="rpt-row"><span class="rk">Vel. diseño</span><span class="rv">${d.vFiltr} m/h·m²</span></div>
+      <div class="rpt-row"><span class="rk">Vel. máxima</span><span class="rv">${d.vFiltrMax} m/h·m²</span></div>
+      <div class="rpt-row"><span class="rk">Ø mínimo calculado</span><span class="rv warn">${fmt(d.DminMm)} mm</span></div>
+      <div class="rpt-row"><span class="rk">Ø filtro seleccionado</span><span class="rv ok">${d.fSel.d} mm</span></div>
+      <div class="rpt-row"><span class="rk">Conexión filtro</span><span class="rv">${d.fSel.cnx}</span></div>
+      <div class="rpt-row"><span class="rk">S filtrante comercial</span><span class="rv">${fmt(d.Scom,4)} m²/ud</span></div>
+      <div class="rpt-row"><span class="rk">Q real filtración</span><span class="rv ${d.sufFilt?'ok':'err'}">${fmt(d.Qreal)} m³/h</span></div>
+      <div class="rpt-row"><span class="rk">Q máximo admisible</span><span class="rv warn">${fmt(d.Qmax)} m³/h</span></div>
+      <div class="rpt-row"><span class="rk">Vel. real (Q_total)</span><span class="rv ${vSt}">${fmt(d.vRealF,1)} m/h·m²</span></div>
+    </div>
+    <div class="${d.sufFilt?'rpt-alert-ok':'rpt-alert-err'}">
+      ${d.sufFilt?`✅ Filtro Ø${d.fSel.d} mm válido. Q_real=${fmt(d.Qreal)} m³/h ≥ Q_requerido=${fmt(d.Qtot)} m³/h`
+                 :`❌ Filtro insuficiente. Aumentar diámetro o número de filtros.`}
+    </div>
+  </div>`;
+
+  // S4 — Tuberías
+  let rowsT='';
+  d.tramosCalc.forEach(t=>{
+    const cc=t.cal==='ok'?'color:#0a7a5c':t.cal==='wn'?'color:#b8630a':'color:#c0392b';
+    rowsT+=`<tr>
+      <td>${t.n}</td><td>${fmt(t.q)}</td><td>${fmt(t.vd)}</td>
+      <td>DN ${t.dn}</td><td>${t.di}</td>
+      <td style="${cc}">${fmt(t.vr)}</td>
+      <td style="${cc}">${t.cal==='ok'?'✅ OK':t.cal==='wn'?'⚠ Revisar':'❌ Fuera rango'}</td>
+    </tr>`;
+  });
+  html+=`<div class="rpt-section"><h2>4. Dimensionamiento de Tuberías (PVC PN10)</h2>
+    <table class="rpt-tbl">
+      <thead><tr><th>Tramo</th><th>Q [m³/h]</th><th>v diseño [m/s]</th><th>DN comercial</th><th>DI [mm]</th><th>v real [m/s]</th><th>Estado</th></tr></thead>
+      <tbody>${rowsT}</tbody>
+    </table>
+  </div>`;
+
+  // S5 — Elementos
+  html+=`<div class="rpt-section"><h2>5. Elementos Hidráulicos</h2>
+    <div class="rpt-grid">
+      <div class="rpt-row"><span class="rk">Q sumidero fondo</span><span class="rv warn">${fmt(d.qSum)} m³/h</span></div>
+      <div class="rpt-row"><span class="rk">Uds. sumidero estimadas</span><span class="rv">${d.nSum} ud</span></div>
+      <div class="rpt-row"><span class="rk">Boquillas impulsión mín.</span><span class="rv">${d.nBoq} ud</span></div>
+    </div>
+  </div>`;
+
+  // S6 — Bomba
+  html+=`<div class="rpt-section"><h2>6. Selección de Bomba</h2>
+    <div class="rpt-grid three">
+      <div class="rpt-row"><span class="rk">N.º de bombas</span><span class="rv">${d.nBombs} ud (paralelo)</span></div>
+      <div class="rpt-row"><span class="rk">HMT sistema</span><span class="rv">${fmt(d.HMT)} mca</span></div>
+      <div class="rpt-row"><span class="rk">Q por bomba</span><span class="rv ok">${fmt(d.Qbomba)} m³/h</span></div>
+      <div class="rpt-row"><span class="rk">Q máx. filtro / bomba</span><span class="rv warn">${fmt(d.QmaxBomba)} m³/h</span></div>
+      <div class="rpt-row"><span class="rk">P hidráulica</span><span class="rv">${fmt(d.Phid)} kW</span></div>
+      <div class="rpt-row"><span class="rk">P motor mínima</span><span class="rv ok">${fmt(d.Pmot)} kW — ${fmt(d.Pcv,1)} CV</span></div>
+      <div class="rpt-row"><span class="rk">η bomba / η motor</span><span class="rv">${(d.etaB*100).toFixed(0)}% / ${(d.etaM*100).toFixed(0)}%</span></div>
+    </div>
+    <div class="${d.compatible?'rpt-alert-ok':'rpt-alert-warn'}">
+      ${d.compatible
+        ?`✅ Q_bomba = ${fmt(d.Qbomba)} m³/h ≤ Q_máx_filtro/bomba = ${fmt(d.QmaxBomba)} m³/h. Filtro y bomba compatibles.`
+        :`⚠ Q_bomba = ${fmt(d.Qbomba)} m³/h supera el límite del filtro (${fmt(d.QmaxBomba)} m³/h). Revisar selección.`}
+    </div>
+  </div>`;
+
+  document.getElementById('rpt-body').innerHTML=html;
+}
+
+// ═══════════════════════════════════════════════════════
+//  RESET
+// ═══════════════════════════════════════════════════════
+function resetear() {
+  const D={largo:25,ancho:10,h_min:1.4,h_max:1.8,pct_comp:10,t_renov:4,
+           n_filtros:2,v_filtr:40,v_filtr_max:50,v_bateria:1.7,
+           v_asp:1.2,v_imp:1.8,v_recog:0.6,v_lavado:2.5,
+           pct_sumidero:30,q_boquilla:10,n_bombas:2,hmt:12,eta_bomba:70,eta_motor:90};
+  Object.entries(D).forEach(([k,v])=>{const e=document.getElementById(k);if(e)e.value=v;});
+  document.getElementById('sel_filtro').innerHTML='<option value="">— Calcular primero —</option>';
+  ['chip_scom','chip_qreal','chip_qmax','chip_vreal','chip_cnx'].forEach(id=>{document.getElementById(id).textContent='—';});
+  document.getElementById('warn-filtro-bajo').style.display='none';
+  document.getElementById('results-panel').classList.remove('visible');
+  document.getElementById('rpt-placeholder').style.display='block';
+  document.getElementById('informe-contenido').classList.remove('visible');
+  _dMin=0;_Qtot=0;_resultados=null;
+}
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+poblarTablasFiltros();
+poblarTablasPVC();
+</script>
+</body>
+</html>
