@@ -3,13 +3,13 @@
 ---
 ## 📂 Índice de Aplicaciones y Módulos
 
-* [APP cálculo Pozo Bombeo Saneamiento ](./APP_1.Cal.PB_SAN/)
-* [APP cálculo Pozo Bombeo Nivel Freático](./APP_2.Calc.PB_NF/)
+* [APP cálculo HS5: Pozo Bombeo Saneamiento ](./APP_1.Cal.PB_SAN/)
+* [APP cálculo HS1: Pozo Bombeo Nivel Freático](./APP_2.Calc.PB_NF/)
 * [APP Cálculo Curva Bombas](./APP_3.Calc_B.HID_Multiples/)
 * [APP Cálculo Caudales AA para refrigeración](./APP_4.Calc.Caudales-AA/)
 * [APP Cálculo Hidráulico Piscinas](./APP_5.Calc.HID_Piscinas/)
-* [APP Cálculo Hidráulico Piscinas Full con información](./APP_5.1.Calc.HID_Piscina_Full)
-* 
+* [APP Cálculo Hidráulico Piscinas Full con información](./APP_5.1.Calc.HID_Piscina_Full/)
+* [APP Cálculo SUA8: Necesidad Pararrayos](./APP_6.Calc.SUA8_Pararrayos/)
 
 ---
 
