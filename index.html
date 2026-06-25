@@ -92,7 +92,7 @@
 <body>
 
 <header>
-  <h1>⚙️ Dashboard MEP</h1>
+  <h1>⚙️ Dashboard APPs MEP</h1>
 </header>
 
 <div class="container">
@@ -102,56 +102,64 @@
   <div class="grid">
 
     <div class="card">
-      <h3>PB SAN</h3>
-      <p>Presión base saneamiento</p>
-      APP_1.Calc.PB_SAN/Abrir</a>
-    </div>
+  <h3>HS5 PB SAN</h3>
+  <p>Pozo Bombeo Fecales saneamiento</p>
+  <a href="APP_1.Calc.PB_SAN/" class="btn">Abrir</a>
+</div>
 
-    <div class="card">
-      <h3>PB NF</h3>
-      <p>Presión base red incendios</p>
-      APP_2.Calc.PB_NF/Abrir</a>
-    </div>
+<div class="card">
+  <h3>HS1 PB NF</h3>
+  <p>Pozo Bombeo Nivel Freático_HS1</p>
+  <a href="APP_2.Calc.PB_NF/" class="btn">Abrir</a>
+</div>
 
-    <div class="card">
-      <h3>HID Múltiples</h3>
-      <p>Cálculos hidráulicos complejos</p>
-      APP_3.Calc.B.HID_Multiples/Abrir</a>
-    </div>
+<div class="card">
+  <h3>HID Bombas Múltiples</h3>
+  <p>Cálculos hidráulicos Curvas Bombas</p>
+  <a href="APP_3.Calc.B.HID_Multiples/" class="btn">Abrir</a>
+</div>
 
-  </div>
+<div class="card">
+  <h3>Caudales Agua AA</h3>
+  <p>Cálculo de caudales de agua climatización</p>
+  <a href="APP_4.Calc.Caudales-AA/" class="btn">Abrir</a>
+</div>
 
-  <!-- 🔵 Climatización -->
-  <h2>Climatización</h2>
-  <div class="grid">
+<div class="card">
+  <h3>Piscina Full</h3>
+  <p>Herramienta completa Filtración</p>
+  <a href="APP_5.1.Calc.HID_Piscina_Full/" class="btn">Abrir</a>
+</div>
 
-    <div class="card">
-      <h3>Caudales AA</h3>
-      <p>Cálculo de caudales de aire</p>
-      APP_4.Calc.Caudales-AA/Abrir</a>
-    </div>
-
-  </div>
-
-  <!-- 🔵 Piscinas -->
-  <h2>Piscinas</h2>
-  <div class="grid">
-
-    <div class="card">
-      <h3>Piscina Full</h3>
-      <p>Herramienta completa</p>
-      APP_5.1.Calc.HID_Piscina_Full/Abrir</a>
-    </div>
-
-    <div class="card">
-      <h3>Piscinas</h3>
-      <p>Cálculo básico</p>
-      APP_5.Calc.HID_Piscinas/Abrir</a>
-    </div>
+<div class="card">
+  <h3>Piscinas</h3>
+  <p>Cálculo básico Filtración</p>
+  <a href="APP_5.Calc.HID_Piscinas/" class="btn">Abrir</a>
+</div>
 
   </div>
 
 </div>
+
+<footer style="
+  background:#1e293b;
+  color:#94a3b8;
+  text-align:center;
+  padding:15px;
+  font-size:14px;
+  margin-top:40px;
+  border-top:1px solid #334155;
+">
+  <p>⚙️ Apps MEP</p>
+  <p id="version"></p>
+  <p>Desarrollado por rpulido_ELECNOR SA · © 2026</p>
+</footer>
+
+<script>
+  const fecha = new Date();
+  const version = "v" + fecha.getFullYear() + "." + (fecha.getMonth()+1) + "." + fecha.getDate();
+  document.getElementById("version").innerText = "Versión " + version;
+</script>
 
 </body>
 </html>
