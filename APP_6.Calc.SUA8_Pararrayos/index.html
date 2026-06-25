@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora CTE DB-SUA 8 - Pararrayos</title>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --elecnor-blue: #004687;
+            --elecnor-orange: #FF8200;
+            --bg-accent: #FFF8F2;
+            --dark-text: #333333;
+            --light-bg: #f8f9fa;
+            --border-color: #cccccc;
+            --danger-color: #dc3545;
+            --success-color: #28a745;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-text);
+            margin: 0;
+            padding: 0;
+            background-color: #e9ecef;
+        }
+
+        .navbar {
+            background-color: var(--elecnor-blue);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--elecnor-orange);
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 1.4rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #ffffff;
+            border-bottom: 2px solid var(--border-color);
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .tab-link {
+            padding: 12px 24px;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--elecnor-blue);
+            border-right: 1px solid #eee;
+            transition: all 0.2s;
+        }
+
+        .tab-link:hover {
+            background-color: #f1f1f1;
+        }
+
+        .tab-link.active {
+            background-color: var(--elecnor-blue);
+            color: white;
+            border-bottom: 3px solid var(--elecnor-orange);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+
+        fieldset {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: var(--light-bg);
+        }
+
+        legend {
+            font-weight: bold;
+            color: var(--elecnor-blue);
+            padding: 0 10px;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--elecnor-orange);
+            box-shadow: 0 0 5px rgba(255,130,0,0.2);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .checkbox-group input {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--elecnor-orange);
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+            padding: 12px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .results-box {
+            background-color: var(--bg-accent);
+            border: 2px solid var(--elecnor-orange);
+            border-radius: 6px;
+            padding: 20px;
+            position: sticky;
+            top: 20px;
+        }
+
+        .results-box h3 {
+            margin-top: 0;
+            color: var(--elecnor-blue);
+            border-bottom: 2px solid var(--elecnor-orange);
+            padding-bottom: 10px;
+        }
+
+        .formula-display {
+            background: #ffffff;
+            padding: 14px;
+            border-left: 5px solid var(--elecnor-blue);
+            margin: 10px 0;
+            font-family: monospace;
+            overflow-x: auto;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .results-box p strong {
+            font-size: 0.95rem;
+            color: var(--dark-text);
+        }
+
+        /* Box de Demostración Visual Ne > Na */
+        .comparison-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            text-align: center;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+        }
+
+        .comparison-metric {
+            flex: 1;
+            padding: 5px;
+        }
+
+        .comparison-metric div:first-child {
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: bold;
+        }
+
+        .comparison-metric div:last-child {
+            font-size: 1.1rem;
+            font-weight: bold;
+            font-family: monospace;
+        }
+
+        .comparison-operator {
+            font-size: 1.8rem;
+            font-weight: bold;
+            padding: 0 10px;
+            transition: color 0.3s ease;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            font-weight: bold;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .badge-danger { background-color: var(--danger-color); color: white; }
+        .badge-success { background-color: var(--success-color); color: white; }
+
+        /* Estilos del Informe / Formato de Impresión */
+        .document-page {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: white;
+            padding: 20mm;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-top: 10px solid var(--elecnor-blue);
+            box-sizing: border-box;
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--elecnor-orange);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .report-title {
+            color: var(--elecnor-blue);
+            font-size: 20pt;
+            text-align: center;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+        }
+
+        .report-section-title {
+            color: var(--elecnor-blue);
+            border-left: 5px solid var(--elecnor-orange);
+            padding-left: 15px;
+            margin-top: 30px;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 12px;
+        }
+
+        th {
+            background: var(--elecnor-blue);
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+
+        td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+        }
+
+        .conclusion-final {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            background-color: #e6f7ff;
+            border: 2px solid var(--elecnor-blue);
+            color: var(--elecnor-blue);
+        }
+
+        /* Box de Nivel de Protección en Informe */
+        .report-protection-box {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: var(--bg-accent);
+            border: 2px dashed var(--elecnor-orange);
+            border-radius: 4px;
+            text-align: center;
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: var(--elecnor-blue);
+        }
+
+        .btn-print {
+            background-color: var(--elecnor-orange);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-print:hover {
+            background-color: #e07200;
+        }
+
+        .markdown-container {
+            background: #333;
+            color: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+
+        /* Reglas de impresión estructuradas */
+        @media print {
+            body { background: none; color: #000; }
+            .navbar, .nav-tabs, .btn-print, #calc-tab, #doc-tab { display: none !important; }
+            #report-tab { display: block !important; padding: 0 !important; }
+            .document-page { box-shadow: none; border-top: none; padding: 0; margin: 0; width: 100%; }
+            .results-box, fieldset { background: #fff !important; border: 1px solid #000 !important; }
+            .report-protection-box { border: 2px dashed #000 !important; background: #fff !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <h1>Módulo MEP - Protección contra el Rayo CTE SUA 8</h1>
+        <div style="font-size: 0.85rem; font-weight: bold;">v1.2 | Control de Riesgo Reactivo</div>
+    </div>
+
+    <ul class="nav-tabs">
+        <li class="tab-link active" onclick="switchTab(event, 'calc-tab')">Panel de Cálculo</li>
+        <li class="tab-link" onclick="switchTab(event, 'report-tab')">Informe Técnico Regulado</li>
+        <li class="tab-link" onclick="switchTab(event, 'doc-tab')">Documentación del Código (ITR)</li>
+    </ul>
+
+    <div class="container">
+        
+        <div id="calc-tab" class="tab-content active">
+            <div class="grid-2">
+                <div>
+                    <fieldset>
+                        <legend>Datos Generales del Proyecto</legend>
+                        <div class="form-group">
+                            <label for="p_nombre">Nombre del Proyecto / Edificio:</label>
+                            <input type="text" id="p_nombre" class="form-control" value="Casa Villa Hanna">
+                        </div>
+                        <div class="form-group">
+                            <label for="p_ubicacion">Ubicación / Municipio:</label>
+                            <input type="text" id="p_ubicacion" class="form-control" value="Marbella">
+                        </div>
+                        <div class="form-group">
+                            <label for="p_expediente">Referencia / Expediente:</label>
+                            <input type="text" id="p_expediente" class="form-control" value="REV-2026-XYZ">
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Parámetros Geométricos y Locales</legend>
+                        <div class="form-group">
+                            <label for="g_largo">Longitud Máxima ($L$) [m]:</label>
+                            <input type="number" id="g_largo" class="form-control" value="50.00" step="0.01" min="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="g_ancho">Anchura Máxima ($W$) [m]:</label>
+                            <input type="number" id="g_ancho" class="form-control" value="11.00" step="0.01" min="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="g_altura">Altura Máxima ($H$) [m]:</label>
+                            <input type="number" id="g_altura" class="form-control" value="8.00" step="0.01" min="0.01">
+                            <div id="alert-altura" class="alert-warning" style="display:none;">
+                                ⚠️ Altura superior a 43 m: El sistema de protección es obligatorio por imperativo legal con Eficiencia alta.
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="g_ng">Densidad de Impactos ($N_g$) [imp/km²·año]:</label>
+                            <input type="number" id="g_ng" class="form-control" value="1.50" step="0.01" min="0.00">
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Factores de Riesgo Normativos (Coeficientes C)</legend>
+                        
+                        <div class="form-group">
+                            <label for="c1_sel">$C_1$: Factor de Emplazamiento</label>
+                            <select id="c1_sel" class="form-control">
+                                <option value="0.50" selected>Próximo a otros edificios o árboles de igual o mayor altura (0.50)</option>
+                                <option value="0.75">Rodeado de edificios más bajos (0.75)</option>
+                                <option value="1.00">Aislado en terrain llano (1.00)</option>
+                                <option value="2.00">Aislado sobre una colina o promontorio (2.00)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="c2_sel">$C_2$: Tipo de Estructura / Cubierta</label>
+                            <select id="c2_sel" class="form-control">
+                                <option value="0.50">Estructura metálica + Cubierta metálica (0.50)</option>
+                                <option value="1.00" selected>Estructura de hormigón + Cubierta de hormigón / metálica (1.00)</option>
+                                <option value="2.00">Estructura metálica / madera + Cubierta de madera (2.00)</option>
+                                <option value="2.50">Estructura de hormigón + Cubierta de madera (2.50)</option>
+                                <option value="3.00">Estructura de madera + Cubierta de madera (3.00)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="c3_sel">$C_3$: Contenido del Edificio</label>
+                            <select id="c3_sel" class="form-control">
+                                <option value="1.00" selected>Otros contenidos ordinarios / No inflamable (1.00)</option>
+                                <option value="3.00">Edificio con contenido altamente inflamable o combustible (3.00)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="c4_sel">$C_4$: Ocupación del Edificio</label>
+                            <select id="c4_sel" class="form-control">
+                                <option value="0.50">Edificios no ocupados normalmente (0.50)</option>
+                                <option value="1.00" selected>Resto de edificios / Uso residencial estándar (1.00)</option>
+                                <option value="3.00">Pública Concurrencia, Sanitario, Comercial, Docente (3.00)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="c5_sel">$C_5$: Continuidad y Consecuencias</label>
+                            <select id="c5_sel" class="form-control">
+                                <option value="1.00" selected>Resto de edificios sin implicación crítica (1.00)</option>
+                                <option value="5.00">Servicios imprescindibles (Hospitales, Bomberos) o alto impacto ambiental (5.00)</option>
+                            </select>
+                        </div>
+
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="quimicos_check">
+                            <label for="quimicos_check"><strong>Riesgo Crítico Especial:</strong> El edificio manipula sustancias tóxicas, explosivas o altamente inflamables.</label>
+                        </div>
+                    </fieldset>
+                </div>
+
+                <div>
+                    <div class="results-box">
+                        <h3>Análisis Técnico en Tiempo Real</h3>
+                        
+                        <p><strong>Superficie de Captura Equivalente ($A_e$):</strong></p>
+                        <div id="ae_val" class="formula-display">Cargando...</div>
+
+                        <p><strong>Frecuencia Esperada de Impactos ($N_e$):</strong></p>
+                        <div id="ne_val" class="formula-display">Cargando...</div>
+
+                        <p><strong>Frecuencia de Riesgo Admisible ($N_a$):</strong></p>
+                        <div id="na_val" class="formula-display">Cargando...</div>
+
+                        <p><strong>Evaluación de la Inecuación de Riesgo ($N_e > N_a$):</strong></p>
+                        <div class="comparison-card">
+                            <div class="comparison-metric">
+                                <div>Esperada ($N_e$)</div>
+                                <div id="comp_ne" style="color: var(--elecnor-blue);">0.000000</div>
+                            </div>
+                            <div class="comparison-operator" id="comp_op">≤</div>
+                            <div class="comparison-metric">
+                                <div>Admisible ($N_a$)</div>
+                                <div id="comp_na" style="color: #555;">0.000000</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 15px; text-align: center;">
+                            <div style="font-weight: bold; margin-bottom: 10px;">Dictamen Normativo CTE:</div>
+                            <div id="dictamen_badge" class="badge">Evaluando...</div>
+                        </div>
+
+                        <div id="eficiencia_wrapper" style="margin-top: 20px; display: none;">
+                            <p><strong>Eficiencia del Sistema Requerida ($E$):</strong></p>
+                            <div id="e_val" class="formula-display"></div>
+                            <p><strong>Nivel de Protección Exigido (Tabla 2.1):</strong></p>
+                            <div id="nivel_val" style="font-weight: bold; color: var(--elecnor-blue); font-size: 1.1rem; text-align: center; background: #fff; padding: 10px; border: 1px dashed var(--elecnor-blue);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="report-tab" class="tab-content">
+            <button class="btn-print" onclick="window.print()">
+                🖨️ Imprimir / Exportar a PDF Técnico
+            </button>
+            
+            <div class="document-page">
+                <div class="report-header">
+                    <div>
+                        <div style="font-size: 16pt; font-weight: bold; color: var(--elecnor-blue);">INGENIERÍA MEP</div>
+                        <div style="font-size: 9px; color: #555; text-transform: uppercase; letter-spacing: 0.5px;">Cálculo de Ingeniería Conforme a Normativa</div>
+                    </div>
+                    <div style="text-align: right; font-size: 11px; color: var(--elecnor-blue);">
+                        <strong>Proyecto:</strong> <span id="r_p_nombre"></span><br>
+                        <strong>Referencia:</strong> <span id="r_p_expediente"></span><br>
+                        <strong>Ubicación:</strong> <span id="r_p_ubicacion"></span><br>
+                        <strong>Fecha de Emisión:</strong> 24 de junio de 2026
+                    </div>
+                </div>
+
+                <div class="report-title">Memoria Justificativa de Protección Frente al Rayo</div>
+                
+                <p>Este documento constituye el informe justificativo oficial según las exigencias impuestas por el Código Técnico de la Edificación, de acuerdo con el <strong>Documento Básico SUA 8 (Seguridad frente al riesgo causado por la acción del rayo)</strong>. Los parámetros han sido auditados mediante herramientas informáticas MEP de cálculo reactivo.</p>
+
+                <div class="report-section-title">1. Bases Técnicas y Formulación</div>
+                <p>De conformidad con el protocolo normativo establecido en el artículo 1.3 de la sección SUA 8, la necesidad de pararrayos se dictamina mediante la confrontación analítica de la tasa esperada de caídas de rayos frente al margen de vulnerabilidad intrínseco de la edificación.</p>
+                
+                <table style="width:100%;">
+                    <thead>
+                        <tr><th>Concepto Métrico</th><th>Modelo Matemático de Simulación</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Superficie de Captura Equivalente ($A_e$)</strong></td>
+                            <td>$$A_e = (L \cdot W) + 6H \cdot (L+W) + 9\pi \cdot H^2$$</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Frecuencia Anual Esperada ($N_e$)</strong></td>
+                            <td>$$N_e = N_g \cdot A_e \cdot C_1 \cdot 10^{-6}$$</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Umbral de Riesgo Tolerable ($N_a$)</strong></td>
+                            <td>$$N_a = \frac{5,5 \cdot 10^{-3}}{C_2 \cdot C_3 \cdot C_4 \cdot C_5}$$</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Eficiencia del Sistema ($E$)</strong></td>
+                            <td>$$E = 1 - \frac{N_a}{N_e}$$</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="report-section-title">2. Variables de Entrada Computadas</div>
+                <table style="width:100%;">
+                    <thead>
+                        <tr><th>Variable / Coeficiente</th><th>Valor Nominal</th><th>Descripción Funcional de Diseño</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Largo ($L$)</td><td><span id="r_largo"></span> m</td><td>Longitud ortogonal en planta del contorno perimetral.</td></tr>
+                        <tr><td>Ancho ($W$)</td><td><span id="r_ancho"></span> m</td><td>Anchura transversal en planta de la envolvente.</td></tr>
+                        <tr><td>Altura ($H$)</td><td><span id="r_altura"></span> m</td><td>Altura máxima del edificio medida desde la rasante del suelo.</td></tr>
+                        <tr><td>Densidad de Impactos ($N_g$)</td><td><span id="r_ng"></span></td><td>Frecuencia regional de rayos sobre el terreno en la zona física.</td></tr>
+                        <tr><td>Emplazamiento ($C_1$)</td><td><span id="r_c1"></span></td><td>Ajuste por relieve, topografía y apantallamiento circundante.</td></tr>
+                        <tr><td>Estructura ($C_2$)</td><td><span id="r_c2"></span></td><td>Comportamiento de la matriz portante y los planos de cubierta.</td></tr>
+                        <tr><td>Contenido ($C_3$)</td><td><span id="r_c3"></span></td><td>Grado de inflamabilidad o reactividad interna de la edificación.</td></tr>
+                        <tr><td>Ocupación ($C_4$)</td><td><span id="r_c4"></span></td><td>Intensidad de uso del inmueble y criticidad de evacuación.</td></tr>
+                        <tr><td>Consecuencias ($C_5$)</td><td><span id="r_c5"></span></td><td>Evaluación del impacto por interrupción del servicio o daño ambiental.</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="report-section-title">3. Desglose Numérico y Solución Analítica</div>
+                <table style="width:100%;">
+                    <thead>
+                        <tr><th>Parámetro de Control</th><th>Ecuación Operada con Valores Reales</th><th>Magnitud Resultante</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Superficie Equivalente ($A_e$)</strong></td>
+                            <td><span id="r_ae_calc"></span></td>
+                            <td><strong><span id="r_ae_res"></span> m²</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Frecuencia de Rayos ($N_e$)</strong></td>
+                            <td><span id="r_ne_calc"></span></td>
+                            <td><strong><span id="r_ne_res"></span> imp/año</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Riesgo Tolerable ($N_a$)</strong></td>
+                            <td><span id="r_na_calc"></span></td>
+                            <td><strong><span id="r_na_res"></span> imp/año</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="report-section-title">4. Nivel de Protección Requerido</div>
+                <div id="r_protection_box" class="report-protection-box">
+                    Nivel de Protección Evaluado: Pendiente de cálculo
+                </div>
+
+                <div class="report-section-title">5. Conclusión Técnico Oficial</div>
+                <div id="r_conclusion_box" class="conclusion-final">
+                    Calculando dictamen definitivo...
+                </div>
+                
+                <div style="margin-top: 50px; display: flex; justify-content: space-between; font-size: 10px; color: #555;">
+                    <div>Calculador Homologado CTE SUA 8<br>Unidades Técnicas bajo Estándar Internacional SI</div>
+                    <div style="text-align: right;">Firma Responsable Autorizado<br>Departamento de Proyectos MEP</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="doc-tab" class="tab-content">
+            <h3>Informe Técnico de Requisitos (ITR) Encontrado</h3>
+            <p>Este bloque contiene el Readme normativo que sirvió de base para la programación del código:</p>
+            <div class="markdown-container" id="itr-markdown-box"></div>
+        </div>
+
+    </div>
+
+    <script>
+        const itrMarkdownText = `# INFORME TÉCNICO DE REQUISITOS: CALCULADORA PARARRAYOS CTE SUA 8
+ID_INFORME: ITR.SUA8_260624-01 | VERSIÓN: v1.2  
+ESTADO: ACEPTADO
+
+1. ESPECIFICACIONES TÉCNICAS
+- Normativa: Código Técnico de la Edificación (CTE), Documento Básico SUA 8.
+- Parámetros Validados: Geometría, Ng local y matriz de coeficientes adimensionales C1-C5.
+- Interfaz: Desglose analítico explícito replicando la estructura de imagen técnica real.
+
+2. LÓGICA DE INGENIERÍA Y CÁLCULOS
+- Expresión del desarrollo numérico con puntos de multiplicación alineados con el estándar técnico.
+- Box dinámico de inecuación de riesgo y nivel de protección estructurado para memorias descriptivas.`;
+
+        document.getElementById('itr-markdown-box').textContent = itrMarkdownText;
+
+        function switchTab(evt, tabId) {
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            const links = document.querySelectorAll('.tab-link');
+            links.forEach(link => link.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            evt.currentTarget.classList.add('active');
+            
+            if (window.MathJax && typeof MathJax.typeset === 'function') {
+                MathJax.typeset();
+            }
+        }
+
+        const inputsToTrack = [
+            'p_nombre', 'p_ubicacion', 'p_expediente',
+            'g_largo', 'g_ancho', 'g_altura', 'g_ng',
+            'c1_sel', 'c2_sel', 'c3_sel', 'c4_sel', 'c5_sel',
+            'quimicos_check'
+        ];
+
+        function initLocalStorage() {
+            inputsToTrack.forEach(id => {
+                const element = document.getElementById(id);
+                const cachedValue = localStorage.getItem(id);
+                if (cachedValue !== null) {
+                    if (element.type === 'checkbox') {
+                        element.checked = cachedValue === 'true';
+                    } else {
+                        element.value = cachedValue;
+                    }
+                }
+                
+                element.addEventListener('input', runCalculationsAndSync);
+                element.addEventListener('change', runCalculationsAndSync);
+            });
+        }
+
+        function runCalculationsAndSync() {
+            inputsToTrack.forEach(id => {
+                const element = document.getElementById(id);
+                if (element.type === 'checkbox') {
+                    localStorage.setItem(id, element.checked);
+                } else {
+                    localStorage.setItem(id, element.value);
+                }
+            });
+
+            const L = parseFloat(document.getElementById('g_largo').value) || 0;
+            const W = parseFloat(document.getElementById('g_ancho').value) || 0;
+            const H = parseFloat(document.getElementById('g_altura').value) || 0;
+            const Ng = parseFloat(document.getElementById('g_ng').value) || 0;
+            
+            const C1 = parseFloat(document.getElementById('c1_sel').value);
+            const C2 = parseFloat(document.getElementById('c2_sel').value);
+            const C3 = parseFloat(document.getElementById('c3_sel').value);
+            const C4 = parseFloat(document.getElementById('c4_sel').value);
+            const C5 = parseFloat(document.getElementById('c5_sel').value);
+            const quimicosCriticos = document.getElementById('quimicos_check').checked;
+
+            const alertAltura = document.getElementById('alert-altura');
+            if (H > 43) {
+                alertAltura.style.display = 'block';
+            } else {
+                alertAltura.style.display = 'none';
+            }
+
+            // --- RESOLUCIÓN MATEMÁTICA ---
+            const Ae = (L * W) + (6 * H * (L + W)) + (9 * Math.PI * Math.pow(H, 2));
+            const Ne = Ng * Ae * C1 * Math.pow(10, -6);
+            const Na = (5.5 / (C2 * C3 * C4 * C5)) * Math.pow(10, -3);
+
+            let pararrayosObligatorio = false;
+            let causaExigencia = "";
+
+            if (Ne > Na) {
+                pararrayosObligatorio = true;
+                causaExigencia = "Frecuencia esperada superior al riesgo tolerable ($N_e > N_a$)";
+            }
+            if (H > 43) {
+                pararrayosObligatorio = true;
+                causaExigencia = "Altura del edificio superior a 43 m (Exigencia directa del artículo SUA 8.1.2)";
+            }
+            if (quimicosCriticos) {
+                pararrayosObligatorio = true;
+                causaExigencia = "Presencia de sustancias altamente inflamables, explosivas o tóxicas (Exigencia directa del artículo SUA 8.1.2)";
+            }
+
+            // --- ACTUALIZACIÓN BOX COMPARATIVO VISUAL (Ne > Na) ---
+            document.getElementById('comp_ne').textContent = Ne.toFixed(6);
+            document.getElementById('comp_na').textContent = Na.toFixed(6);
+            const compOp = document.getElementById('comp_op');
+            
+            if (Ne > Na) {
+                compOp.textContent = ">";
+                compOp.style.color = "var(--danger-color)";
+                document.getElementById('comp_ne').style.color = "var(--danger-color)";
+            } else {
+                compOp.textContent = "≤";
+                compOp.style.color = "var(--success-color)";
+                document.getElementById('comp_ne').style.color = "var(--elecnor-blue)";
+            }
+
+            // --- ACTUALIZACIÓN DE FORMULAS (FORMATO EXACTO IMAGE_CC9EDF.PNG) ---
+            document.getElementById('ae_val').innerHTML = `$$A_e = (${L.toFixed(2)} \\cdot ${W.toFixed(2)}) + 6 \\cdot ${H.toFixed(2)} \\cdot (${L.toFixed(2)} + ${W.toFixed(2)}) + 9\\pi \\cdot ${H.toFixed(2)}^2 = ${Ae.toFixed(2)}\\text{ m}^2$$`;
+            document.getElementById('ne_val').innerHTML = `$$N_e = ${Ng.toFixed(2)} \\cdot ${Ae.toFixed(2)} \\cdot ${C1.toFixed(2)} \\cdot 10^{-6} = ${Ne.toFixed(6)}\\text{ imp/año}$$`;
+            document.getElementById('na_val').innerHTML = `$$N_a = \\frac{5,5}{${C2.toFixed(2)} \\cdot ${C3.toFixed(2)} \\cdot ${C4.toFixed(2)} \\cdot ${C5.toFixed(2)}} \\cdot 10^{-3} = ${Na.toFixed(6)}\\text{ imp/año}$$`;
+
+            const dictamenBadge = document.getElementById('dictamen_badge');
+            const eficienciaWrapper = document.getElementById('eficiencia_wrapper');
+            const reportProtectionBox = document.getElementById('r_protection_box');
+
+            let txtNivelProteccion = "No requerido por cálculo analítico";
+
+            if (pararrayosObligatorio) {
+                dictamenBadge.textContent = "INSTALACIÓN OBLIGATORIA";
+                dictamenBadge.className = "badge badge-danger";
+                eficienciaWrapper.style.display = 'block';
+
+                let E = 1 - (Na / Ne);
+                if (H > 43 || quimicosCriticos) {
+                    if (E < 0.98) E = 0.98;
+                }
+
+                if (E >= 0.98) {
+                    txtNivelProteccion = "NIVEL 1 (Eficiencia Máxima Extra Alta: E ≥ 0,98)";
+                } else if (E >= 0.95) {
+                    txtNivelProteccion = "NIVEL 2 (Eficiencia Alta: 0,95 ≤ E < 0,98)";
+                } else if (E >= 0.80) {
+                    txtNivelProteccion = "NIVEL 3 (Eficiencia Media: 0,80 ≤ E < 0,95)";
+                } else {
+                    txtNivelProteccion = "NIVEL 4 (Eficiencia Baja: 0 ≤ E < 0,80)";
+                }
+
+                document.getElementById('e_val').innerHTML = `$$E = 1 - \\frac{${Na.toFixed(6)}}{${Ne.toFixed(6)}} = ${E.toFixed(4)}$$`;
+                document.getElementById('nivel_val').innerHTML = txtNivelProteccion.replace("E ≥", "$E \\ge$").replace("≤ E <", "$\\le E <$");
+                
+                reportProtectionBox.style.color = "var(--danger-color)";
+                reportProtectionBox.textContent = `SISTEMA EXIGIDO: ${txtNivelProteccion}`;
+            } else {
+                dictamenBadge.textContent = "PROTECCIÓN NO REQUERIDA";
+                dictamenBadge.className = "badge badge-success";
+                eficienciaWrapper.style.display = 'none';
+                
+                reportProtectionBox.style.color = "var(--success-color)";
+                reportProtectionBox.textContent = `NIVEL DE PROTECCIÓN: ${txtNivelProteccion}`;
+            }
+
+            // --- VINCULACIÓN CON LA PESTAÑA DEL INFORME TÉCNICO ---
+            document.getElementById('r_p_nombre').textContent = document.getElementById('p_nombre').value;
+            document.getElementById('r_p_ubicacion').textContent = document.getElementById('p_ubicacion').value;
+            document.getElementById('r_p_expediente').textContent = document.getElementById('p_expediente').value;
+            
+            document.getElementById('r_largo').textContent = L.toFixed(2);
+            document.getElementById('r_ancho').textContent = W.toFixed(2);
+            document.getElementById('r_altura').textContent = H.toFixed(2);
+            document.getElementById('r_ng').textContent = Ng.toFixed(2);
+            
+            document.getElementById('r_c1').textContent = C1.toFixed(2);
+            document.getElementById('r_c2').textContent = C2.toFixed(2);
+            document.getElementById('r_c3').textContent = C3.toFixed(2);
+            document.getElementById('r_c4').textContent = C4.toFixed(2);
+            document.getElementById('r_c5').textContent = C5.toFixed(2);
+
+            document.getElementById('r_ae_calc').textContent = `(${L.toFixed(2)} * ${W.toFixed(2)}) + 6 * ${H.toFixed(2)} * (${L.toFixed(2)} + ${W.toFixed(2)}) + 9 * π * ${H.toFixed(2)}²`;
+            document.getElementById('r_ae_res').textContent = Ae.toFixed(2);
+
+            document.getElementById('r_ne_calc').textContent = `${Ng.toFixed(2)} * ${Ae.toFixed(2)} * ${C1.toFixed(2)} * 10^-6`;
+            document.getElementById('r_ne_res').textContent = Ne.toFixed(6);
+
+            document.getElementById('r_na_calc').textContent = `0.0055 / (${C2.toFixed(2)} * ${C3.toFixed(2)} * ${C4.toFixed(2)} * ${C5.toFixed(2)})`;
+            document.getElementById('r_na_res').textContent = Na.toFixed(6);
+
+            const rConclusionBox = document.getElementById('r_conclusion_box');
+            if (pararrayosObligatorio) {
+                let E_rep = 1 - (Na / Ne);
+                if (H > 43 || quimicosCriticos) if (E_rep < 0.98) E_rep = 0.98;
+                
+                rConclusionBox.style.backgroundColor = '#fff3cd';
+                rConclusionBox.style.borderColor = 'var(--elecnor-orange)';
+                rConclusionBox.style.color = 'var(--dark-text)';
+                rConclusionBox.innerHTML = `❌ SE REQUIERE INSTALACIÓN OBLIGATORIA DE PARARRAYOS<br><span style='font-size:11px; font-weight:normal;'>Justificación: ${causaExigencia}. Eficiencia requerida calculada de E = ${E_rep.toFixed(4)}. Se debe estructurar un anillo de protección bajo las directrices técnicas del Anexo SUA B del Código Técnico.</span>`;
+            } else {
+                rConclusionBox.style.backgroundColor = '#e6f7ff';
+                rConclusionBox.style.borderColor = 'var(--elecnor-blue)';
+                rConclusionBox.style.color = 'var(--elecnor-blue)';
+                rConclusionBox.innerHTML = `✅ EL NIVEL DE RIESGO SE CONSIDERA TOLERABLE: NO SE REQUIERE INSTALACIÓN DE PARARRAYOS ($N_e \\le N_a$)`;
+            }
+
+            if (window.MathJax && typeof MathJax.typeset === 'function') {
+                MathJax.typeset();
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initLocalStorage();
+            runCalculationsAndSync();
+        });
+    </script>
+</body>
+</html>
