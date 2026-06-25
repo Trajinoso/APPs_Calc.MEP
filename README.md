@@ -15,7 +15,7 @@
 
 # MEP & Hydraulic Engineering Suite
 
-Este repositorio centraliza un conjunto de aplicaciones e instrumentos técnicos interactivos orientados al **cálculo, dimensionado preliminar y supervisión visual de instalaciones Hidraulicas**, con especial enfoque en ingeniería hidráulica, climatización (HVAC) y sistemas de tratamiento de agua para piscinas públicas.
+Este repositorio centraliza un conjunto de aplicaciones e instrumentos técnicos interactivos orientados al **cálculo, dimensionado preliminar y supervisión visual de instalaciones integrales**.
 
 Todas las aplicaciones se ejecutan bajo una arquitectura **Client-Side pura (CSR)**, lo que garantiza privacidad absoluta de los datos, agilidad y despliegue inmediato sin dependencias de servidor ni bases de datos.
 
