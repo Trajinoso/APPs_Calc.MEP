@@ -1,97 +1,97 @@
-Primero, la simplificación geométrica del vaso es un acierto para facilitar la entrada de datos al usuario. Segundo, respecto a los datos psicrométricos: **no te preocupes, ya implementé en la versión anterior un motor de cálculo termodinámico**. La aplicación calcula internamente y de forma exacta la humedad absoluta ($x_i$, $x_e$) a partir de las temperaturas y humedades relativas que introduce el usuario usando la ecuación de Magnus-Tetens. No hace falta meter tablas manuales.
+Como Ingeniero Senior, he revisado las fórmulas propuestas. Son un excelente paso hacia la rigurosidad térmica (el modelo VDI 2089 es el estándar de oro en Europa para piscinas). Sin embargo, atendiendo a tu petición de mejora, realizo las siguientes **observaciones críticas de ingeniería** que he incorporado al informe:
 
-Respecto a la fórmula de ventilación $\dot{m}_v = Q_v \cdot \rho_{aire} \cdot (x_i - x_e)$: este enfoque calcula la **capacidad de secado** del aire exterior. Si el aire interior tiene más agua ($x_i$) que el exterior ($x_e$), ventilar *resta* trabajo a la máquina deshumectadora. Lo ajustaremos en el balance de masas para que funcione exactamente así.
+1. **Sobre el Balance de Aire Exterior ($V_{ae}$):** La fórmula que propones utiliza solo la evaporación ($m_e$). En la realidad, el caudal de aire exterior debe vencer **toda** la carga latente del recinto antes de la ventilación, es decir, la evaporación más la generada por las personas ($\dot{m}_e + \dot{m}_p$). Si no sumamos a los bañistas, el recinto acabará condensando con el local lleno.
+2. **Condición de Imposibilidad Física:** La fórmula $V_{ae} = \frac{v_e \cdot m_{req}}{W_{ai} - W_{ae}}$ asume que el aire exterior es más seco que el interior ($W_{ai} > W_{ae}$). Si en verano el aire exterior es más húmedo, el denominador se vuelve negativo y el caudal carece de sentido físico (no se puede secar con aire húmedo). Añadiré un condicional lógico para advertir de esto.
+3. **Volumen Específico ($v_e$):** Para mantener la coherencia con el Módulo 1 (donde usamos $\rho = 1.2 \text{ kg/m}^3$), asumiremos un volumen específico estándar de $v_e = \frac{1}{\rho} \approx 0.833 \text{ m}^3/\text{kg}$, o bien lo calcularemos dinámicamente con las propiedades psicrométricas.
 
+A continuación, presento la versión actualizada del Informe Técnico de Requisitos (ITR v1.3) para tu validación.
+
+---
 
 # CALCULADORA AVANZADA MEP: DESHUMECTACIÓN Y POTENCIA TÉRMICA EN PISCINAS
 
-**ID_INFORME:** ITR.CDP_260626-01 | **VERSIÓN:** 1.2
+**ID_INFORME:** ITR.CDP_260626-01 | **VERSIÓN:** 1.3
 
 **ESTADO:** ESPERANDO ACEPTACIÓN
 
-### 1. ESPECIFICACIONES TÉCNICAS 
+### 1. ESPECIFICACIONES TÉCNICAS
 
-* **Orden del Usuario:** Modificar la aplicación SPA de cálculo integral para recintos de piscinas. Se elimina el input directo de volumen del vaso, calculándolo geométricamente a partir de la profundidad. Se ajusta la ecuación de ventilación para evaluar correctamente el potencial de secado del aire exterior y se confirma la automatización del cálculo psicrométrico.
-* **Normativa:** RITE, ASHRAE Handbook (Natatoriums), VDI 2089.
-* **Parámetros Validados (Actualizados):**
-* *Superficie de agua ($A$):* [m²] (Validación: > 0)
-* **[NUEVO]** *Profundidad media del vaso ($h_{vaso}$):* [m] (Validación: > 0) -> El Volumen ($V$) pasará a ser un campo calculado ($A \cdot h_{vaso}$).
-* *Temperatura del agua ($T_w$):* [ºC]
-* *Temperatura inicial/red ($T_{red}$):* [ºC]
-* *Tiempo de calentamiento inicial ($t_{cal}$):* [h]
-* *Temperatura del aire interior ($T_{int}$) y Exterior ($T_{ext}$):* [ºC]
-* *Humedad Relativa interior ($HR_{int}$) y Exterior ($HR_{ext}$):* [%]
-* *Caudal de ventilación exterior ($Q_v$):* [m³/h]
-* *Ocupantes ($N$) y Factor de Actividad ($F$).*
+* **Orden del Usuario:** 1. Modificar el cálculo de evaporación de la lámina de agua al método **VDI 2089** basado en la diferencia de humedades absolutas (g/kg) y coeficientes empíricos $\beta$.
+2. Añadir un tercer módulo para el cálculo del **Caudal de Aire Exterior de Deshumectación** (Free-Drying), que determine los m³/h necesarios si la instalación depende 100% de aire exterior para secar el ambiente.
+* **Normativa:** VDI 2089 (Building services in swimming baths), ASHRAE Fundamentals.
+* **Parámetros Validados:**
+* *Coeficiente de Uso VDI ($\beta$):* 0.5 (Reposo), 1.0 (Residencial), 2.0 (Hidromasaje), 4.0 (Atracciones/Olas). Sustituye al antiguo factor $F$.
+* Resto de parámetros geométricos y termodinámicos ($A, h_{vaso}, T_w, T_{int}, HR_{int}$, etc.) se mantienen de la v1.2.
+
+
+* **Hipótesis y simplificaciones adoptadas:**
+* El aire exterior utilizado para el cálculo de $V_{ae}$ entra al recinto sin tratamiento previo (Free-Cooling/Drying latente).
+* La densidad del aire se mantiene en $1.2 \text{ kg/m}^3$ para un volumen específico $v_e = 0.833 \text{ m}^3/\text{kg}$.
 
 
 
 ### 2. LÓGICA DE INGENIERÍA Y CÁLCULOS
 
-Se mantiene la base termodinámica de la versión 1.1 y se modifica el balance de masa latente.
-
-* **Check de datos aportados:** Comprendida la modificación geométrica. Confirmada la capacidad de la herramienta para autocalcular las propiedades del aire (Humedad Absoluta y Presión de Saturación) sin depender de ábacos externos.
-* **Módulo 1: Carga Latente y Deshumectación (Modificado)**
-1. **Cálculo Psicrométrico Automático:** Se usa Magnus-Tetens para calcular $P_{sat}$ y deducir $x_i$ y $x_e$ en kg/kg.
-2. **Aportes de Humedad:**
-* Evaporación: $\dot{m}_e = A \cdot (P_w - P_{a,int}) \cdot F$ [kg/h]
-* Ocupación: $\dot{m}_p = N \cdot 0.15$ [kg/h]
+* **Check de comprensión:** Comprendida la transición de diferencias de presión de vapor ($\Delta P$) a diferencias de humedad absoluta ($\Delta x$) en g/kg para el cálculo latente de la lámina, y la integración de la ventilación como método de resolución mecánica.
+* **Desarrollo completo de los cálculos:**
+1. **Psicrometría (Magnus-Tetens):**
+* $P_{sat}(T) = 0.6112 \cdot e^{\frac{17.67 \cdot T}{T + 243.5}} \text{ [kPa]}$
+* $P_v = \frac{HR}{100} \cdot P_{sat} \text{ [kPa]}$
+* $x = 622 \cdot \frac{P_v}{101.325 - P_v} \text{ [g/kg]}$ (Nota: Dividir por 1000 para pasar a kg/kg en cálculos de masas).
 
 
-3. **Extracción por Ventilación (Nueva Lógica):**
-* Capacidad de secado: $\dot{m}_v = Q_v \cdot \rho_{aire} \cdot (x_i - x_e)$ [kg/h]
-* *(Nota: Si $x_i > x_e$, la ventilación seca el local y el valor es positivo. Si $x_e > x_i$, el aire exterior es más húmedo, introduciendo humedad al local, por lo que el valor resultará negativo y sumará carga).*
+2. **Módulo A: Deshumectación (VDI 2089):**
+* $x_{sup}$: Humedad absoluta evaluada a $T_w$ y $HR = 100\%$.
+* $x_{int}$: Humedad absoluta evaluada a $T_{int}$ y $HR_{int}$.
+* $\dot{m}_e = \beta \cdot A \cdot (x_{sup} - x_{int}) \cdot \frac{1}{1000} \text{ [kg/h]}$
+* Carga Base a secar ($m_{req}$) = $\dot{m}_e + \dot{m}_p$
 
 
-4. **Carga Neta de la Deshumectadora:**
-* $\dot{m}_{neta} = \dot{m}_e + \dot{m}_p - \dot{m}_v$ [kg/h]
-* $\dot{m}_{total\_diseño} = \max(0, \dot{m}_{neta}) \cdot \left(1 + \frac{\text{Margen}}{100}\right)$ [kg/h]
+3. **Módulo B: Caudal de Aire Exterior (Nuevo):**
+* $V_{ae} = \frac{v_e \cdot (\dot{m}_e + \dot{m}_p)}{W_{ai} - W_{ae}} \text{ [m}^3\text{/h]}$
+* *Condición MEP:* Si $W_{ae} \ge W_{ai}$, el aire exterior no puede secar. $V_{ae} = \text{No Viable (Requisito de Máquina Frigorífica)}$.
 
 
-
-
-* **Módulo 2: Potencia Térmica del Vaso (Actualizado)**
-1. **Volumen Dinámico:** $V = A \cdot h_{vaso}$ [m³]
-2. **Energía de Calentamiento:** $Q_{ini} = V \cdot 1.16 \cdot (T_w - T_{red})$ [kWh]
-3. **Potencia de Arranque:** $P_{arranque} = \frac{Q_{ini}}{t_{cal}}$ [kW]
-4. **Potencia de Mantenimiento:** $P_{maint} = (\dot{m}_e \cdot 0.68) + P_{otras}$ [kW]
 
 
 
 ### 3. HISTORIAL DE REQUERIMIENTOS ACUMULADOS
 
-* [Implementado] Interfaz con 3 pestañas (Cálculo, Informe, Documentación).
-* [Implementado] Motor de cálculo psicrométrico exacto en JS para $x_i$ y $x_e$.
-* [Implementado] Generación de informe justificativo imprimible (MathJax).
-* **[Pendiente v1.2]** Sustituir el input de "Volumen" por "Profundidad Media" y automatizar el cálculo del volumen.
-* **[Pendiente v1.2]** Modificar el balance de masas: $\text{Carga Total} = \text{Evaporación} + \text{Personas} - \text{Ventilación}$. Reflejar visualmente si la ventilación ayuda a secar o si penaliza.
+* [Implementado v1.0] Interfaz base con 3 pestañas y cálculo psicrométrico.
+* [Implementado v1.1] Módulo térmico del vaso (arranque y mantenimiento).
+* [Implementado v1.2] Volumen de vaso automático y modelo vectorial de ventilación.
+* **[Pendiente v1.3]** Reemplazar motor de evaporación por VDI 2089 ($\beta$ y $\Delta x$).
+* **[Pendiente v1.3]** Añadir cálculo analítico de $V_{ae}$ (Free-Drying) informando al usuario sobre la viabilidad de usar solo ventilación exterior.
 
-### 4. ESPECIFICACIONES DE LA VERSIÓN ACTUAL (v1.2)
+### 4. ESPECIFICACIONES DE LA VERSIÓN ACTUAL (v1.3)
 
-* **Descripción:** Actualización menor de la interfaz para incluir la profundidad del vaso. Refactorización del algoritmo de cálculo latente para que el aire de ventilación actúe algebraicamente (restando carga si es seco, sumando si es húmedo) acorde a la fórmula solicitada por el usuario.
-* **Manejo de errores:** Si el aire exterior es tan seco y el caudal tan alto que la carga neta es negativa (la ventilación seca más de lo que evapora la piscina), la herramienta dictaminará una carga de 0 kg/h para la deshumectadora (no se requiere encenderla bajo esas condiciones).
+* **Descripción:** Actualización del núcleo algorítmico. Se modifica el selector de "Factor de Actividad" para albergar los valores $\beta$ de la VDI 2089. Se añade un nuevo panel de resultados para mostrar el "Caudal Volumétrico de Secado ($V_{ae}$)".
+* **Lógica de negocio:** La UI mostrará el caudal necesario en m³/h. Si las condiciones exteriores ($T_{ext}, HR_{ext}$) resultan en un aire más húmedo que el interior, el panel mostrará un aviso de "Secado exterior imposible" bloqueando resultados negativos irreales.
+* **Estrategia de manejo de errores:** Condicional de división por cero o divisiones negativas en la ecuación de $V_{ae}$ si $W_{ai} \le W_{ae}$.
 
 ### 5. STACK TECNOLÓGICO
 
-* HTML5 / CSS3 / Vanilla JS (Mantenido).
+* JavaScript ES6 (Mantenido). MathJax para la nueva fórmula VDI.
 
 ### 6. BITÁCORA DE CAMBIOS (Changelog)
 
-* **v1.0:** ITR inicial (balance de masa de agua / deshumectación).
-* **v1.1:** Incorporación térmica del vaso (calentamiento y mantenimiento).
-* **v1.2:** Cambio geométrico (Volumen calculado vía Área x Profundidad). Corrección del enfoque de ventilación para tratarlo como vector de extracción de humedad $\dot{m} = Q \cdot \rho \cdot (x_i - x_e)$ integrando el cálculo psicrométrico automático.
+* **v1.0 - 1.2:** [Implementados previamente] Balance base, módulo térmico, automatización geométrica.
+* **v1.3:** Migración al estándar VDI 2089 para evaporación y adición de módulo de dimensionado de ventilador para control de humedad por Free-Drying.
 
 ### 7. FUNDAMENTOS DE INGENIERÍA Y NORMATIVA
 
-* **Densidad del aire ($\rho_{aire}$):** 1.2 kg/m³.
-* **Balance de masa de agua:** Conservación de la masa en volumen de control. La masa que se retira por ventilación natural/forzada se resta de la que debe procesar el equipo frigorífico.
+* **Marco Normativo:** VDI 2089 Part 1 (Heating, ventilation and air-conditioning in indoor swimming pools).
+* **Fórmulas:** Ecuación de evaporación VDI validada internacionalmente, superior en precisión a estimaciones estáticas antiguas.
 
 ### 8. LIBRERÍAS TÉCNICAS
 
-* HTML/JS: `MathJax` (v3).
+* Nativo (cero dependencias). MathJax vía CDN.
 
 ### 9. IMPLEMENTACIÓN
 
 *(Pendiente de aprobación)*
+
+---
+
 
 
