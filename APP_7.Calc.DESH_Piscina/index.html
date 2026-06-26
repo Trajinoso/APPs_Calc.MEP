@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora Avanzada MEP - Deshumectación y Térmica de Piscinas v1.2</title>
+    <title>Calculadora MEP - Piscinas Cubiertas VDI 2089 v1.3</title>
     <script>
         window.MathJax = {
             tex: {
@@ -24,10 +24,11 @@
             --border-color: #cccccc;
             --danger-color: #dc3545;
             --success-color: #28a745;
+            --warning-color: #ffc107;
         }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: var(--dark-text); margin: 0; background-color: #e9ecef; }
-        .navbar { background-color: var(--elecnor-blue); color: white; padding: 15px 20px; display: flex; justify-content: space-between; border-bottom: 4px solid var(--elecnor-orange); }
-        .navbar h1 { margin: 0; font-size: 1.3rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .navbar { background-color: var(--elecnor-blue); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--elecnor-orange); }
+        .navbar h1 { margin: 0; font-size: 1.25rem; text-transform: uppercase; letter-spacing: 0.5px; }
         .nav-tabs { display: flex; background: #ffffff; border-bottom: 2px solid var(--border-color); margin: 0; padding: 0; list-style: none; }
         .tab-link { padding: 12px 24px; cursor: pointer; font-weight: bold; color: var(--elecnor-blue); border-right: 1px solid #eee; transition: all 0.2s; }
         .tab-link:hover { background-color: #f1f1f1; }
@@ -45,20 +46,21 @@
         .form-control:focus { outline: none; border-color: var(--elecnor-orange); box-shadow: 0 0 5px rgba(255,130,0,0.2); }
         .form-control[readonly] { background-color: #e3e6ea; color: #495057; cursor: not-allowed; }
         .results-box { background-color: var(--bg-accent); border: 2px solid var(--elecnor-orange); border-radius: 6px; padding: 20px; position: sticky; top: 20px; }
-        .results-box h3 { margin-top: 0; color: var(--elecnor-blue); border-bottom: 2px solid var(--elecnor-orange); padding-bottom: 10px; text-transform: uppercase; font-size: 1.1rem; }
-        .formula-display { background: #ffffff; padding: 12px; border-left: 4px solid var(--elecnor-blue); margin: 10px 0; font-family: monospace; overflow-x: auto; font-size: 0.9rem; }
-        .result-highlight { display: flex; justify-content: space-between; background: white; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; font-weight: bold; }
-        .val-total { font-size: 1.25rem; color: var(--elecnor-orange); }
+        .results-box h3 { margin-top: 0; color: var(--elecnor-blue); border-bottom: 2px solid var(--elecnor-orange); padding-bottom: 10px; text-transform: uppercase; font-size: 1.05rem; }
+        .formula-display { background: #ffffff; padding: 12px; border-left: 4px solid var(--elecnor-blue); margin: 10px 0; font-family: monospace; overflow-x: auto; font-size: 0.85rem; }
+        .result-highlight { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; font-weight: bold; }
+        .val-total { font-size: 1.2rem; color: var(--elecnor-orange); }
         .val-blue { color: var(--elecnor-blue); }
+        .badge-warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 5px 10px; border-radius: 3px; font-size: 0.85rem; }
         .btn-print { background-color: var(--elecnor-orange); color: white; border: none; padding: 12px 25px; font-size: 1rem; font-weight: bold; border-radius: 4px; cursor: pointer; margin-bottom: 20px; }
         .btn-print:hover { background-color: #e07200; }
         .document-page { max-width: 210mm; margin: 0 auto; background: white; padding: 20mm; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-top: 10px solid var(--elecnor-blue); box-sizing: border-box; }
-        .report-title { color: var(--elecnor-blue); font-size: 18pt; text-align: center; text-transform: uppercase; margin-bottom: 20px; border-bottom: 2px solid var(--elecnor-orange); padding-bottom: 10px;}
+        .report-title { color: var(--elecnor-blue); font-size: 16pt; text-align: center; text-transform: uppercase; margin-bottom: 20px; border-bottom: 2px solid var(--elecnor-orange); padding-bottom: 10px;}
         .report-section { margin-top: 25px; }
-        .report-section h4 { color: var(--elecnor-blue); border-left: 5px solid var(--elecnor-orange); padding-left: 10px; text-transform: uppercase; margin-bottom: 10px; }
+        .report-section h4 { color: var(--elecnor-blue); border-left: 5px solid var(--elecnor-orange); padding-left: 10px; text-transform: uppercase; margin-bottom: 10px; font-size: 1rem; }
         table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 12px; }
-        th { background: var(--elecnor-blue); color: white; padding: 10px; text-align: left; font-weight: bold; }
-        td { border: 1px solid var(--border-color); padding: 10px; text-align: left; }
+        th { background: var(--elecnor-blue); color: white; padding: 8px; text-align: left; font-weight: bold; }
+        td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
         textarea.md-box { width: 100%; height: 400px; font-family: monospace; padding: 15px; border: 1px solid var(--border-color); border-radius: 4px; background: #2b2b2b; color: #f8f8f2; box-sizing: border-box; }
         @media print {
             body { background: none; color: #000; }
@@ -71,14 +73,14 @@
 <body>
 
     <div class="navbar">
-        <h1>Módulo MEP - Ingeniería de Piscinas Cubiertas Integrada</h1>
-        <div style="font-size: 0.85rem; font-weight: bold;">v1.2 | Formulación Psicrométrica Rígida</div>
+        <h1>Módulo MEP - Piscinas (Estándar VDI 2089)</h1>
+        <div style="font-size: 0.85rem; font-weight: bold;">v1.3 | Motor Psicrométrico Integrado</div>
     </div>
 
     <ul class="nav-tabs">
         <li class="tab-link active" onclick="switchTab(event, 'calc-tab')">Panel de Cálculo</li>
-        <li class="tab-link" onclick="switchTab(event, 'report-tab')">Informe Técnico</li>
-        <li class="tab-link" onclick="switchTab(event, 'doc-tab')">Documentación Técnica (ITR)</li>
+        <li class="tab-link" onclick="switchTab(event, 'report-tab')">Memoria Justificativa</li>
+        <li class="tab-link" onclick="switchTab(event, 'doc-tab')">Auditoría ITR</li>
     </ul>
 
     <div class="container">
@@ -87,12 +89,12 @@
             <div class="grid-2">
                 <div>
                     <fieldset>
-                        <legend>1. Geometría y Termodinámica del Recinto</legend>
+                        <legend>1. Geometría y Termodinámica</legend>
                         <div class="grid-2">
-                            <div class="form-group"><label>Superficie de Agua ($A$) [m²]:</label><input type="number" id="inp_A" class="form-control calc-trigger" value="33" min="1"></div>
+                            <div class="form-group"><label>Superficie Agua ($A$) [m²]:</label><input type="number" id="inp_A" class="form-control calc-trigger" value="33" min="1"></div>
                             <div class="form-group"><label>Profundidad Media ($h_{vaso}$) [m]:</label><input type="number" id="inp_hvaso" class="form-control calc-trigger" value="1.4" step="0.1" min="0.1"></div>
                         </div>
-                        <div class="form-group"><label>Volumen Calculado del Vaso ($V$) [m³]:</label><input type="number" id="inp_V" class="form-control" readonly value="46.2"></div>
+                        <div class="form-group"><label>Volumen Calculado del Vaso ($V$) [m³]:</label><input type="number" id="inp_V" class="form-control" readonly></div>
                         <div class="grid-2">
                             <div class="form-group"><label>Tª Agua ($T_w$) [ºC]:</label><input type="number" id="inp_Tw" class="form-control calc-trigger" value="28" step="0.5"></div>
                             <div class="form-group"><label>Tª Aire Interior ($T_{int}$) [ºC]:</label><input type="number" id="inp_Tint" class="form-control calc-trigger" value="30" step="0.5"></div>
@@ -101,20 +103,20 @@
                     </fieldset>
 
                     <fieldset>
-                        <legend>2. Dinámica de Ocupación y Ventilación</legend>
+                        <legend>2. Factores de Uso y Aire Exterior</legend>
                         <div class="grid-2">
-                            <div class="form-group"><label>Número de Ocupantes ($N$):</label><input type="number" id="inp_N" class="form-control calc-trigger" value="12" min="0"></div>
+                            <div class="form-group"><label>Ocupantes Simultáneos ($N$):</label><input type="number" id="inp_N" class="form-control calc-trigger" value="12" min="0"></div>
                             <div class="form-group">
-                                <label>Factor de Actividad Superficial ($F$):</label>
-                                <select id="inp_F" class="form-control calc-trigger">
-                                    <option value="0.05">Estática / Cubierta térmica (0.05)</option>
-                                    <option value="0.10">Residencial / Pública tranquila (0.10)</option>
-                                    <option value="0.12" selected>Recreativo / SPA agitado (0.12)</option>
-                                    <option value="0.15">Oleaje / Actividad de alta intensidad (0.15)</option>
+                                <label>Coef. Agitación VDI 2089 ($\beta$):</label>
+                                <select id="inp_beta" class="form-control calc-trigger">
+                                    <option value="0.5">Piscina cubierta, en reposo (0.5)</option>
+                                    <option value="1.0" selected>Baño recreativo / Residencial (1.0)</option>
+                                    <option value="2.0">Hidromasaje / SPA (2.0)</option>
+                                    <option value="4.0">Atracciones / Alta agitación (4.0)</option>
                                 </select>
                             </div>
                         </div>
-                        <div class="form-group"><label>Caudal Ventilación Exterior ($Q_v$) [m³/h]:</label><input type="number" id="inp_Qv" class="form-control calc-trigger" value="4000" min="0"></div>
+                        <div class="form-group"><label>Caudal Ventilación Forzada Máquina ($Q_v$) [m³/h]:</label><input type="number" id="inp_Qv" class="form-control calc-trigger" value="4000" min="0"></div>
                         <div class="grid-2">
                             <div class="form-group"><label>Tª Seca Exterior ($T_{ext}$) [ºC]:</label><input type="number" id="inp_Text" class="form-control calc-trigger" value="30" step="0.5"></div>
                             <div class="form-group"><label>HR Exterior ($HR_{ext}$) [%]:</label><input type="number" id="inp_HRext" class="form-control calc-trigger" value="50" min="1" max="100"></div>
@@ -122,124 +124,122 @@
                     </fieldset>
 
                     <fieldset>
-                        <legend>3. Parámetros de Suministro y Márgenes</legend>
+                        <legend>3. Carga Térmica y Márgenes</legend>
                         <div class="grid-2">
                             <div class="form-group"><label>Tª Red de Llenado ($T_{red}$) [ºC]:</label><input type="number" id="inp_Tred" class="form-control calc-trigger" value="13" step="1"></div>
                             <div class="form-group">
-                                <label>Tiempo Límite Calentamiento ($t_{cal}$):</label>
+                                <label>Tiempo de Calentamiento ($t_{cal}$):</label>
                                 <select id="inp_tcal" class="form-control calc-trigger">
-                                    <option value="6">6 horas (Potencia de Choque)</option>
+                                    <option value="6">6 horas (Choque)</option>
                                     <option value="12">12 horas</option>
-                                    <option value="24" selected>24 horas (Ciclo Estándar)</option>
-                                    <option value="48">48 horas (Bajo Impacto)</option>
+                                    <option value="24" selected>24 horas (Estándar)</option>
+                                    <option value="48">48 horas</option>
                                 </select>
                             </div>
                         </div>
-                        <div class="form-group"><label>Pérdidas Estructurales por Transmisión ($P_{otras}$) [kW]:</label><input type="number" id="inp_Pextras" class="form-control calc-trigger" value="3.0" step="0.5"></div>
-                        <div class="form-group"><label>Margen de Seguridad de Ingeniería [%]:</label><input type="number" id="inp_Margen" class="form-control calc-trigger" value="20" step="5"></div>
+                        <div class="form-group"><label>Transmisión Vaso y Cerramientos ($P_{otras}$) [kW]:</label><input type="number" id="inp_Pextras" class="form-control calc-trigger" value="3.0" step="0.5"></div>
+                        <div class="form-group"><label>Margen de Ingeniería [%]:</label><input type="number" id="inp_Margen" class="form-control calc-trigger" value="20" step="1"></div>
                     </fieldset>
                 </div>
 
                 <div>
                     <div class="results-box">
-                        <h3>Módulo Latente: Carga de Deshumectación</h3>
-                        <div class="result-highlight"><span>Generación por Evaporación ($\dot{m}_e$):</span><span id="out_me" class="val-blue">0.00 kg/h</span></div>
-                        <div class="result-highlight"><span>Generación por Personas ($\dot{m}_p$):</span><span id="out_mp" class="val-blue">0.00 kg/h</span></div>
-                        <div class="result-highlight"><span>Efecto Neto Ventilación ($\dot{m}_v$):</span><span id="out_mv" class="val-blue">0.00 kg/h</span></div>
+                        <h3>Módulo Latente: Evaporación VDI 2089</h3>
+                        <div class="result-highlight"><span>Evaporación Vaso ($\dot{m}_e$):</span><span id="out_me" class="val-blue">0.00 kg/h</span></div>
+                        <div class="result-highlight"><span>Carga Ocupantes ($\dot{m}_p$):</span><span id="out_mp" class="val-blue">0.00 kg/h</span></div>
                         <div class="result-highlight" style="border-left: 5px solid var(--elecnor-orange); background: #fff3cd;">
-                            <span>CAPACIDAD DE EXTRACCIÓN REQUERIDA:</span><span id="out_mtotal" class="val-total">0.0 kg/h</span>
+                            <span>CARGA TOTAL DEL RECINTO ($m_{req}$):</span><span id="out_mreq" class="val-total">0.0 kg/h</span>
                         </div>
-                        <div id="form_deshum" class="formula-display">Cargando ecuaciones...</div>
+                        <div id="form_deshum" class="formula-display">Cargando...</div>
 
-                        <h3 style="margin-top:25px;">Módulo Sensible: Potencia Térmica Vaso</h3>
+                        <h3 style="margin-top:20px;">Módulo Sistema: Soluciones de Secado</h3>
+                        <div class="result-highlight" style="font-size: 0.9rem;">
+                            <span>Vector Ventilación Máquina ($\dot{m}_v$):</span><span id="out_mv" class="val-blue">0.00 kg/h</span>
+                        </div>
+                        <div class="result-highlight">
+                            <span>1. MÁQUINA FRIGORÍFICA (Neto + Margen):</span><span id="out_mtotal_maq" class="val-blue">0.0 kg/h</span>
+                        </div>
+                        <div class="result-highlight">
+                            <span>2. SISTEMA 100% FREE-DRYING ($V_{ae}$):</span>
+                            <span id="out_vae" class="val-total" style="font-size: 1.1rem;">0 m³/h</span>
+                        </div>
+                        <div id="form_vae" class="formula-display">Cargando...</div>
+
+                        <h3 style="margin-top:20px;">Módulo Térmico: Potencia del Vaso</h3>
                         <div class="result-highlight"><span>Potencia Mantenimiento ($P_{maint}$):</span><span id="out_pmaint" class="val-blue">0.0 kW</span></div>
                         <div class="result-highlight" style="border-left: 5px solid var(--elecnor-orange); background: #fff3cd;">
-                            <span>POTENCIA INTERCAMBIADOR (ARRANQUE):</span><span id="out_parranque" class="val-total">0.0 kW</span>
+                            <span>POTENCIA INTERCAMBIADOR ($P_{arr}$):</span><span id="out_parranque" class="val-total">0.0 kW</span>
                         </div>
-                        <div id="form_term" class="formula-display">Cargando ecuaciones...</div>
+                        <div id="form_term" class="formula-display">Cargando...</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div id="report-tab" class="tab-content">
-            <button class="btn-print" onclick="window.print()">🖨️ Exportar Memoria Técnica Justificativa a PDF</button>
+            <button class="btn-print" onclick="window.print()">🖨️ Exportar Memoria VDI 2089 a PDF</button>
             <div class="document-page">
                 <div style="display:flex; justify-content:space-between; border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-bottom: 20px;">
-                    <div><strong>DEPARTAMENTO DE INGENIERÍA MEP</strong><br><small>Simulación Termodinámica de Natatorios</small></div>
-                    <div style="text-align: right;"><small>Fecha Emisión: <span id="r_date"></span></small><br><small>Código Registro: ITR.CDP-v1.2</small></div>
+                    <div><strong>INGENIERÍA MEP</strong><br><small>Metodología ASHRAE & VDI 2089</small></div>
+                    <div style="text-align: right;"><small>Emisión: <span id="r_date"></span></small><br><small>Ref: ITR.CDP-v1.3</small></div>
                 </div>
                 
-                <div class="report-title">Memoria Justificativa de Balance de Masa y Energía</div>
+                <div class="report-title">Justificación Analítica de Climatización de Natatorios</div>
 
                 <div class="report-section">
-                    <h4>1. Datos Básicos y Geometría del Proyecto</h4>
-                    <table>
-                        <thead>
-                            <tr><th>Parámetro de Diseño</th><th>Valor Nominal Computado</th><th>Propiedades Ambientales</th><th>Valor Introducido</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>Superficie Lámina ($A$)</td><td><strong><span id="r_A"></span> m²</strong></td><td>Tª Seca Interior ($T_{int}$)</td><td><strong><span id="r_Tint"></span> ºC</strong></td></tr>
-                            <tr><td>Profundidad Media ($h_{vaso}$)</td><td><strong><span id="r_hvaso"></span> m</strong></td><td>HR Interior ($HR_{int}$)</td><td><strong><span id="r_HRint"></span> %</strong></td></tr>
-                            <tr><td>Volumen Total Vaso ($V$)</td><td><strong><span id="r_V"></span> m³</strong></td><td>Tª Seca Exterior ($T_{ext}$)</td><td><strong><span id="r_Text"></span> ºC</strong></td></tr>
-                            <tr><td>Caudal Renovación ($Q_v$)</td><td><strong><span id="r_Qv"></span> m³/h</strong></td><td>HR Exterior ($HR_{ext}$)</td><td><strong><span id="r_HRext"></span> %</strong></td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="report-section">
-                    <h4>2. Resolución Psicrométrica Analítica (Magnus-Tetens)</h4>
-                    <p>Las propiedades de estado del aire húmedo se resuelven mediante modelos físicos directos a fin de asegurar la precisión en las presiones de vapor ($P$) y humedades absolutas ($x$):</p>
+                    <h4>1. Base Termodinámica de Estados (Magnus-Tetens)</h4>
+                    <p>Las humedades absolutas se calculan sin ábacos determinando las presiones parciales del vapor:</p>
                     <div id="r_form_psic"></div>
                 </div>
 
                 <div class="report-section">
-                    <h4>3. Balance Químico-Masa Latente (Deshumectación)</h4>
-                    <p>Aplicación de la Ley de Conservación de la Masa sobre el volumen de control del recinto. La capacidad requerida es la suma de aportes internos corregidos por la acción extractora o aditiva del vector ventilación:</p>
+                    <h4>2. Generación Latente Intrínseca (VDI 2089)</h4>
+                    <p>La tasa de evaporación libre $\dot{m}_e$ se calcula mediante la diferencia de humedades absolutas en g/kg y el factor de actividad VDI $\beta = <span id="r_beta"></span>$:</p>
                     <table>
-                        <thead>
-                            <tr><th>Origen de Carga</th><th>Expresión Matemática de Balance</th><th>Resultado Parcial</th></tr>
-                        </thead>
+                        <thead><tr><th>Parámetro</th><th>Expresión Analítica</th><th>Generación Base</th></tr></thead>
                         <tbody>
-                            <tr><td>Evaporación (${\dot{m}_e}$)</td><td id="r_eq_me"></td><td><strong><span id="r_res_me"></span> kg/h</strong></td></tr>
-                            <tr><td>Ocupantes (${\dot{m}_p}$)</td><td id="r_eq_mp"></td><td><strong><span id="r_res_mp"></span> kg/h</strong></td></tr>
-                            <tr><td>Ventilación Psicrométrica (${\dot{m}_v}$)</td><td id="r_eq_mv"></td><td><strong><span id="r_res_mv"></span> kg/h</strong></td></tr>
-                            <tr style="background-color: var(--bg-accent);">
-                                <td colspan="2" style="text-align: right; font-weight: bold;">CAPACIDAD REQUERIDA DE DISEÑO DE MÁQUINA (Margen <span id="r_margen"></span>%)</td>
-                                <td><strong style="font-size: 1.15rem; color: var(--elecnor-blue);"><span id="r_res_mtotal"></span> kg/h</strong></td>
-                            </tr>
+                            <tr><td>Evaporación ($\dot{m}_e$)</td><td id="r_eq_me"></td><td><strong><span id="r_res_me"></span> kg/h</strong></td></tr>
+                            <tr><td>Ocupación ($\dot{m}_p$)</td><td id="r_eq_mp"></td><td><strong><span id="r_res_mp"></span> kg/h</strong></td></tr>
+                            <tr style="background: var(--bg-accent);"><td colspan="2" style="text-align: right; font-weight: bold;">TOTAL GENERADO RECINTO ($m_{req}$)</td><td><strong style="color:var(--elecnor-blue);"><span id="r_res_mreq"></span> kg/h</strong></td></tr>
                         </tbody>
                     </table>
                 </div>
 
                 <div class="report-section">
-                    <h4>4. Balance Térmico del Vaso (Potencias del Intercambiador)</h4>
-                    <p>Justificación analítica para la cota térmica del intercambiador de calor de aportación hidráulica:</p>
+                    <h4>3. Evaluación de Estrategias de Deshumectación</h4>
+                    <p>Se evalúan dos escenarios tecnológicos independientes para combatir la carga de $<span id="r_res_mreq_rep"></span>\text{ kg/h}$:</p>
+                    <ul>
+                        <li><strong>Escenario A (Frigorífico):</strong> Máquina dimensionada descontando el vector de secado de la ventilación mecánica actual ($Q_v = <span id="r_Qv"></span>\text{ m}^3\text{/h}$). Carga neta resultante con <span id="r_margen"></span>% de margen de seguridad.</li>
+                        <li><strong>Escenario B (Todo Aire exterior):</strong> Sistema Free-Drying puro (volumen específico $v_e = 0.833\text{ m}^3\text{/kg}$). Requiere un caudal másico suficiente para evacuar la carga latente.</li>
+                    </ul>
+                    <div id="r_form_strats"></div>
+                </div>
+
+                <div class="report-section">
+                    <h4>4. Balance Térmico de Agua (Calentamiento)</h4>
+                    <p>Evaluación energética de choque (sensible) y compensación por evaporación (latente, $0.68\text{ kWh/kg}$):</p>
                     <div id="r_form_term"></div>
                 </div>
             </div>
         </div>
 
         <div id="doc-tab" class="tab-content">
-            <h3>Copia de Seguridad - Informe Técnico de Requisitos (ITR v1.2)</h3>
-            <p>El siguiente bloque contiene el informe acumulativo completo en formato Markdown para su almacenamiento directo en archivos <code>README.md</code> de auditoría de proyectos MEP:</p>
+            <h3>Registro de Auditoría (ITR v1.3)</h3>
             <textarea class="md-box" readonly>
-# CALCULADORA AVANZADA MEP: DESHUMECTACIÓN Y POTENCIA TÉRMICA EN PISCINAS
-**ID_INFORME:** ITR.CDP_260626-01 | **VERSIÓN:** 1.2  
-**ESTADO:** ACEPTADO
+# CALCULADORA AVANZADA MEP: DESHUMECTACIÓN EN PISCINAS
+**VERSIÓN:** 1.3 | **ESTADO:** ACEPTADO
 
-## 1. ESPECIFICACIONES TÉCNICAS
-- **Normativa:** RITE, ASHRAE Applications (Places of Assembly - Natatoriums), VDI 2089.
-- **Fórmulas Psicrométricas:** Formulación directa de Magnus-Tetens para cálculo de presiones parciales sin ábacos manuales.
-- **Lógica Vectorial:** La ventilación se calcula con la ecuación ṁ = Qv × ρaire × (xi - xe). Si xi > xe el aire exterior asiste reduciendo la carga del deshumectador frigorífico.
+## 1. NORMATIVA Y ALGORITMOS
+- **Estándar:** VDI 2089 (Alemania) / ASHRAE Fundamentals.
+- **Evaporación VDI:** \dot{m}_e = \beta \cdot A \cdot (x_{sup} - x_{int}) \cdot \frac{1}{1000} [kg/h].
+- **Humedad Absoluta (Magnus):** x = 622 \cdot \frac{P_v}{101.325 - P_v} [g/kg].
+- **Free-Drying (Todo Aire):** V_{ae} = \frac{v_e \cdot m_{req}}{W_{ai} - W_{ae}} [m3/h]. Condicionado a que W_{ai} > W_{ae}.
 
-## 2. FORMULACIÓN APLICADA
-1. Presión Saturación: Psat = 0.6112 * exp(17.67 * T / (T + 243.5)) [kPa]
-2. Humedad Absoluta: x = 0.622 * Pa / (101.325 - Pa) [kg/kg]
-3. Evaporación: me = A * (Pw - Pa,int) * F [kg/h]
-4. Ventilación: mv = Qv * 1.2 * (xi - xe) [kg/h]
-5. Volumen del Vaso: V = A * h_vaso [m³]
-6. Energía Inicial: Qini = V * 1.16 * (Tw - Tred) [kWh]
+## 2. PARÁMETROS CRÍTICOS
+- \beta: 0.5 (Reposo), 1.0 (Residencial), 2.0 (SPA), 4.0 (Atracciones).
+- v_e: 0.833 m3/kg (inverso de la densidad del aire \rho = 1.2 kg/m3).
+- Calor latente agua: 0.68 kWh/kg.
+- Cp agua: 1.16 Wh/(kg·K).
             </textarea>
         </div>
 
@@ -254,25 +254,25 @@
             if (window.MathJax) MathJax.typesetPromise();
         }
 
-        // Motor Psicrométrico Analítico Integrado v1.2
+        // Motor Psicrométrico v1.3 (Retorna g/kg y kg/kg)
         function resolverPsicrometria(T, HR) {
-            // Ecuación empírica rígida de Magnus-Tetens (Aceptada por ASHRAE)
             const Psat = 0.6112 * Math.exp((17.67 * T) / (T + 243.5)); // kPa
             const Pa = Psat * (HR / 100); // kPa
-            const Patm = 101.325; // Presión estándar nivel del mar
-            const x = 0.622 * (Pa / (Patm - Pa)); // kg vapor / kg aire seco
-            return { Psat, Pa, x };
+            const Patm = 101.325; // kPa
+            const x_g_kg = 622 * (Pa / (Patm - Pa)); // g/kg
+            const x_kg_kg = x_g_kg / 1000; // kg/kg
+            return { Psat, Pa, x_g_kg, x_kg_kg };
         }
 
         function procesarCalculosMEP() {
-            // Recogida de variables e inputs con salvaguarda de rangos
+            // Recogida de inputs
             const A = parseFloat(document.getElementById('inp_A').value) || 0;
             const h_vaso = parseFloat(document.getElementById('inp_hvaso').value) || 0;
             const Tw = parseFloat(document.getElementById('inp_Tw').value) || 0;
             const Tint = parseFloat(document.getElementById('inp_Tint').value) || 0;
             const HRint = parseFloat(document.getElementById('inp_HRint').value) || 0;
             const N = parseFloat(document.getElementById('inp_N').value) || 0;
-            const F = parseFloat(document.getElementById('inp_F').value) || 0;
+            const beta = parseFloat(document.getElementById('inp_beta').value) || 1.0;
             const Qv = parseFloat(document.getElementById('inp_Qv').value) || 0;
             const Text = parseFloat(document.getElementById('inp_Text').value) || 0;
             const HRext = parseFloat(document.getElementById('inp_HRext').value) || 0;
@@ -281,94 +281,122 @@
             const Pextras = parseFloat(document.getElementById('inp_Pextras').value) || 0;
             const Margen = parseFloat(document.getElementById('inp_Margen').value) || 0;
 
-            // --- CÁLCULO GEOMÉTRICO AUTOMATIZADO (Requisito v1.2) ---
+            // Volumen Automático
             const V = A * h_vaso;
             document.getElementById('inp_V').value = V.toFixed(2);
 
-            // --- CÁLCULOS TERMODINÁMICOS DE ESTADO ---
-            const psicAgua = resolverPsicrometria(Tw, 100); // Interfaz de agua saturada al 100%
+            // Estados del Aire
+            const psicAgua = resolverPsicrometria(Tw, 100); // Tª de saturación sobre la lámina
             const psicInt = resolverPsicrometria(Tint, HRint);
             const psicExt = resolverPsicrometria(Text, HRext);
 
-            // 1. Componente Evaporativa Libre
-            let me = A * (psicAgua.Psat - psicInt.Pa) * F;
-            if (me < 0) me = 0; 
+            // MÓDULO 1: Evaporación VDI 2089
+            let me = beta * A * (psicAgua.x_g_kg - psicInt.x_g_kg) * (1 / 1000); // kg/h
+            if (me < 0) me = 0;
+            const mp = N * 0.15; // kg/h
+            const m_req = me + mp; // Carga total latente del recinto a combatir
 
-            // 2. Componente de Ocupación Estándar
-            const mp = N * 0.15;
-
-            // 3. Componente de Ventilación Vectorial Psicrométrica (Requisito v1.2)
-            // formula: ṁagua = Qv × ρaire × (xᵢ − xₑ)
-            const mv = Qv * 1.2 * (psicInt.x - psicExt.x);
-
-            // Balance de masa neta para la deshumectadora frigorífica
-            // Carga neta = me + mp - mv (si mv es positivo, resta trabajo por capacidad de secado)
-            const mNeta = me + mp - mv;
+            // MÓDULO 2A: Máquina Frigorífica (Balance Neto con Qv fijo)
+            const mv = Qv * 1.2 * (psicInt.x_kg_kg - psicExt.x_kg_kg); // Si es positivo, Qv saca humedad
+            const mNeta = me + mp - mv; 
             const mTotalDiseno = Math.max(0, mNeta) * (1 + Margen / 100);
 
-            // --- CÁLCULO DE POTENCIA TÉRMICA ---
+            // MÓDULO 2B: Caudal Free-Drying
+            const ve = 0.833; // m³/kg (inverso densidad 1.2)
+            const deltaW = psicInt.x_kg_kg - psicExt.x_kg_kg; // W_ai - W_ae
+            let Vae = 0;
+            let freeDryingViable = deltaW > 0;
+            
+            if (freeDryingViable) {
+                Vae = (ve * m_req) / deltaW;
+            }
+
+            // MÓDULO 3: Potencia Térmica
             const deltaT_agua = Tw - Tred;
             const Qini = V * 1.16 * deltaT_agua; // kWh
             const Parranque = tcal > 0 ? Qini / tcal : 0; // kW
-            const Pevap = me * 0.68; // Pérdida latente reponedora (kW)
+            const Pevap = me * 0.68; // kW
             const Pmaint = Pevap + Pextras;
 
-            // --- TRADUCCIÓN A INTERFAZ VISUAL EN TIEMPO REAL ---
+            // --- ACTUALIZACIÓN DE UI (PANEL) ---
             document.getElementById('out_me').textContent = me.toFixed(2) + " kg/h";
             document.getElementById('out_mp').textContent = mp.toFixed(2) + " kg/h";
+            document.getElementById('out_mreq').textContent = m_req.toFixed(2) + " kg/h";
             
-            // Grafía visual del comportamiento de ventilación
+            // Vector Ventilación Visual
             if (mv >= 0) {
-                document.getElementById('out_mv').textContent = "-" + mv.toFixed(2) + " kg/h (Aporte Secado)";
+                document.getElementById('out_mv').textContent = "-" + mv.toFixed(2) + " kg/h (Asiste Secado)";
                 document.getElementById('out_mv').style.color = "var(--success-color)";
             } else {
-                document.getElementById('out_mv').textContent = "+" + Math.abs(mv).toFixed(2) + " kg/h (Penalización Aire Húmedo)";
+                document.getElementById('out_mv').textContent = "+" + Math.abs(mv).toFixed(2) + " kg/h (Penaliza)";
                 document.getElementById('out_mv').style.color = "var(--danger-color)";
             }
-            document.getElementById('out_mtotal').textContent = mTotalDiseno.toFixed(1) + " kg/h";
+            
+            document.getElementById('out_mtotal_maq').textContent = mTotalDiseno.toFixed(1) + " kg/h";
+
+            // Resultado Vae
+            const outVae = document.getElementById('out_vae');
+            if (freeDryingViable) {
+                outVae.textContent = Math.round(Vae) + " m³/h";
+                outVae.style.color = "var(--elecnor-orange)";
+                outVae.style.fontSize = "1.1rem";
+            } else {
+                outVae.innerHTML = "<span class='badge-warning'>Inviable (Ext. Húmedo)</span>";
+            }
+
             document.getElementById('out_pmaint').textContent = Pmaint.toFixed(1) + " kW";
             document.getElementById('out_parranque').textContent = Parranque.toFixed(1) + " kW";
 
-            // Renderizado de ecuaciones dinámicas de panel
+            // Fórmulas Dinámicas UI
             document.getElementById('form_deshum').innerHTML = 
-                `$$\\dot{m}_{neta} = ${me.toFixed(2)} + ${mp.toFixed(2)} - (${mv.toFixed(2)}) = ${mNeta.toFixed(2)}\\text{ kg/h}$$
-                 $$\\dot{m}_{dise\\tilde{n}o} = ${Math.max(0, mNeta).toFixed(2)} \\cdot 1.${Margen} = \\mathbf{${mTotalDiseno.toFixed(1)}\\text{ kg/h}}$$`;
+                `$$\\dot{m}_e = ${beta.toFixed(1)} \\cdot ${A} \\cdot (${psicAgua.x_g_kg.toFixed(1)} - ${psicInt.x_g_kg.toFixed(1)}) \\cdot \\frac{1}{1000} = ${me.toFixed(2)}\\text{ kg/h}$$`;
             
+            let formVaeText = "";
+            if(freeDryingViable){
+                formVaeText = `$$V_{ae} = \\frac{0.833 \\cdot ${m_req.toFixed(2)}}{${psicInt.x_kg_kg.toFixed(5)} - ${psicExt.x_kg_kg.toFixed(5)}} = ${Math.round(Vae)}\\text{ m}^3/\\text{h}$$`;
+            } else {
+                formVaeText = `$$V_{ae} = \\text{Imposible secar. } W_{ae} (${psicExt.x_kg_kg.toFixed(4)}) \\ge W_{ai} (${psicInt.x_kg_kg.toFixed(4)})$$`;
+            }
+            document.getElementById('form_vae').innerHTML = formVaeText;
+
             document.getElementById('form_term').innerHTML = 
-                `$$V = ${A}\\text{ m}^2 \\cdot ${h_vaso}\\text{ m} = ${V.toFixed(1)}\\text{ m}^3$$
-                 $$P_{arr} = \\frac{${V.toFixed(1)} \\cdot 1.16 \\cdot (${Tw} - ${Tred})}{${tcal}\\text{ h}} = \\mathbf{${Parranque.toFixed(1)}\\text{ kW}}$$`;
+                `$$P_{arr} = \\frac{${V.toFixed(1)} \\cdot 1.16 \\cdot (${Tw} - ${Tred})}{${tcal}} = ${Parranque.toFixed(1)}\\text{ kW}$$`;
 
-            // --- ACTUALIZACIÓN DE MEMORIA JUSTIFICATIVA (INFORME) ---
+            // --- ACTUALIZACIÓN INFORME PDF ---
             document.getElementById('r_date').textContent = new Date().toLocaleDateString();
-            document.getElementById('r_A').textContent = A; 
-            document.getElementById('r_hvaso').textContent = h_vaso.toFixed(1);
-            document.getElementById('r_V').textContent = V.toFixed(1);
-            document.getElementById('r_Tint').textContent = Tint; 
-            document.getElementById('r_Tw').textContent = Tw;
-            document.getElementById('r_HRint').textContent = HRint; 
-            document.getElementById('r_Text').textContent = Text; 
-            document.getElementById('r_HRext').textContent = HRext;
-            document.getElementById('r_Qv').textContent = Qv; 
-            document.getElementById('r_N').textContent = N; 
-            document.getElementById('r_F').textContent = F;
+            document.getElementById('r_beta').textContent = beta;
+            document.getElementById('r_Qv').textContent = Qv;
             document.getElementById('r_margen').textContent = Margen;
-
+            
             document.getElementById('r_form_psic').innerHTML = 
-                `$$P_{w} (\\text{Saturación Agua a } ${Tw}^\\circ\\text{C}) = ${psicAgua.Psat.toFixed(3)}\\text{ kPa}$$
-                 $$P_{a,int} (\\text{Parcial Recinto a } ${Tint}^\\circ\\text{C}) = ${psicInt.Pa.toFixed(3)}\\text{ kPa} \\implies x_i = ${(psicInt.x * 1000).toFixed(2)}\\text{ g/kg}$$
-                 $$P_{a,ext} (\\text{Parcial Exterior a } ${Text}^\\circ\\text{C}) = ${psicExt.Pa.toFixed(3)}\\text{ kPa} \\implies x_e = ${(psicExt.x * 1000).toFixed(2)}\\text{ g/kg}$$`;
+                `$$P_{a,sup} (T_w = ${Tw}^\\circ\\text{C}) = ${psicAgua.Pa.toFixed(3)}\\text{ kPa} \\implies x_{sup} = ${psicAgua.x_g_kg.toFixed(2)}\\text{ g/kg}$$
+                 $$P_{a,int} (T = ${Tint}^\\circ\\text{C}, ${HRint}\\%) = ${psicInt.Pa.toFixed(3)}\\text{ kPa} \\implies x_{int} = ${psicInt.x_g_kg.toFixed(2)}\\text{ g/kg}$$
+                 $$P_{a,ext} (T = ${Text}^\\circ\\text{C}, ${HRext}\\%) = ${psicExt.Pa.toFixed(3)}\\text{ kPa} \\implies x_{ext} = ${psicExt.x_g_kg.toFixed(2)}\\text{ g/kg}$$`;
 
-            document.getElementById('r_eq_me').innerHTML = `$$${A} \\cdot (${psicAgua.Psat.toFixed(3)} - ${psicInt.Pa.toFixed(3)}) \\cdot ${F}$$`;
+            document.getElementById('r_eq_me').innerHTML = `$$${beta} \\cdot ${A} \\cdot (${psicAgua.x_g_kg.toFixed(1)} - ${psicInt.x_g_kg.toFixed(1)}) \\cdot \\frac{1}{1000}$$`;
             document.getElementById('r_res_me').textContent = me.toFixed(2);
             document.getElementById('r_eq_mp').innerHTML = `$$${N} \\cdot 0.15$$`;
             document.getElementById('r_res_mp').textContent = mp.toFixed(2);
-            document.getElementById('r_eq_mv').innerHTML = `$$${Qv} \\cdot 1.2 \\cdot (${psicInt.x.toFixed(5)} - ${psicExt.x.toFixed(5)})$$`;
-            document.getElementById('r_res_mv').textContent = mv.toFixed(2);
-            document.getElementById('r_res_mtotal').textContent = mTotalDiseno.toFixed(1);
+            document.getElementById('r_res_mreq').textContent = m_req.toFixed(2);
+            document.getElementById('r_res_mreq_rep').textContent = m_req.toFixed(2);
+
+            let stratsText = `
+                <p><strong>Escenario A: Ciclo Frigorífico</strong><br>
+                Carga Neta = $${m_req.toFixed(2)} - (${mv.toFixed(2)}) = ${mNeta.toFixed(2)}\\text{ kg/h}$.<br>
+                Capacidad requerida con margen = <strong>${mTotalDiseno.toFixed(1)} kg/h</strong>.</p>`;
+            
+            if (freeDryingViable) {
+                stratsText += `<p><strong>Escenario B: Free-Drying de VDI</strong><br>
+                $$V_{ae} = \\frac{0.833 \\cdot ${m_req.toFixed(2)}}{${psicInt.x_kg_kg.toFixed(5)} - ${psicExt.x_kg_kg.toFixed(5)}} = \\mathbf{${Math.round(Vae)} \\text{ m}^3/\\text{h}}$$</p>`;
+            } else {
+                stratsText += `<p><strong>Escenario B: Free-Drying de VDI</strong><br>
+                El secado puro con aire exterior resulta <strong>físicamente imposible</strong> bajo las condiciones de diseño estivales proporcionadas, ya que el contenido de humedad absoluto exterior supera al de consigna interior.</p>`;
+            }
+            document.getElementById('r_form_strats').innerHTML = stratsText;
 
             document.getElementById('r_form_term').innerHTML = 
-                `$$P_{arranque} = \\frac{${V.toFixed(1)}\\text{ m}^3 \\cdot 1.16 \\cdot (${Tw}^\\circ\\text{C} - ${Tred}^\\circ\\text{C})}{${tcal}\\text{ h}} = \\mathbf{${Parranque.toFixed(1)} \\text{ kW}}$$
-                 $$P_{mantenimiento} = (${me.toFixed(2)}\\text{ kg/h} \\cdot 0.68\\text{ kWh/kg}) + ${Pextras.toFixed(1)}\\text{ kW}_{trans} = \\mathbf{${Pmaint.toFixed(1)} \\text{ kW}}$$`;
+                `$$P_{arranque} = \\frac{${V.toFixed(1)} \\cdot 1.16 \\cdot (${Tw} - ${Tred})}{${tcal}} = \\mathbf{${Parranque.toFixed(1)} \\text{ kW}}$$
+                 $$P_{mantenimiento} = (${me.toFixed(2)} \\cdot 0.68) + ${Pextras} = \\mathbf{${Pmaint.toFixed(1)} \\text{ kW}}$$`;
 
             if (window.MathJax && typeof MathJax.typesetPromise === 'function') {
                 MathJax.typesetPromise();
