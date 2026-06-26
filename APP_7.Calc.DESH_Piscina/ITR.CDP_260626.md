@@ -9,7 +9,7 @@ Respecto a la fórmula de ventilación $\dot{m}_v = Q_v \cdot \rho_{aire} \cdot 
 
 **ESTADO:** ESPERANDO ACEPTACIÓN
 
-### 1. ESPECIFICACIONES TÉCNICAS
+### 1. ESPECIFICACIONES TÉCNICAS 
 
 * **Orden del Usuario:** Modificar la aplicación SPA de cálculo integral para recintos de piscinas. Se elimina el input directo de volumen del vaso, calculándolo geométricamente a partir de la profundidad. Se ajusta la ecuación de ventilación para evaluar correctamente el potencial de secado del aire exterior y se confirma la automatización del cálculo psicrométrico.
 * **Normativa:** RITE, ASHRAE Handbook (Natatoriums), VDI 2089.
