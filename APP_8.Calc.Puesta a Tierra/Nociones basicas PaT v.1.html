@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Untitled</title>
+    
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe Técnico - Documentación Calculo Puesta a Tierra</title>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --elecnor-blue: #004687; /* Pantone 294c */
+            --elecnor-orange: #FF8200; /* Pantone 1505c */
+            --bg-accent: #FFF8F2;
+            --text-main: #333333;
+        }
+
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+        }
+
+        .document-container {
+            max-width: 210mm;
+            margin: 30px auto;
+            background: #ffffff;
+            padding: 25mm;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            border-top: 10px solid var(--elecnor-blue);
+            position: relative;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid var(--elecnor-orange);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .logo-box img {
+            max-width: 180px;
+            height: auto;
+        }
+
+        .meta-box {
+            text-align: right;
+            font-size: 0.85rem;
+            color: var(--elecnor-blue);
+            line-height: 1.4;
+        }
+
+        h1 {
+            color: var(--elecnor-blue);
+            font-size: 1.5rem;
+            text-align: center;
+            margin: 30px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: var(--elecnor-blue);
+            font-size: 1.25rem;
+            border-left: 6px solid var(--elecnor-orange);
+            padding-left: 15px;
+            margin-top: 35px;
+            background: #f9f9f9;
+            text-transform: uppercase;
+        }
+
+        h3 {
+            color: var(--elecnor-blue);
+            font-size: 1.1rem;
+            margin-top: 25px;
+            border-bottom: 1px solid var(--elecnor-orange);
+            display: inline-block;
+            padding-bottom: 3px;
+        }
+
+        h4 {
+            color: var(--elecnor-blue);
+            font-size: 1rem;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .formula-display {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #fdfdfd;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.85rem;
+        }
+
+        th {
+            background-color: var(--elecnor-blue);
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        td {
+            border: 1px solid #e0e0e0;
+            padding: 10px;
+        }
+
+        .highlight {
+            font-weight: bold;
+            color: var(--elecnor-blue);
+        }
+
+        .tech-box {
+            background-color: var(--bg-accent);
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 0.95rem;
+        }
+
+        footer {
+            margin-top: 60px;
+            padding-top: 15px;
+            border-top: 2px solid var(--elecnor-orange);
+            text-align: center;
+            font-size: 10pt;
+            color: var(--elecnor-blue);
+            font-weight: bold;
+        }
+
+        @media print {
+            body { background: white; }
+            .document-container {
+                margin: 0;
+                box-shadow: none;
+                width: 100%;
+                max-width: none;
+                padding: 15mm;
+            }
+            footer {
+                position: fixed;
+                bottom: 10mm;
+                left: 0;
+                right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="document-container">
+    <header>
+        <div class="logo-box">
+            <img src="logo1.png" alt="Elecnor Logo">
+        </div>
+        <div class="meta-box">
+            <p><strong>Documento:</strong> INF.TEC.PAT.V1</p>
+            <p><strong>Referencia:</strong> Calculo Puesta a Tierra</p>
+        </div>
+    </header>
+
+    <h1>DOCUMENTACIÓN TÉCNICA: CALCULO DE PUESTA A TIERRA</h1>
+
+    <h2>1. Introducción</h2>
+    <p>La instalación de puesta a tierra es un elemento fundamental de seguridad en cualquier instalación eléctrica de baja tensión. Su función principal es garantizar la protección de las personas ante contactos indirectos y derivar a tierra las corrientes de fuga, descargas atmosféricas y sobretensiones.</p>
+    <p>Este documento presenta la documentación técnica completa de una calculadora especializada para el dimensionado de sistemas de puesta a tierra en edificios, cumpliendo rigurosamente con el Reglamento Electrotécnico de Baja Tensión (REBT) y sus Instrucciones Técnicas Complementarias ITC-BT-18 e ITC-BT-26.</p>
+    <h3>1.1. Objetivos del Calculo</h3>
+    <ul>
+        <li>Dimensionar correctamente el sistema de puesta a tierra según REBT</li>
+        <li>Calcular la necesidad de electrodos adicionales (picas) según características del terreno</li>
+        <li>Verificar el cumplimiento simultáneo de múltiples criterios normativos</li>
+        <li>Generar informes técnicos justificativos para proyectos eléctricos</li>
+    </ul>
+
+    <h2>2. Marco Normativo</h2>
+    <h3>2.1. REBT ITC-BT-18: Instalaciones de Puesta a Tierra</h3>
+    <p>La ITC-BT-18 establece los requisitos de seguridad para las puestas a tierra, definiendo que el valor de la resistencia debe ser tal que cualquier masa no pueda dar lugar a tensiones de contacto superiores a:</p>
+    <ul>
+        <li>24 V en locales o emplazamientos conductores (exteriores, locales mojados, húmedos)</li>
+        <li>50 V en los demás casos (locales secos interiores)</li>
+    </ul>
+    <p>El cálculo de la resistencia máxima admisible se realiza mediante la Ley de Ohm:</p>
+    <div class="formula-display">
+        $$R_{máx} = \frac{V_c}{I_d}$$
+    </div>
+    <p>donde $V_c$ es la tensión de contacto límite (24 o 50 V) e $I_d$ es la sensibilidad del diferencial instalado.</p>
+
+    <h3>2.2. Guía Técnica ITC-BT-26</h3>
+    <p>La Guía Técnica de aplicación de la ITC-BT-26 establece valores de referencia de buena práctica profesional en función de la presencia o ausencia de pararrayos:</p>
+    <ul>
+        <li>Edificios con pararrayos: $R < 15\ \Omega$</li>
+        <li>Edificios sin pararrayos: $R < 37\ \Omega$</li>
+    </ul>
+    <p>Estos valores complementan los requisitos de seguridad del REBT, siendo más restrictivos en edificios con pararrayos debido a la necesidad de una evacuación eficaz de las corrientes de descarga atmosférica.</p>
+
+    <h2>3. Fundamentos Técnicos</h2>
+    <h3>3.1. Componentes del Sistema de Puesta a Tierra</h3>
+    <p>Un sistema de puesta a tierra en edificios consta de los siguientes elementos fundamentales:</p>
+
+    <h4>3.1.1. Electrodo de Tierra o Anillo de Cimentación</h4>
+    <p>Conductor de cobre desnudo formando un anillo cerrado que rodea el perímetro del edificio, instalado en el fondo de las zanjas de cimentación antes de hormigonar. Características técnicas:</p>
+    <ul>
+        <li>Sección mínima: 25 mm² (habitual 50 mm²)</li>
+        <li>Material: Cobre desnudo</li>
+        <li>Profundidad mínima: 0,5 m (recomendado ≥ 0,8 m)</li>
+        <li>Uniones: Soldadura aluminotérmica o autógena</li>
+    </ul>
+
+    <h4>3.1.2. Picas o Electrodos Verticales</h4>
+    <p>Varillas metálicas hincadas verticalmente en el terreno cuando la resistencia del anillo no es suficiente. Las más habituales son picas de acero recubiertas de cobre de 2 metros de longitud y 14-18 mm de diámetro.</p>
+
+    <h4>3.1.3. Línea de Enlace con Tierra (LET)</h4>
+    <p>Conductor que conecta el borne principal de tierra con el electrodo de puesta a tierra. Sección mínima según tabla 1 de ITC-BT-18.</p>
+
+    <h4>3.1.4. Línea Principal de Tierra (LPT)</h4>
+    <p>En edificios de viviendas, conductor que va por la misma canalización que la línea general de alimentación. Secciones según ITC-BT-26:</p>
+    <ul>
+        <li>Si fases < 35 mm²: LPT ≥ 16 mm²</li>
+        <li>Si fases ≥ 35 mm²: LPT ≥ Sección_fase / 2</li>
+    </ul>
+
+    <h4>3.1.5. Conductores de Protección</h4>
+    <p>Conductores verde-amarillo que unen las masas metálicas (enchufes, aparatos) con el borne principal de tierra. Sección según tabla 2 de ITC-BT-18.</p>
+
+    <h3>3.2. Resistividad del Terreno</h3>
+    <p>La resistividad ($\rho$) del terreno es el parámetro fundamental que determina la resistencia de tierra. Se mide en $\Omega\cdot\text{m}$ y varía significativamente según la naturaleza del suelo:</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Tipo de Terreno</th>
+                <th>$\rho$ mín.</th>
+                <th>$\rho$ típico</th>
+                <th>$\rho$ máx.</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Cenizas, turba, arcillas blandas</td><td>1</td><td>30</td><td>100</td></tr>
+            <tr><td>Arcilla, marga</td><td>50</td><td>100</td><td>200</td></tr>
+            <tr><td>Arenas arcillosas, calizas blandas</td><td>100</td><td>300</td><td>500</td></tr>
+            <tr><td>Arenas silíceas, granitos, basaltos</td><td>200</td><td>600</td><td>1000</td></tr>
+            <tr><td>Calizas compactadas, esquistos, pizarras</td><td>500</td><td>1500</td><td>3000</td></tr>
+            <tr><td>Roca masiva, granito compacto</td><td>1000</td><td>5000</td><td>&gt;10000</td></tr>
+        </tbody>
+    </table>
+    <p><em>Nota: Valores en $\Omega\cdot\text{m}$. Para diseño definitivo se requiere medición in situ con telurómetro.</em></p>
+
+    <h2>4. Criterios de Diseño</h2>
+    <h3>4.1. Jerarquía de Umbrales Normativos</h3>
+    <p>La calculadora implementa una verificación multi-umbral que considera simultáneamente dos criterios normativos independientes:</p>
+    <ol>
+        <li><strong>Criterio de Seguridad REBT ITC-BT-18:</strong> Umbral absoluto de seguridad calculado por la Ley de Ohm en función del tipo de emplazamiento y la sensibilidad del diferencial instalado. Es un requisito obligatorio e ineludible.</li>
+        <li><strong>Criterio de Buena Práctica ITC-BT-26:</strong> Umbral de referencia profesional según la Guía Técnica, diferenciado por la presencia o ausencia de sistema de protección contra el rayo. Representa valores de diseño conservadores y de buena práctica.</li>
+    </ol>
+    <p>El objetivo de diseño adoptado es el más restrictivo de ambos umbrales:</p>
+    <div class="formula-display">$$R_{objetivo} = \min(R_{REBT}, R_{\text{ITC-BT-26}})$$</div>
+
+    <h3>4.2. Estrategia de Dimensionado</h3>
+    <p>El dimensionado sigue una metodología secuencial que optimiza el uso de recursos:</p>
+    <ul>
+        <li><strong>Paso 1: Evaluación del anillo de cimentación:</strong> Se calcula la resistencia del anillo en función del perímetro del edificio y la resistividad del terreno. Si esta resistencia es inferior al objetivo de diseño, no se requieren picas adicionales.</li>
+        <li><strong>Paso 2: Cálculo de picas necesarias (si procede):</strong> Si el anillo es insuficiente, se determina el número mínimo de picas verticales necesarias para alcanzar el objetivo mediante el análisis del circuito paralelo formado por el anillo y las picas.</li>
+        <li><strong>Paso 3: Verificación cruzada:</strong> Se comprueba que la resistencia total obtenida cumple todos los umbrales normativos aplicables, generando un informe detallado del estado de cumplimiento.</li>
+    </ul>
+
+    <h2>5. Formulación Matemática</h2>
+    <h3>5.1. Resistencia Máxima Admisible (REBT)</h3>
+    <div class="formula-display">$$R_{REBT} = \frac{V_c}{I_d}$$</div>
+    <p>Donde $V_c$ es la tensión de contacto límite (24V o 50V) e $I_d$ es la sensibilidad del diferencial.</p>
+
+    <h3>5.2. Resistencia del Anillo de Cimentación</h3>
+    <div class="formula-display">$$R_{anillo} = \frac{2 \times \rho}{L}$$</div>
+    <p>Donde $L$ es el perímetro del edificio.</p>
+
+    <h3>5.3. Resistencia de Electrodos Verticales (Picas)</h3>
+    <div class="formula-display">$$R_{pica} = \frac{\rho}{L} \quad ; \quad R_{picas\_total} = \frac{\rho}{n \times L}$$</div>
+
+    <h3>5.4. Resistencia Total del Sistema (Circuito Paralelo)</h3>
+    <div class="formula-display">$$R_{total} = \frac{R_{anillo} \times R_{picas}}{R_{anillo} + R_{picas}}$$</div>
+
+    <h3>5.5. Cálculo del Número de Picas Necesarias</h3>
+    <div class="formula-display">
+        $$R_{picas\_necesaria} = \frac{R_{anillo} \times R_{objetivo}}{R_{anillo} - R_{objetivo}}$$
+        $$n = \frac{\rho}{R_{picas\_necesaria} \times L_{pica}}$$
+    </div>
+
+    <h3>5.6. Separación entre Picas</h3>
+    <p>Según la ITC-BT-18, la separación mínima recomendada entre picas debe ser igual o mayor que su longitud enterrada:</p>
+    <div class="formula-display">$$\text{Separación mínima} \ge L_{pica}$$</div>
+
+    <h2>6. Caso Práctico de Cálculo</h2>
+    <div class="tech-box">
+        <strong>Datos de partida:</strong> Terreno de calizas compactas ($\rho = 1.500\ \Omega\cdot\text{m}$) y anillo de cobre de $282$ metros.
+    </div>
+
+    <h3>Cálculo del Anillo:</h3>
+    <div class="formula-display">
+        $$R_a = \frac{2 \cdot 1.500}{282} = 10,64\ \Omega$$
+    </div>
+    <p>Dado que $10,64\ \Omega > 10\ \Omega$, se requiere refuerzo mediante picas.</p>
+
+    <h3>Cálculo de resistencia necesaria en picas ($R_p$):</h3>
+    <div class="formula-display">
+        $$\frac{1}{R_p} = \frac{1}{10} - \frac{1}{10,64} \implies R_p \approx 166,67\ \Omega$$
+    </div>
+
+    <h3>Determinación del número de picas ($n$):</h3>
+    <p>Usando picas estándar de $2$ metros:</p>
+    <div class="formula-display">
+        $$n = \frac{1.500}{166,67 \cdot 2} = 4,5 \text{ picas}$$
+    </div>
+    <p><span class="highlight">Decisión técnica:</span> Se proyecta la instalación de <strong>5 picas</strong> de 2 metros de longitud para asegurar el cumplimiento del objetivo.</p>
+
+    <h2>7. Especificaciones Técnicas de Materiales</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Componente</th>
+                <th>Especificación Técnica</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Electrodo de Anillo</strong></td>
+                <td>Cobre desnudo, sección mínima $35\ \text{mm}^2$. Profundidad: $0,5$ a $0,8\ \text{m}$.</td>
+            </tr>
+            <tr>
+                <td><strong>Picas</strong></td>
+                <td>Acero cobreado, $\varnothing 14\ \text{mm}$, longitud $2\ \text{m}$.</td>
+            </tr>
+            <tr>
+                <td><strong>Línea de Enlace (LET)</strong></td>
+                <td>Cable H07V-K verde-amarillo, sección mínima $16\ \text{mm}^2$.</td>
+            </tr>
+            <tr>
+                <td><strong>Conductores de Protección</strong></td>
+                <td>Según sección de fase (F): $F \le 16 \implies CP = F$; $F = 35 \implies CP = 16$; $F > 35 \implies CP = F/2$.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>8. Puntos de Inspección y Mantenimiento</h2>
+    <ul>
+        <li><strong>Arquetas de Registro:</strong> Instalación obligatoria en cada punto de hincado de picas para inspección visual.</li>
+        <li><strong>Puente de Seccionamiento:</strong> Ubicado en el Borne Principal de Tierra para permitir la desconexión y medida con telurómetro.</li>
+        <li><strong>Periodicidad:</strong> Según REBT, revisión anual de la resistencia, preferiblemente en condiciones de máxima sequedad del terreno.</li>
+    </ul>
+
+    <p style="font-style: italic; margin-top: 20px;">Este cálculo asegura que el sistema de puesta a tierra operará de forma segura bajo las condiciones geológicas indicadas, cumpliendo con los estándares de seguridad industrial y habitacional.</p>
+
+    <footer>
+        Informe realizado por el Departamento de Reingeniería y Proyectos
+    </footer>
+</div>
+
+</body>
+</html>
+    
+  </body>
+  
+</html>

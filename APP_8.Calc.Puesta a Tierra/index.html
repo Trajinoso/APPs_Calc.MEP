@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cálculo Puesta a Tierra — REBT</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0e14;
+    --panel: #111520;
+    --panel2: #161c2d;
+    --border: #1e2d4a;
+    --accent: #00d4ff;
+    --accent2: #ff6b35;
+    --green: #00ff9d;
+    --warn: #ffb800;
+    --danger: #ff3b30;
+    --text: #c8d8f0;
+    --muted: #4a6080;
+    --grid: rgba(0,212,255,0.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .header-badge {
+    display: inline-block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 4px 14px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    background: rgba(0,212,255,0.06);
+  }
+
+  h1 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #fff;
+    line-height: 1.1;
+  }
+
+  h1 span { color: var(--accent); }
+
+  .subtitle {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    margin-top: 10px;
+  }
+
+  /* STEPS */
+  .steps-nav {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+
+  .step-btn {
+    flex: 1;
+    min-width: 90px;
+    padding: 10px 6px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .step-btn.active {
+    background: rgba(0,212,255,0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .step-btn .step-num {
+    display: block;
+    font-size: 20px;
+    font-weight: bold;
+    color: inherit;
+    font-family: 'Rajdhani', sans-serif;
+  }
+
+  /* PANELS */
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 28px 32px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    background: var(--accent);
+  }
+
+  .card-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card-title .icon { font-size: 18px; }
+
+  /* FORM GRID */
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .field label span {
+    color: var(--accent2);
+    font-size: 10px;
+    margin-left: 6px;
+  }
+
+  .field input, .field select {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .field input:focus, .field select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0,212,255,0.1);
+  }
+
+  .field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2300d4ff' d='M0 0l6 8 6-8z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+
+  .field select option { background: #1a2035; color: var(--text); }
+
+  .hint {
+    font-size: 11px;
+    color: var(--muted);
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  /* CALC BUTTON */
+  .btn-calc {
+    width: 100%;
+    padding: 18px;
+    background: transparent;
+    border: 2px solid var(--accent);
+    color: var(--accent);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+    margin-top: 8px;
+  }
+
+  .btn-calc::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+    z-index: 0;
+  }
+
+  .btn-calc:hover::before { transform: scaleX(1); }
+  .btn-calc:hover { color: var(--bg); }
+  .btn-calc span { position: relative; z-index: 1; }
+
+  /* INFORME BUTTON */
+  .btn-informe {
+    width: 100%;
+    padding: 16px;
+    background: transparent;
+    border: 2px solid var(--green);
+    color: var(--green);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+    margin-top: 16px;
+  }
+  .btn-informe::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--green);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+    z-index: 0;
+  }
+  .btn-informe:hover::before { transform: scaleX(1); }
+  .btn-informe:hover { color: var(--bg); }
+  .btn-informe span { position: relative; z-index: 1; }
+
+  /* RESULTS */
+  .results-section { display: none; }
+  .results-section.visible { display: block; }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .result-card {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    padding: 18px;
+    text-align: center;
+    position: relative;
+  }
+
+  .result-card.highlight {
+    border-color: var(--green);
+    background: rgba(0,255,157,0.05);
+  }
+
+  .result-card.warning {
+    border-color: var(--warn);
+    background: rgba(255,184,0,0.05);
+  }
+
+  .result-card.danger {
+    border-color: var(--danger);
+    background: rgba(255,59,48,0.05);
+  }
+
+  .result-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .result-value {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--green);
+    line-height: 1;
+  }
+
+  .result-card.warning .result-value { color: var(--warn); }
+  .result-card.danger .result-value { color: var(--danger); }
+
+  .result-unit {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* PROCESS STEPS */
+  .process-box {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+
+  .process-step {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .process-step:last-child { border-bottom: none; }
+
+  .ps-num {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 36px;
+    line-height: 1;
+  }
+
+  .ps-body {}
+  .ps-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+
+  .ps-formula {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    color: var(--accent2);
+    background: rgba(255,107,53,0.08);
+    padding: 6px 10px;
+    display: inline-block;
+    margin: 6px 0;
+    border-left: 2px solid var(--accent2);
+  }
+
+  .ps-result {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    color: var(--green);
+  }
+
+  .ps-note {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+    font-style: italic;
+  }
+
+  /* STATUS BAR */
+  .status-bar {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .status-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 10px var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  .status-dot.warn { background: var(--warn); box-shadow: 0 0 10px var(--warn); }
+  .status-dot.fail { background: var(--danger); box-shadow: 0 0 10px var(--danger); }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .status-text {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  /* RESISTIVITY TABLE */
+  .table-ref {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    margin-top: 12px;
+  }
+
+  .table-ref th {
+    background: rgba(0,212,255,0.1);
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    color: var(--accent);
+    letter-spacing: 1px;
+    font-size: 11px;
+    text-transform: uppercase;
+  }
+
+  .table-ref td {
+    border: 1px solid var(--border);
+    padding: 7px 12px;
+    color: var(--text);
+  }
+
+  .table-ref tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  .table-ref tr.selected td { background: rgba(0,212,255,0.08); color: var(--accent); }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab {
+    padding: 10px 20px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    cursor: pointer;
+    text-transform: uppercase;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+  }
+
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* SECTION CABLES */
+  .cable-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 12px;
+  }
+  .cable-table th {
+    background: rgba(255,107,53,0.1);
+    border: 1px solid var(--border);
+    padding: 8px;
+    color: var(--accent2);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+  }
+  .cable-table td {
+    border: 1px solid var(--border);
+    padding: 7px 10px;
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    text-align: center;
+  }
+  .cable-table tr.active-row td {
+    background: rgba(0,255,157,0.07);
+    color: var(--green);
+    font-weight: bold;
+  }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    margin: 24px 0;
+    opacity: 0.3;
+  }
+
+  .badge-rebt {
+    display: inline-block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border: 1px solid var(--accent2);
+    color: var(--accent2);
+    letter-spacing: 1px;
+    vertical-align: middle;
+    margin-left: 8px;
+  }
+
+  @media (max-width: 600px) {
+    .card { padding: 20px 16px; }
+    .wrapper { padding: 20px 12px 60px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <header>
+    <div class="header-badge">ITC-BT-18 · REBT · Cálculo Técnico</div>
+    <h1>Sistema de <span>Puesta a Tierra</span></h1>
+    <p class="subtitle">DIMENSIONADO SEGÚN REGLAMENTO ELECTROTÉCNICO DE BAJA TENSIÓN</p>
+  </header>
+
+  <!-- TABS MAIN -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('calc')">⚡ Calculadora</div>
+    <div class="tab" onclick="switchTab('tabla')">📋 Tabla Resistividades</div>
+    <div class="tab" onclick="switchTab('cables')">🔌 Secciones Cables</div>
+  </div>
+
+  <!-- TAB: CALCULADORA -->
+  <div class="tab-content active" id="tab-calc">
+
+    <!-- CARD 1: DATOS DEL EDIFICIO -->
+    <div class="card">
+      <div class="card-title"><span class="icon">🏗</span> Datos del Edificio e Instalación</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Tipo de Emplazamiento <span>(seguridad)</span></label>
+          <select id="emplazamiento" onchange="updateRmax()">
+            <option value="50">Normal (interior seco) — Vc máx. 50V</option>
+            <option value="24">Conductor (exterior, mojado, baños) — Vc máx. 24V</option>
+          </select>
+          <p class="hint">Local conductor: intemperie, local mojado, tintorerías, etc.</p>
+        </div>
+        <div class="field">
+          <label>Sensibilidad del Diferencial <span>(Id)</span></label>
+          <select id="diferencial" onchange="updateRmax()">
+            <option value="0.010">10 mA — Alta sensibilidad</option>
+            <option value="0.030" selected>30 mA — Viviendas (habitual)</option>
+            <option value="0.100">100 mA</option>
+            <option value="0.300">300 mA — Alumbrado exterior</option>
+            <option value="0.500">500 mA</option>
+            <option value="1.000">1 A</option>
+          </select>
+          <p class="hint">En viviendas se usan diferenciales de 30 mA.</p>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="form-grid" style="margin-top:4px;">
+        <div class="field">
+          <label>R máx. admisible calculada</label>
+          <input type="text" id="rmax_display" readonly style="color:var(--green); font-size:18px;">
+          <p class="hint">R = Vc / Id — Ley de Ohm (REBT)</p>
+        </div>
+        <div class="field">
+          <label>¿Edificio con pararrayos? <span>(ITC-BT-26)</span></label>
+          <div style="display:flex; gap:0; border:1px solid var(--border);">
+            <button id="btn-pararra-si" onclick="setPararrayos(true)"
+              style="flex:1; padding:10px; background:rgba(0,212,255,0.15); border:none; border-right:1px solid var(--border); color:var(--accent); font-family:'Rajdhani',sans-serif; font-size:15px; font-weight:700; cursor:pointer; transition:all 0.2s; letter-spacing:1px;">
+              ⚡ SÍ — con pararrayos<br><span style="font-size:11px; font-weight:400; letter-spacing:0;">R &lt; 15 Ω</span>
+            </button>
+            <button id="btn-pararra-no" onclick="setPararrayos(false)"
+              style="flex:1; padding:10px; background:var(--panel2); border:none; color:var(--muted); font-family:'Rajdhani',sans-serif; font-size:15px; font-weight:700; cursor:pointer; transition:all 0.2s; letter-spacing:1px;">
+              🏠 NO — sin pararrayos<br><span style="font-size:11px; font-weight:400; letter-spacing:0;">R &lt; 37 Ω</span>
+            </button>
+          </div>
+          <p class="hint" id="rref-hint">Guía Técnica ITC-BT-26 — Con pararrayos: R &lt; 15 Ω · Sin pararrayos: R &lt; 37 Ω</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 2: TERRENO -->
+    <div class="card">
+      <div class="card-title"><span class="icon">🌍</span> Características del Terreno</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Tipo de terreno</label>
+          <select id="tipo_terreno" onchange="selectTerrain()">
+            <option value="">-- Seleccionar tipo --</option>
+            <option value="1">Cenizas, turba, arcillas blandas</option>
+            <option value="2">Arcilla, marga</option>
+            <option value="3">Arenas arcillosas, calizas blandas</option>
+            <option value="4">Arenas silíceas, granitos, basaltos</option>
+            <option value="5">Calizas compactadas, esquistos, pizarras</option>
+            <option value="6">Roca masiva, granito compacto</option>
+            <option value="custom">Introducir valor manualmente</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Resistividad del terreno ρ <span>(Ω·m)</span></label>
+          <input type="number" id="resistividad" placeholder="Ej: 1500" min="1" step="1">
+          <p class="hint">Ver tabla de resistividades en la pestaña superior.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 3: ELECTRODO ANILLO -->
+    <div class="card">
+      <div class="card-title"><span class="icon">⭕</span> Electrodo — Anillo/Conductor Enterrado</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Longitud del anillo / conductor L <span>(m)</span></label>
+          <input type="number" id="longitud_anillo" placeholder="Ej: 282" min="1" step="0.5">
+          <p class="hint">Perímetro del edificio o longitud total del cable de cobre enterrado.</p>
+        </div>
+        <div class="field">
+          <label>Profundidad mínima enterrado</label>
+          <input type="text" value="≥ 0,5 m  (recomendado ≥ 0,8 m)" readonly style="color:var(--muted); font-size:12px;">
+          <p class="hint">Sección mínima del anillo: 25 mm² (habitual 50 mm²) cobre desnudo.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 4: PICAS -->
+    <div class="card">
+      <div class="card-title"><span class="icon">📌</span> Electrodos Verticales — Picas</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Longitud de cada pica L_pica <span>(m)</span></label>
+          <input type="number" id="long_pica" value="2" min="0.5" step="0.5">
+          <p class="hint">El electrodo más habitual son picas de 2 m de longitud.</p>
+        </div>
+        <div class="field">
+          <label>¿Calcular nº de picas automáticamente?</label>
+          <select id="modo_picas">
+            <option value="auto">Sí — calcular número necesario</option>
+            <option value="manual">No — introducir número fijo</option>
+          </select>
+        </div>
+        <div class="field" id="campo_npicas" style="display:none;">
+          <label>Número de picas a instalar</label>
+          <input type="number" id="n_picas_manual" value="4" min="1" step="1">
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-calc" onclick="calcular()"><span>⚡ Calcular Sistema de Puesta a Tierra</span></button>
+
+    <!-- RESULTADOS -->
+    <div class="results-section" id="results">
+      <div class="divider"></div>
+
+      <div class="card" style="margin-top:0;">
+        <div class="card-title"><span class="icon">📊</span> Resultados del Cálculo</div>
+
+        <div class="results-grid" id="results-grid">
+          <!-- se rellena por JS -->
+        </div>
+
+        <div class="process-box" id="process-box">
+          <!-- pasos -->
+        </div>
+
+        <div id="status-bar-container"></div>
+
+      </div>
+
+      <!-- SEPARACIÓN PICAS -->
+      <div class="card" id="separacion-card" style="display:none;">
+        <div class="card-title"><span class="icon">📐</span> Separación entre Picas</div>
+        <div id="separacion-content"></div>
+      </div>
+
+      <!-- BOTÓN INFORME -->
+      <button class="btn-informe" onclick="generarInforme()">
+        <span>📄 Generar Informe PDF</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- TAB: RESISTIVIDADES -->
+  <div class="tab-content" id="tab-tabla">
+    <div class="card">
+      <div class="card-title"><span class="icon">📋</span> Resistividades de Terrenos <span class="badge-rebt">ITC-BT-18</span></div>
+      <p style="font-size:13px; color:var(--muted); margin-bottom:16px;">Valores orientativos según el tipo de terreno. Para diseño definitivo, realizar medición con telurómetro.</p>
+      <table class="table-ref">
+        <thead>
+          <tr><th>Tipo de Terreno</th><th>ρ mín. (Ω·m)</th><th>ρ típico (Ω·m)</th><th>ρ máx. (Ω·m)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Cenizas, turba, arcillas blandas</td><td>1</td><td>30</td><td>100</td></tr>
+          <tr><td>Arcilla, marga</td><td>50</td><td>100</td><td>200</td></tr>
+          <tr><td>Arenas arcillosas, calizas blandas</td><td>100</td><td>300</td><td>500</td></tr>
+          <tr><td>Arenas silíceas, granitos, basaltos</td><td>200</td><td>600</td><td>1000</td></tr>
+          <tr><td>Calizas compactadas, esquistos, pizarras</td><td>500</td><td>1500</td><td>3000</td></tr>
+          <tr><td>Roca masiva, granito compacto</td><td>1000</td><td>5000</td><td>&gt; 10000</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">⚡</span> Tabla de R máximas Admisibles</div>
+      <table class="table-ref">
+        <thead>
+          <tr><th>Diferencial (mA)</th><th>Vc = 24 V (conductor)</th><th>Vc = 50 V (normal)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>10 mA</td><td>2.400 Ω</td><td>5.000 Ω</td></tr>
+          <tr><td>30 mA</td><td>800 Ω</td><td>1.667 Ω</td></tr>
+          <tr><td>100 mA</td><td>240 Ω</td><td>500 Ω</td></tr>
+          <tr><td>300 mA</td><td>80 Ω</td><td>167 Ω</td></tr>
+          <tr><td>500 mA</td><td>48 Ω</td><td>100 Ω</td></tr>
+          <tr><td>1.000 mA</td><td>24 Ω</td><td>50 Ω</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:12px; color:var(--muted); margin-top:12px; font-style:italic;">⚠ Referencia práctica de proyecto: 10 Ω (Reglamento ICT telecomunicaciones)</p>
+    </div>
+  </div>
+
+  <!-- TAB: SECCIONES CABLES -->
+  <div class="tab-content" id="tab-cables">
+    <div class="card">
+      <div class="card-title"><span class="icon">🔌</span> Secciones Conductores de Protección <span class="badge-rebt">ITC-BT-18</span></div>
+      <p style="font-size:13px; color:var(--muted); margin-bottom:16px;">Sección mínima del conductor de protección (verde-amarillo) en función de la sección de fase.</p>
+      <table class="cable-table" id="cable-table">
+        <thead>
+          <tr><th>Sección fase (mm²)</th><th>Sección mín. protección (mm²)</th><th>Color</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>S ≤ 16</td><td>= S (igual a la fase)</td><td>🟡🟢 Verde-Amarillo</td></tr>
+          <tr><td>16 &lt; S ≤ 35</td><td>16 mm²</td><td>🟡🟢 Verde-Amarillo</td></tr>
+          <tr><td>S > 35</td><td>S / 2 (mitad de la fase)</td><td>🟡🟢 Verde-Amarillo</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">🏗</span> Línea Principal de Tierra (LPT) en Edificios</div>
+      <table class="cable-table">
+        <thead>
+          <tr><th>Condición</th><th>Sección LPT (Cu)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Fases &lt; 35 mm²</td><td>≥ 16 mm²</td></tr>
+          <tr><td>Fases ≥ 35 mm²</td><td>≥ Sección_fase / 2</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:12px; color:var(--muted); margin-top:12px;">La LPT va por la misma canalización que la LGA (Línea General de Alimentación).</p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">⭕</span> Anillo de Cimentación</div>
+      <div style="font-family:'Share Tech Mono',monospace; font-size:13px; line-height:2;">
+        <div>Sección mínima: <span style="color:var(--accent)">25 mm²</span> de cobre desnudo</div>
+        <div>Sección habitual: <span style="color:var(--green)">50 mm²</span> de cobre desnudo</div>
+        <div>Profundidad mínima: <span style="color:var(--accent2)">0,5 m</span> (recomendado <span style="color:var(--accent2)">0,8 m</span>)</div>
+        <div>Uniones: <span style="color:var(--muted)">Soldadura aluminotérmica o autógena</span></div>
+        <div>Se conectará a la <span style="color:var(--accent)">estructura metálica del edificio</span></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<script>
+// ============================================================
+//  UTILS
+// ============================================================
+const fmt = (v, d=2) => isNaN(v) ? '—' : parseFloat(v.toFixed(d)).toLocaleString('es-ES');
+
+// ============================================================
+//  TABS
+// ============================================================
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const ids = ['calc','tabla','cables'];
+    t.classList.toggle('active', ids[i] === id);
+  });
+  document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+}
+
+// ============================================================
+//  Modo picas
+// ============================================================
+document.getElementById('modo_picas').addEventListener('change', function() {
+  document.getElementById('campo_npicas').style.display = this.value === 'manual' ? 'block' : 'none';
+});
+
+// ============================================================
+//  Selección de terreno
+// ============================================================
+const resistividades = {
+  '1': 30, '2': 100, '3': 300, '4': 600, '5': 1500, '6': 5000
+};
+function selectTerrain() {
+  const v = document.getElementById('tipo_terreno').value;
+  const inp = document.getElementById('resistividad');
+  if (v && v !== 'custom') {
+    inp.value = resistividades[v];
+    inp.readOnly = true;
+    inp.style.color = 'var(--accent)';
+  } else {
+    inp.readOnly = false;
+    inp.style.color = 'var(--text)';
+    if (v === 'custom') inp.value = '';
+  }
+}
+
+// ============================================================
+//  Pararrayos → R referencia según Guía Técnica ITC-BT-26
+//  Con pararrayos:    R < 15 Ω
+//  Sin pararrayos:    R < 37 Ω
+// ============================================================
+let tiene_pararrayos = true;   // por defecto: con pararrayos
+let _informe = null;           // datos del último cálculo (para el informe)
+
+function getPararrayosRref() {
+  return tiene_pararrayos ? 15 : 37;
+}
+
+function setPararrayos(val) {
+  tiene_pararrayos = val;
+  const btnSi = document.getElementById('btn-pararra-si');
+  const btnNo = document.getElementById('btn-pararra-no');
+  const hint  = document.getElementById('rref-hint');
+  if (val) {
+    btnSi.style.background = 'rgba(0,212,255,0.15)';
+    btnSi.style.color = 'var(--accent)';
+    btnNo.style.background = 'var(--panel2)';
+    btnNo.style.color = 'var(--muted)';
+    hint.textContent = 'Guía Técnica ITC-BT-26 — Con pararrayos: R < 15 Ω';
+  } else {
+    btnNo.style.background = 'rgba(255,184,0,0.12)';
+    btnNo.style.color = 'var(--warn)';
+    btnSi.style.background = 'var(--panel2)';
+    btnSi.style.color = 'var(--muted)';
+    hint.textContent = 'Guía Técnica ITC-BT-26 — Sin pararrayos: R < 37 Ω';
+  }
+}
+
+
+function updateRmax() {
+  const Vc = parseFloat(document.getElementById('emplazamiento').value);
+  const Id = parseFloat(document.getElementById('diferencial').value);
+  const Rmax = Vc / Id;
+  document.getElementById('rmax_display').value = fmt(Rmax, 0) + ' Ω  (= ' + Vc + '/' + (Id*1000) + 'mA)';
+}
+updateRmax();
+
+// ============================================================
+//  CÁLCULO PRINCIPAL
+// ============================================================
+function calcular() {
+  const Vc = parseFloat(document.getElementById('emplazamiento').value);
+  const Id = parseFloat(document.getElementById('diferencial').value);
+  const rho = parseFloat(document.getElementById('resistividad').value);
+  const L_anillo = parseFloat(document.getElementById('longitud_anillo').value);
+  const L_pica = parseFloat(document.getElementById('long_pica').value);
+  const modo = document.getElementById('modo_picas').value;
+
+  // Validaciones
+  if (isNaN(rho) || rho <= 0) return alert('⚠ Introduce la resistividad del terreno.');
+  if (isNaN(L_anillo) || L_anillo <= 0) return alert('⚠ Introduce la longitud del anillo enterrado.');
+  if (isNaN(L_pica) || L_pica <= 0) return alert('⚠ Introduce la longitud de las picas.');
+
+  // ── Umbrales ─────────────────────────────────────────────
+  // 1a. R máx absoluta por seguridad (Ley de Ohm, REBT ITC-BT-18)
+  const Rmax_ohm = Vc / Id;
+  // 1b. R referencia Guía Técnica ITC-BT-26 según pararrayos (15 o 37 Ω)
+  const R_BT26   = getPararrayosRref();
+  // Objetivo de diseño = el más restrictivo de los dos
+  const Rt_objetivo = Math.min(Rmax_ohm, R_BT26);
+
+  // ── Resistencia del anillo ────────────────────────────────
+  //    R_anillo = (2 × ρ) / L  (conductor horizontal)
+  const R_anillo = (2 * rho) / L_anillo;
+
+  // ── Necesidad de picas ────────────────────────────────────
+  const anillo_suficiente = R_anillo <= Rt_objetivo;
+
+  let R_picas_necesaria, n_picas_calc, n_picas_final, R_picas_real, Rt_total;
+
+  if (anillo_suficiente) {
+    R_picas_necesaria = null;
+    n_picas_calc  = 0;
+    n_picas_final = 0;
+    R_picas_real  = Infinity;
+    Rt_total      = R_anillo;
+  } else {
+    // R_picas necesaria en paralelo con el anillo
+    R_picas_necesaria = (R_anillo * Rt_objetivo) / (R_anillo - Rt_objetivo);
+    // n = ρ / (R_picas_nec × L_pica)
+    n_picas_calc = Math.ceil(rho / (R_picas_necesaria * L_pica));
+
+    if (modo === 'manual') {
+      n_picas_final = parseInt(document.getElementById('n_picas_manual').value) || 0;
+    } else {
+      n_picas_final = n_picas_calc;
+    }
+
+    R_picas_real = (n_picas_final > 0) ? rho / (n_picas_final * L_pica) : Infinity;
+    Rt_total = (n_picas_final > 0)
+      ? 1 / ((1 / R_anillo) + (1 / R_picas_real))
+      : R_anillo;
+  }
+
+  // ── Evaluación de cumplimiento ────────────────────────────
+  const cumple_rebt  = Rt_total <= Rmax_ohm  + 0.001;
+  const cumple_bt26  = Rt_total <= R_BT26    + 0.001;
+  const cumple_total = cumple_rebt && cumple_bt26;
+
+  const Vc_real = Rt_total * Id;
+
+  // ============================================================
+  //  RENDERIZAR RESULTADOS
+  // ============================================================
+  document.getElementById('results').classList.add('visible');
+
+  // ── Cards métricas ────────────────────────────────────────
+  const grid = document.getElementById('results-grid');
+  grid.innerHTML = `
+    <div class="result-card ${R_anillo <= Rt_objetivo ? 'highlight' : 'warning'}">
+      <div class="result-label">Resistencia Anillo</div>
+      <div class="result-value">${fmt(R_anillo)}</div>
+      <div class="result-unit">Ω</div>
+    </div>
+    ${n_picas_final > 0 ? `
+    <div class="result-card ${cumple_total ? 'highlight' : 'danger'}">
+      <div class="result-label">R Picas (${n_picas_final} uds.)</div>
+      <div class="result-value">${fmt(R_picas_real)}</div>
+      <div class="result-unit">Ω</div>
+    </div>` : ''}
+    <div class="result-card ${cumple_total ? 'highlight' : 'danger'}">
+      <div class="result-label">R Total Instalación</div>
+      <div class="result-value" style="font-size:38px">${fmt(Rt_total)}</div>
+      <div class="result-unit">Ω</div>
+    </div>
+    <div class="result-card ${cumple_rebt ? 'highlight' : 'danger'}">
+      <div class="result-label">Vc contacto real</div>
+      <div class="result-value">${fmt(Vc_real, 1)}</div>
+      <div class="result-unit">V (máx. ${Vc} V)</div>
+    </div>
+    <div class="result-card ${anillo_suficiente ? 'highlight' : cumple_total ? 'highlight' : 'danger'}">
+      <div class="result-label">Picas necesarias</div>
+      <div class="result-value" style="font-size:42px">${n_picas_final}</div>
+      <div class="result-unit">${anillo_suficiente ? 'No se necesitan picas' : `picas de ${L_pica} m`}</div>
+    </div>
+    <div class="result-card">
+      <div class="result-label">Objetivo de diseño</div>
+      <div class="result-value" style="color:var(--accent2); font-size:28px">${fmt(Rt_objetivo, 0)}</div>
+      <div class="result-unit">Ω — ${tiene_pararrayos ? 'con pararrayos' : 'sin pararrayos'}</div>
+    </div>
+  `;
+
+  // ── Tabla de verificación normativa ──────────────────────
+  const normBox = `
+    <div style="margin-bottom:16px;">
+      <div class="card-title" style="font-size:14px; margin-bottom:12px;"><span class="icon">📋</span> Verificación Normativa</div>
+      <table style="width:100%; border-collapse:collapse; font-family:'Share Tech Mono',monospace; font-size:12px;">
+        <thead>
+          <tr>
+            <th style="border:1px solid var(--border); padding:8px 12px; background:rgba(0,212,255,0.06); color:var(--accent); text-align:left; letter-spacing:1px; font-size:11px; text-transform:uppercase;">Normativa / Criterio</th>
+            <th style="border:1px solid var(--border); padding:8px 12px; background:rgba(0,212,255,0.06); color:var(--accent); text-align:center; letter-spacing:1px; font-size:11px; text-transform:uppercase;">Límite</th>
+            <th style="border:1px solid var(--border); padding:8px 12px; background:rgba(0,212,255,0.06); color:var(--accent); text-align:center; letter-spacing:1px; font-size:11px; text-transform:uppercase;">R obtenida</th>
+            <th style="border:1px solid var(--border); padding:8px 12px; background:rgba(0,212,255,0.06); color:var(--accent); text-align:center; letter-spacing:1px; font-size:11px; text-transform:uppercase;">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="border:1px solid var(--border); padding:8px 12px; color:var(--text);">REBT ITC-BT-18 — Seguridad de personas<br><span style="color:var(--muted); font-size:11px;">Vc ≤ ${Vc} V con diferencial de ${Id*1000} mA</span></td>
+            <td style="border:1px solid var(--border); padding:8px 12px; text-align:center; color:var(--text);">&lt; ${fmt(Rmax_ohm, 0)} Ω</td>
+            <td style="border:1px solid var(--border); padding:8px 12px; text-align:center; color:var(--text);">${fmt(Rt_total)} Ω</td>
+            <td style="border:1px solid var(--border); padding:8px 12px; text-align:center; font-weight:bold; color:${cumple_rebt ? 'var(--green)' : 'var(--danger)'};">${cumple_rebt ? '✅ CUMPLE' : '❌ NO CUMPLE'}</td>
+          </tr>
+          <tr style="background:rgba(255,255,255,0.015);">
+            <td style="border:1px solid var(--border); padding:8px 12px; color:var(--text);">Guía Técnica ITC-BT-26 — ${tiene_pararrayos ? 'Edificio CON pararrayos' : 'Edificio SIN pararrayos'}<br><span style="color:var(--muted); font-size:11px;">${tiene_pararrayos ? 'Pararrayos exige mayor control de impedancia' : 'Sin pararrayos, umbral más permisivo'}</span></td>
+            <td style="border:1px solid var(--border); padding:8px 12px; text-align:center; color:${tiene_pararrayos ? 'var(--accent)' : 'var(--warn)'};">&lt; ${R_BT26} Ω</td>
+            <td style="border:1px solid var(--border); padding:8px 12px; text-align:center; color:var(--text);">${fmt(Rt_total)} Ω</td>
+            <td style="border:1px solid var(--border); padding:8px 12px; text-align:center; font-weight:bold; color:${cumple_bt26 ? 'var(--green)' : 'var(--danger)'};">${cumple_bt26 ? '✅ CUMPLE' : '❌ NO CUMPLE'}</td>
+          </tr>
+          <tr>
+            <td style="border:1px solid var(--border); padding:8px 12px; color:var(--text);" colspan="3">
+              <span style="color:${anillo_suficiente ? 'var(--green)' : 'var(--accent2)'}; font-size:13px; font-weight:bold;">
+                ${anillo_suficiente
+                  ? `✅ El anillo de cimentación es suficiente. NO se necesitan picas.`
+                  : `⚠ El anillo solo no es suficiente. Se necesitan ${n_picas_final} pica${n_picas_final !== 1 ? 's' : ''} de ${L_pica} m.`}
+              </span><br>
+              <span style="color:var(--muted); font-size:11px;">
+                ${anillo_suficiente
+                  ? `R_anillo = ${fmt(R_anillo)} Ω ≤ objetivo ${fmt(Rt_objetivo)} Ω`
+                  : `R_anillo = ${fmt(R_anillo)} Ω > objetivo ${fmt(Rt_objetivo)} Ω → picas reducen R_total a ${fmt(Rt_total)} Ω`}
+              </span>
+            </td>
+            <td style="border:1px solid var(--border); padding:8px 12px; text-align:center; font-weight:bold; color:${cumple_total ? 'var(--green)' : 'var(--danger)'};">${cumple_total ? '✅ OK' : '❌ REVISAR'}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  // ── Proceso paso a paso ───────────────────────────────────
+  const pb = document.getElementById('process-box');
+  pb.innerHTML = normBox + `
+    <div class="process-step">
+      <div class="ps-num">1</div>
+      <div class="ps-body">
+        <div class="ps-title">Umbrales normativos aplicables</div>
+        <div class="ps-formula">R_REBT = Vc / Id = ${Vc} V / ${Id*1000} mA = ${fmt(Rmax_ohm, 0)} Ω</div>
+        <div class="ps-formula">R_ITC-BT-26 = ${R_BT26} Ω (${tiene_pararrayos ? 'con pararrayos' : 'sin pararrayos'})</div>
+        <div class="ps-result">→ Objetivo de diseño = min(${fmt(Rmax_ohm, 0)}, ${R_BT26}) = <b>${fmt(Rt_objetivo, 0)} Ω</b></div>
+      </div>
+    </div>
+    <div class="process-step">
+      <div class="ps-num">2</div>
+      <div class="ps-body">
+        <div class="ps-title">Resistencia del anillo enterrado (conductor horizontal)</div>
+        <div class="ps-formula">R_anillo = (2 × ρ) / L = (2 × ${rho}) / ${L_anillo} = ${fmt(R_anillo)} Ω</div>
+        <div class="ps-result">${R_anillo <= Rt_objetivo
+          ? `✅ El anillo solo es SUFICIENTE (${fmt(R_anillo)} Ω ≤ ${fmt(Rt_objetivo)} Ω) — No se necesitan picas`
+          : `⚠ El anillo NO es suficiente (${fmt(R_anillo)} Ω > ${fmt(Rt_objetivo)} Ω) — Se necesitan picas`}
+        </div>
+      </div>
+    </div>
+    ${!anillo_suficiente && R_picas_necesaria !== null ? `
+    <div class="process-step">
+      <div class="ps-num">3</div>
+      <div class="ps-body">
+        <div class="ps-title">Resistencia necesaria del conjunto de picas (circuito paralelo)</div>
+        <div class="ps-formula">R_picas = (R_anillo × Rt) / (R_anillo − Rt) = (${fmt(R_anillo)} × ${Rt_objetivo}) / (${fmt(R_anillo)} − ${Rt_objetivo}) = ${fmt(R_picas_necesaria)} Ω</div>
+      </div>
+    </div>
+    <div class="process-step">
+      <div class="ps-num">4</div>
+      <div class="ps-body">
+        <div class="ps-title">Número de picas necesarias (fórmula pica vertical)</div>
+        <div class="ps-formula">n = ρ / (R_picas × L_pica) = ${rho} / (${fmt(R_picas_necesaria)} × ${L_pica}) = ${fmt(n_picas_calc, 2)}</div>
+        <div class="ps-result">→ Redondeo al entero superior: <b>${n_picas_final} pica${n_picas_final !== 1 ? 's' : ''}</b></div>
+      </div>
+    </div>
+    <div class="process-step">
+      <div class="ps-num">5</div>
+      <div class="ps-body">
+        <div class="ps-title">Resistencia real del conjunto de ${n_picas_final} pica${n_picas_final !== 1 ? 's' : ''}</div>
+        <div class="ps-formula">R_picas_real = ρ / (n × L) = ${rho} / (${n_picas_final} × ${L_pica}) = ${fmt(R_picas_real)} Ω</div>
+      </div>
+    </div>` : ''}
+    <div class="process-step">
+      <div class="ps-num">${anillo_suficiente ? '3' : '6'}</div>
+      <div class="ps-body">
+        <div class="ps-title">Resistencia total de la instalación (verificación)</div>
+        <div class="ps-formula">${anillo_suficiente
+          ? `R_total = R_anillo = ${fmt(R_anillo)} Ω`
+          : `R_total = 1 / [(1/${fmt(R_anillo)}) + (1/${fmt(R_picas_real)})] = ${fmt(Rt_total)} Ω`}
+        </div>
+        <div class="ps-result">${cumple_total
+          ? `✅ CUMPLE: ${fmt(Rt_total)} Ω ≤ ${fmt(Rt_objetivo)} Ω (objetivo)`
+          : `❌ NO CUMPLE: ${fmt(Rt_total)} Ω > ${fmt(Rt_objetivo)} Ω → aumentar nº de picas`}
+        </div>
+      </div>
+    </div>
+  `;
+
+  // ── Status bar ────────────────────────────────────────────
+  const sbc = document.getElementById('status-bar-container');
+  sbc.innerHTML = `
+    <div class="status-bar">
+      <div class="status-dot ${cumple_total ? '' : 'fail'}"></div>
+      <div class="status-text">
+        ${cumple_total
+          ? `✅ INSTALACIÓN VÁLIDA — R_total = ${fmt(Rt_total)} Ω | REBT ✅ | ITC-BT-26 (${tiene_pararrayos ? 'pararrayos' : 'sin pararrayos'}) ✅ | ${anillo_suficiente ? 'Sin picas — anillo suficiente' : n_picas_final + ' pica' + (n_picas_final !== 1 ? 's' : '') + ' de ' + L_pica + ' m'}`
+          : `❌ NO CUMPLE — R_total = ${fmt(Rt_total)} Ω > ${fmt(Rt_objetivo)} Ω · ${!cumple_rebt ? 'Supera límite REBT' : 'Supera límite ITC-BT-26'} · Aumentar nº de picas`}
+      </div>
+    </div>
+  `;
+
+  // ── Separación entre picas ────────────────────────────────
+  const sc = document.getElementById('separacion-card');
+  const scontent = document.getElementById('separacion-content');
+  if (n_picas_final >= 2) {
+    sc.style.display = 'block';
+    scontent.innerHTML = `
+      <div style="font-family:'Share Tech Mono',monospace; font-size:13px; line-height:2.4;">
+        <div>Nº de picas instaladas: <span style="color:var(--green)">${n_picas_final}</span></div>
+        <div>Longitud de cada pica: <span style="color:var(--accent)">${L_pica} m</span></div>
+        <div>Separación mínima recomendada: <span style="color:var(--accent2)">≥ ${L_pica} m</span> (= longitud enterrada)</div>
+        ${n_picas_final > 2 ? `<div>Para ${n_picas_final} picas en paralelo: separación <span style="color:var(--warn)">mayor que ${L_pica} m</span></div>` : ''}
+        <div style="font-size:11px; color:var(--muted); margin-top:8px;">ITC-BT-18: La separación recomendada entre picas es ≥ la longitud enterrada de las mismas.</div>
+      </div>
+    `;
+  } else {
+    sc.style.display = 'none';
+  }
+
+  // ── Guardar datos para el informe ────────────────────────
+  const tipoTerreno = document.getElementById('tipo_terreno');
+  const tipoTerrLabel = tipoTerreno.options[tipoTerreno.selectedIndex]?.text || 'Valor personalizado';
+  _informe = {
+    Vc, Id, rho,
+    tipoTerrenoLabel: tipoTerrLabel,
+    L_anillo, L_pica,
+    tiene_pararrayos,
+    Rmax_ohm, R_BT26, Rt_objetivo,
+    R_anillo,
+    anillo_suficiente,
+    R_picas_necesaria: R_picas_necesaria || 0,
+    n_picas_calc: n_picas_calc || 0,
+    n_picas_final,
+    R_picas_real: isFinite(R_picas_real) ? R_picas_real : 0,
+    Rt_total,
+    cumple_rebt, cumple_bt26, cumple_total
+  };
+
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ============================================================
+//  GENERADOR DE INFORME PDF (HTML para imprimir)
+// ============================================================
+
+function generarInforme() {
+  if (!_informe) {
+    alert('⚠ Realiza el cálculo primero antes de generar el informe.');
+    return;
+  }
+
+  const d = _informe;
+  const ahora = new Date();
+  const fecha = ahora.toLocaleDateString('es-ES', { year:'numeric', month:'long', day:'numeric' });
+  const hora  = ahora.toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit' });
+
+  const fmtR = v => isNaN(v) || !isFinite(v) ? '—' : parseFloat(v.toFixed(2)).toLocaleString('es-ES') + ' Ω';
+  const ok   = c => c ? '<span class="ok">✅ CUMPLE</span>' : '<span class="ko">❌ NO CUMPLE</span>';
+
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Informe Puesta a Tierra — ${fecha}</title>
+<style>
+  @page { size: A4; margin: 20mm 18mm 22mm 18mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; font-size: 10pt; color: #1a1a2e; background: #fff; }
+
+  /* CABECERA */
+  .portada-header {
+    border-bottom: 4px solid #003366;
+    padding-bottom: 10px;
+    margin-bottom: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .portada-header .titulo { font-size: 20pt; font-weight: bold; color: #003366; letter-spacing: 1px; text-transform: uppercase; line-height: 1.1; }
+  .portada-header .subtitulo { font-size: 9pt; color: #666; margin-top: 4px; }
+  .portada-header .logo-area { text-align: right; font-size: 8pt; color: #999; }
+  .portada-header .logo-area strong { display: block; font-size: 10pt; color: #003366; }
+
+  /* FICHA TÉCNICA */
+  .ficha { background: #f0f4ff; border-left: 4px solid #003366; padding: 10px 14px; margin-bottom: 18px; font-size: 9pt; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px; }
+  .ficha .row { display: contents; }
+  .ficha .lbl { color: #555; font-weight: bold; }
+  .ficha .val { color: #1a1a2e; }
+
+  /* SECCIONES */
+  h2 { font-size: 12pt; font-weight: bold; color: #003366; text-transform: uppercase; letter-spacing: 1px;
+       border-bottom: 2px solid #003366; padding-bottom: 4px; margin: 18px 0 10px; }
+  h3 { font-size: 10pt; font-weight: bold; color: #003366; margin: 12px 0 6px; }
+
+  /* TABLA DATOS */
+  table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9.5pt; }
+  th { background: #003366; color: #fff; padding: 6px 10px; text-align: left; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.5px; }
+  td { border: 1px solid #ccd6e8; padding: 6px 10px; }
+  tr:nth-child(even) td { background: #f5f8ff; }
+  td.num { text-align: center; font-weight: bold; }
+  td.formula { font-family: 'Courier New', monospace; font-size: 9pt; background: #f9f9f9; color: #333; }
+
+  /* RESULTADOS PRINCIPALES */
+  .resultados-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+  .res-box { border: 2px solid #003366; padding: 10px; text-align: center; }
+  .res-box.verde { border-color: #1a7a3a; background: #f0fff5; }
+  .res-box.rojo  { border-color: #b22222; background: #fff5f5; }
+  .res-box.amber { border-color: #c17900; background: #fffbf0; }
+  .res-box .res-lbl { font-size: 7.5pt; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .res-box .res-val { font-size: 18pt; font-weight: bold; color: #003366; line-height: 1; }
+  .res-box.verde .res-val { color: #1a7a3a; }
+  .res-box.rojo  .res-val { color: #b22222; }
+  .res-box .res-uni { font-size: 8pt; color: #888; margin-top: 2px; }
+
+  /* VERIFICACIÓN */
+  .ok { color: #1a7a3a; font-weight: bold; }
+  .ko { color: #b22222; font-weight: bold; }
+
+  /* CÁLCULO PASO A PASO */
+  .paso { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid #e8ecf4; align-items: flex-start; }
+  .paso:last-child { border-bottom: none; }
+  .paso-num { font-size: 16pt; font-weight: bold; color: #003366; min-width: 28px; line-height: 1.1; }
+  .paso-body {}
+  .paso-title { font-size: 9.5pt; font-weight: bold; color: #1a1a2e; margin-bottom: 2px; }
+  .paso-formula { font-family: 'Courier New', monospace; font-size: 9pt; color: #c04000; background: #fff8f5; padding: 3px 7px; display: inline-block; border-left: 3px solid #c04000; margin: 3px 0; }
+  .paso-result { font-size: 9pt; font-weight: bold; color: #1a7a3a; margin-top: 2px; }
+  .paso-result.nok { color: #b22222; }
+
+  /* CONCLUSIÓN */
+  .conclusion { border: 2px solid #003366; padding: 12px 16px; background: #f0f4ff; margin-top: 16px; }
+  .conclusion.verde { border-color: #1a7a3a; background: #f0fff5; }
+  .conclusion.rojo  { border-color: #b22222; background: #fff5f5; }
+  .conclusion h3 { color: #003366; margin: 0 0 6px; font-size: 11pt; }
+  .conclusion.verde h3 { color: #1a7a3a; }
+  .conclusion.rojo  h3 { color: #b22222; }
+  .conclusion p { font-size: 9.5pt; line-height: 1.5; color: #333; }
+
+  /* PIE */
+  .footer { border-top: 2px solid #003366; margin-top: 24px; padding-top: 8px; font-size: 8pt; color: #888; display: flex; justify-content: space-between; }
+  .footer strong { color: #003366; }
+
+  /* NOTA NORMATIVA */
+  .nota { background: #fffbf0; border-left: 4px solid #c17900; padding: 8px 12px; font-size: 8.5pt; color: #555; margin: 10px 0; line-height: 1.5; }
+
+  @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+</style>
+</head>
+<body>
+
+<!-- CABECERA -->
+<div class="portada-header">
+  <div>
+    <div class="titulo">Cálculo de Puesta a Tierra</div>
+    <div class="subtitulo">Dimensionado del sistema de toma de tierra · REBT ITC-BT-18 / ITC-BT-26</div>
+  </div>
+  <div class="logo-area">
+    <strong>INFORME TÉCNICO</strong>
+    Fecha: ${fecha} · ${hora}
+  </div>
+</div>
+
+<!-- FICHA TÉCNICA -->
+<div class="ficha">
+  <span class="lbl">Tipo de emplazamiento:</span>
+  <span class="val">${d.Vc === 24 ? 'Emplazamiento conductor (local mojado / exterior) — Vc ≤ 24 V' : 'Emplazamiento normal (interior seco) — Vc ≤ 50 V'}</span>
+  <span class="lbl">Diferencial de protección:</span>
+  <span class="val">${d.Id * 1000} mA</span>
+  <span class="lbl">Tipo de terreno:</span>
+  <span class="val">${d.tipoTerrenoLabel} — ρ = ${d.rho} Ω·m</span>
+  <span class="lbl">Longitud anillo de cimentación:</span>
+  <span class="val">${d.L_anillo} m (cobre desnudo, sección mín. 25 mm²)</span>
+  <span class="lbl">Longitud de cada pica:</span>
+  <span class="val">${d.L_pica} m</span>
+  <span class="lbl">Edificio con pararrayos:</span>
+  <span class="val">${d.tiene_pararrayos ? 'SÍ — Guía Técnica ITC-BT-26: R < 15 Ω' : 'NO — Guía Técnica ITC-BT-26: R < 37 Ω'}</span>
+</div>
+
+<!-- RESULTADOS PRINCIPALES -->
+<h2>Resultados del Dimensionado</h2>
+<div class="resultados-grid">
+  <div class="res-box ${d.cumple_total ? 'verde' : 'rojo'}">
+    <div class="res-lbl">R Total Instalación</div>
+    <div class="res-val">${parseFloat(d.Rt_total.toFixed(2)).toLocaleString('es-ES')}</div>
+    <div class="res-uni">Ω</div>
+  </div>
+  <div class="res-box ${d.anillo_suficiente ? 'verde' : 'amber'}">
+    <div class="res-lbl">Resistencia del Anillo</div>
+    <div class="res-val">${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')}</div>
+    <div class="res-uni">Ω</div>
+  </div>
+  <div class="res-box ${d.anillo_suficiente ? 'verde' : d.cumple_total ? 'verde' : 'rojo'}">
+    <div class="res-lbl">Picas necesarias</div>
+    <div class="res-val">${d.n_picas_final}</div>
+    <div class="res-uni">${d.anillo_suficiente ? 'No se precisan' : 'picas de ' + d.L_pica + ' m'}</div>
+  </div>
+  <div class="res-box">
+    <div class="res-lbl">Tensión contacto real</div>
+    <div class="res-val" style="font-size:14pt">${parseFloat((d.Rt_total * d.Id).toFixed(1)).toLocaleString('es-ES')}</div>
+    <div class="res-uni">V (máx. ${d.Vc} V)</div>
+  </div>
+  <div class="res-box">
+    <div class="res-lbl">Objetivo de diseño</div>
+    <div class="res-val" style="font-size:14pt">${d.Rt_objetivo}</div>
+    <div class="res-uni">Ω</div>
+  </div>
+  ${d.n_picas_final > 0 ? `
+  <div class="res-box ${d.cumple_total ? 'verde' : 'rojo'}">
+    <div class="res-lbl">R del conjunto de picas</div>
+    <div class="res-val" style="font-size:14pt">${parseFloat(d.R_picas_real.toFixed(2)).toLocaleString('es-ES')}</div>
+    <div class="res-uni">Ω</div>
+  </div>` : '<div class="res-box verde"><div class="res-lbl">Anillo suficiente</div><div class="res-val" style="font-size:14pt">✅</div><div class="res-uni">Sin picas adicionales</div></div>'}
+</div>
+
+<!-- VERIFICACIÓN NORMATIVA -->
+<h2>Verificación Normativa</h2>
+<table>
+  <thead>
+    <tr><th style="width:50%">Normativa / Criterio</th><th style="width:15%">Límite</th><th style="width:20%">R obtenida</th><th style="width:15%">Estado</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>REBT ITC-BT-18 — Seguridad de personas<br><small style="color:#888">Vc ≤ ${d.Vc} V con diferencial de ${d.Id * 1000} mA · R = Vc / Id</small></td>
+      <td class="num">&lt; ${parseFloat(d.Rmax_ohm.toFixed(0)).toLocaleString('es-ES')} Ω</td>
+      <td class="num">${parseFloat(d.Rt_total.toFixed(2)).toLocaleString('es-ES')} Ω</td>
+      <td class="num">${ok(d.cumple_rebt)}</td>
+    </tr>
+    <tr>
+      <td>Guía Técnica ITC-BT-26 — ${d.tiene_pararrayos ? 'Edificio CON pararrayos' : 'Edificio SIN pararrayos'}<br><small style="color:#888">${d.tiene_pararrayos ? 'La presencia de pararrayos exige mayor control de impedancia de tierra' : 'Sin pararrayos el umbral es más permisivo'}</small></td>
+      <td class="num">&lt; ${d.R_BT26} Ω</td>
+      <td class="num">${parseFloat(d.Rt_total.toFixed(2)).toLocaleString('es-ES')} Ω</td>
+      <td class="num">${ok(d.cumple_bt26)}</td>
+    </tr>
+    <tr>
+      <td colspan="3"><strong style="color:${d.anillo_suficiente ? '#1a7a3a' : '#c04000'}">
+        ${d.anillo_suficiente
+          ? '✅ El anillo de cimentación es SUFICIENTE. No se requieren picas adicionales.'
+          : `⚠ El anillo de cimentación NO es suficiente. Se requieren ${d.n_picas_final} pica${d.n_picas_final !== 1 ? 's' : ''} de ${d.L_pica} m.`}
+      </strong><br>
+      <small style="color:#888">${d.anillo_suficiente
+        ? `R_anillo = ${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} Ω ≤ objetivo ${d.Rt_objetivo} Ω`
+        : `R_anillo = ${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} Ω > objetivo ${d.Rt_objetivo} Ω → las picas reducen R_total a ${parseFloat(d.Rt_total.toFixed(2)).toLocaleString('es-ES')} Ω`}
+      </small></td>
+      <td class="num">${ok(d.cumple_total)}</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- DESARROLLO DEL CÁLCULO -->
+<h2>Desarrollo del Cálculo</h2>
+
+<div class="paso">
+  <div class="paso-num">1</div>
+  <div class="paso-body">
+    <div class="paso-title">Umbrales normativos aplicables</div>
+    <div class="paso-formula">R_REBT = Vc / Id = ${d.Vc} V / ${d.Id * 1000} mA = ${parseFloat(d.Rmax_ohm.toFixed(0)).toLocaleString('es-ES')} Ω</div>
+    <div class="paso-formula">R_ITC-BT-26 = ${d.R_BT26} Ω (${d.tiene_pararrayos ? 'con pararrayos' : 'sin pararrayos'})</div>
+    <div class="paso-result">→ Objetivo de diseño = min(${parseFloat(d.Rmax_ohm.toFixed(0)).toLocaleString('es-ES')}, ${d.R_BT26}) = ${d.Rt_objetivo} Ω</div>
+  </div>
+</div>
+
+<div class="paso">
+  <div class="paso-num">2</div>
+  <div class="paso-body">
+    <div class="paso-title">Resistencia del anillo de cimentación (conductor enterrado horizontal)</div>
+    <div class="paso-formula">R_anillo = (2 × ρ) / L = (2 × ${d.rho}) / ${d.L_anillo} = ${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} Ω</div>
+    <div class="paso-result ${d.anillo_suficiente ? '' : 'nok'}">${d.anillo_suficiente
+      ? `✅ El anillo es SUFICIENTE: ${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} Ω ≤ ${d.Rt_objetivo} Ω — No se necesitan picas`
+      : `⚠ El anillo NO es suficiente: ${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} Ω > ${d.Rt_objetivo} Ω — Se necesitan picas`}
+    </div>
+  </div>
+</div>
+
+${!d.anillo_suficiente ? `
+<div class="paso">
+  <div class="paso-num">3</div>
+  <div class="paso-body">
+    <div class="paso-title">Resistencia necesaria del conjunto de picas (circuito en paralelo)</div>
+    <div class="paso-formula">R_picas = (R_anillo × Rt_obj) / (R_anillo − Rt_obj) = (${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} × ${d.Rt_objetivo}) / (${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} − ${d.Rt_objetivo}) = ${parseFloat(d.R_picas_necesaria.toFixed(2)).toLocaleString('es-ES')} Ω</div>
+  </div>
+</div>
+<div class="paso">
+  <div class="paso-num">4</div>
+  <div class="paso-body">
+    <div class="paso-title">Número de picas necesarias (electrodos verticales)</div>
+    <div class="paso-formula">n = ρ / (R_picas_nec × L_pica) = ${d.rho} / (${parseFloat(d.R_picas_necesaria.toFixed(2)).toLocaleString('es-ES')} × ${d.L_pica}) = ${parseFloat(d.n_picas_calc.toFixed(2)).toLocaleString('es-ES')}</div>
+    <div class="paso-result">→ Redondeo al entero superior: ${d.n_picas_final} pica${d.n_picas_final !== 1 ? 's' : ''}</div>
+  </div>
+</div>
+<div class="paso">
+  <div class="paso-num">5</div>
+  <div class="paso-body">
+    <div class="paso-title">Resistencia real del conjunto de ${d.n_picas_final} pica${d.n_picas_final !== 1 ? 's' : ''} instaladas</div>
+    <div class="paso-formula">R_picas_real = ρ / (n × L) = ${d.rho} / (${d.n_picas_final} × ${d.L_pica}) = ${parseFloat(d.R_picas_real.toFixed(2)).toLocaleString('es-ES')} Ω</div>
+  </div>
+</div>` : ''}
+
+<div class="paso">
+  <div class="paso-num">${d.anillo_suficiente ? '3' : '6'}</div>
+  <div class="paso-body">
+    <div class="paso-title">Resistencia total de la instalación de puesta a tierra (verificación final)</div>
+    <div class="paso-formula">${d.anillo_suficiente
+      ? `R_total = R_anillo = ${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} Ω`
+      : `R_total = 1 / [(1/${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')}) + (1/${parseFloat(d.R_picas_real.toFixed(2)).toLocaleString('es-ES')})] = ${parseFloat(d.Rt_total.toFixed(2)).toLocaleString('es-ES')} Ω`}
+    </div>
+    <div class="paso-result ${d.cumple_total ? '' : 'nok'}">${d.cumple_total
+      ? `✅ CUMPLE: ${parseFloat(d.Rt_total.toFixed(2)).toLocaleString('es-ES')} Ω ≤ ${d.Rt_objetivo} Ω`
+      : `❌ NO CUMPLE: ${parseFloat(d.Rt_total.toFixed(2)).toLocaleString('es-ES')} Ω > ${d.Rt_objetivo} Ω → Aumentar el número de picas`}
+    </div>
+  </div>
+</div>
+
+<!-- SEPARACIÓN ENTRE PICAS -->
+${d.n_picas_final >= 2 ? `
+<h2>Separación entre Picas</h2>
+<table>
+  <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+  <tbody>
+    <tr><td>Número de picas instaladas</td><td class="num">${d.n_picas_final}</td></tr>
+    <tr><td>Longitud de cada pica</td><td class="num">${d.L_pica} m</td></tr>
+    <tr><td>Separación mínima recomendada entre picas</td><td class="num">≥ ${d.L_pica} m (= longitud enterrada)</td></tr>
+    ${d.n_picas_final > 2 ? `<tr><td>Observación (${d.n_picas_final} picas en paralelo)</td><td class="num">Se recomienda separación &gt; ${d.L_pica} m</td></tr>` : ''}
+  </tbody>
+</table>
+<div class="nota">ITC-BT-18: La separación recomendada entre picas es mayor o igual a la longitud enterrada de las mismas. Para más de dos picas en paralelo se recomienda aumentar la separación.</div>` : ''}
+
+<!-- NOTA NORMATIVA -->
+<div class="nota">
+  <strong>Referencias normativas:</strong> REBT — Reglamento Electrotécnico de Baja Tensión (RD 842/2002) · ITC-BT-18: Instalaciones de puesta a tierra · ITC-BT-26: Instalaciones interiores en viviendas · Guía Técnica de aplicación ITC-BT-26.<br>
+  Los valores de resistividad del terreno son orientativos. Para diseño definitivo se recomienda medición in situ con telurómetro.<br>
+  El anillo de cimentación debe ser de cobre desnudo, sección mínima 25 mm² (habitual 50 mm²), enterrado a una profundidad mínima de 0,5 m (recomendado 0,8 m). Las uniones mediante soldadura aluminotérmica o autógena.
+</div>
+
+<!-- CONCLUSIÓN -->
+<div class="conclusion ${d.cumple_total ? 'verde' : 'rojo'}">
+  <h3>${d.cumple_total ? '✅ Instalación VÁLIDA' : '❌ Instalación NO VÁLIDA — Revisar dimensionado'}</h3>
+  <p>${d.cumple_total
+    ? `La instalación de puesta a tierra con ${d.anillo_suficiente ? 'anillo de cimentación (sin picas adicionales)' : `anillo de cimentación y ${d.n_picas_final} pica${d.n_picas_final !== 1 ? 's' : ''} de ${d.L_pica} m`} proporciona una resistencia total de <strong>${parseFloat(d.Rt_total.toFixed(2)).toLocaleString('es-ES')} Ω</strong>, cumpliendo los requisitos del REBT ITC-BT-18 (R &lt; ${parseFloat(d.Rmax_ohm.toFixed(0)).toLocaleString('es-ES')} Ω) y de la Guía Técnica ITC-BT-26 para edificios ${d.tiene_pararrayos ? 'con pararrayos' : 'sin pararrayos'} (R &lt; ${d.R_BT26} Ω). La tensión de contacto máxima es de ${parseFloat((d.Rt_total * d.Id).toFixed(1)).toLocaleString('es-ES')} V, inferior al límite de ${d.Vc} V establecido por el REBT.`
+    : `La resistencia total obtenida es <strong>${parseFloat(d.Rt_total.toFixed(2)).toLocaleString('es-ES')} Ω</strong>, superando el objetivo de diseño de ${d.Rt_objetivo} Ω. Se debe aumentar el número de picas o revisar la configuración del sistema para que la instalación sea conforme con la normativa aplicable.`}
+  </p>
+</div>
+
+<!-- PIE DE PÁGINA -->
+<div class="footer">
+  <span>Informe generado el ${fecha} a las ${hora} · Calculadora REBT Puesta a Tierra</span>
+  <span><strong>ITC-BT-18 / ITC-BT-26</strong> · REBT (RD 842/2002)</span>
+</div>
+
+</body>
+</html>`;
+
+  // Descargar como archivo HTML
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `informe-puesta-a-tierra-${ahora.toISOString().slice(0,10)}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
