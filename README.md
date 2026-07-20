@@ -11,7 +11,7 @@
 * [APP Cálculo Hidráulico Piscinas Full con información](./APP_5.1.Calc.HID_Piscina_Full/)
 * [APP Cálculo SUA8: Necesidad Pararrayos](./APP_6.Calc.SUA8_Pararrayos/)
 * [APP Cálculo Deshumectación Piscina](./APP_7.Calc.DESH_Piscina/)
-* [APP Cálculo Puesta a Tierra Anillo](./APP_8.Calc.Puesta a Tierra/)
+* [APP Cálculo Puesta a Tierra Anillo](./APP_8.Calc.Puesta_a_Tierra/)
 
 
 ---
