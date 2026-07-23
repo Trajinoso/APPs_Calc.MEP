@@ -12,6 +12,7 @@
 * [APP Cálculo SUA8: Necesidad Pararrayos](./APP_6.Calc.SUA8_Pararrayos/)
 * [APP Cálculo Deshumectación Piscina](./APP_7.Calc.DESH_Piscina/)
 * [APP Cálculo Puesta a Tierra Anillo](./APP_8.Calc.Puesta_a_Tierra/)
+* [APP_Cálculo Batería de Condensadores](./APP_9.Calc.BT.Bateria_Condensadores/)
 
 
 ---
