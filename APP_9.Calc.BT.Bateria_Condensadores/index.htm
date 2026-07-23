@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Calculadora Condensadores PRO</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #f4f6f9;
+    padding: 20px;
+}
+
+.container {
+    max-width: 720px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+h1 { color: #2c3e50; }
+
+input {
+    width: 80px;
+    padding: 5px;
+    margin: 5px;
+}
+
+.result {
+    background: #e8f4ff;
+    padding: 8px;
+    margin-top: 5px;
+    border-radius: 5px;
+}
+
+.section {
+    margin-top: 20px;
+}
+
+.error {
+    color: red;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>⚡ Batería de Condensadores</h1>
+
+<div class="section">
+<h3>📥 Inputs</h3>
+
+P (kW): <input id="P"><br>
+cos φ1: <input id="cos1"><br>
+cos φ2: <input id="cos2"><br>
+U (V): <input id="U"><br>
+Coef: <input id="coef"><br>
+
+<div class="error" id="error"></div>
+
+</div>
+
+<div class="section">
+<h3>📊 Resultados</h3>
+
+<div class="result">Qc: <span id="Qc"></span> kVAr</div>
+<div class="result">Intensidad: <span id="I"></span> A</div>
+<div class="result">Protección: <span id="Iprot"></span> A</div>
+
+<h4>Banco escalonado</h4>
+<div class="result">1:2:4 → <span id="step124"></span> kVAr</div>
+<div class="result">1:2 → <span id="step12"></span> kVAr</div>
+
+</div>
+
+<div class="section">
+<h3>📘 Teoría</h3>
+<p>
+La corrección del factor de potencia se basa en reducir la componente reactiva mediante condensadores.
+</p>
+<p><b>Qc = P (tan φ1 − tan φ2)</b></p>
+<p>
+Esto mejora eficiencia, reduce pérdidas y evita penalizaciones por energía reactiva.
+</p>
+</div>
+
+<div class="section">
+<h3>📜 Normativa básica</h3>
+<ul>
+<li>REBT (España)</li>
+<li>ITC-BT-47 (Instalaciones receptoras)</li>
+<li>Tarifas eléctricas → penalización cos φ &lt; 0.95</li>
+</ul>
+</div>
+
+</div>
+
+<script>
+
+// cargar datos guardados
+function cargar() {
+    document.getElementById("P").value = localStorage.getItem("P") || 204;
+    document.getElementById("cos1").value = localStorage.getItem("cos1") || 0.87;
+    document.getElementById("cos2").value = localStorage.getItem("cos2") || 0.95;
+    document.getElementById("U").value = localStorage.getItem("U") || 400;
+    document.getElementById("coef").value = localStorage.getItem("coef") || 1.5;
+}
+
+// guardar automáticamente
+function guardar() {
+    localStorage.setItem("P", document.getElementById("P").value);
+    localStorage.setItem("cos1", document.getElementById("cos1").value);
+    localStorage.setItem("cos2", document.getElementById("cos2").value);
+    localStorage.setItem("U", document.getElementById("U").value);
+    localStorage.setItem("coef", document.getElementById("coef").value);
+}
+
+// cálculo automático
+function calcular() {
+
+let error = document.getElementById("error");
+error.innerText = "";
+
+let P = parseFloat(P_input.value);
+let cos1 = parseFloat(cos1_input.value);
+let cos2 = parseFloat(cos2_input.value);
+let U = parseFloat(U_input.value);
+let coef = parseFloat(coef_input.value);
+
+// validaciones
+if (cos1 <= 0 || cos1 > 1 || cos2 <= 0 || cos2 > 1) {
+    error.innerText = "cos φ debe estar entre 0 y 1";
+    return;
+}
+
+// cálculos
+let phi1 = Math.acos(cos1);
+let phi2 = Math.acos(cos2);
+
+let tan1 = Math.tan(phi1);
+let tan2 = Math.tan(phi2);
+
+let Qc = P * (tan1 - tan2);
+
+// IMPORTANTE: kVAr → VAr
+let I = (Qc * 1000) / (Math.sqrt(3) * U);
+let Iprot = I * coef;
+
+// escalones
+let step124 = Qc / 7;
+let step12 = Qc / 3;
+
+// mostrar
+Qc_span.innerText = Qc.toFixed(2);
+I_span.innerText = I.toFixed(2);
+Iprot_span.innerText = Iprot.toFixed(2);
+step124_span.innerText = step124.toFixed(2);
+step12_span.innerText = step12.toFixed(2);
+
+}
+
+// referencias rápidas DOM
+const P_input = document.getElementById("P");
+const cos1_input = document.getElementById("cos1");
+const cos2_input = document.getElementById("cos2");
+const U_input = document.getElementById("U");
+const coef_input = document.getElementById("coef");
+
+const Qc_span = document.getElementById("Qc");
+const I_span = document.getElementById("I");
+const Iprot_span = document.getElementById("Iprot");
+const step124_span = document.getElementById("step124");
+const step12_span = document.getElementById("step12");
+
+// eventos automáticos
+[P_input, cos1_input, cos2_input, U_input, coef_input].forEach(el => {
+    el.addEventListener("input", () => {
+        guardar();
+        calcular();
+    });
+});
+
+// iniciar
+cargar();
+calcular();
+
+</script>
+
+</body>
+</html>
