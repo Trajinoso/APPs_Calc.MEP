@@ -18,7 +18,6 @@ Permite introducir parámetros básicos de una instalación y obtener automátic
 ✅ Persistencia de datos (localStorage)  
 ✅ Resultados instantáneos sin recargar  
 ✅ Incluye teoría y normativa básica  
-✅ Preparada para embeber en Notion  
 
 ---
 
