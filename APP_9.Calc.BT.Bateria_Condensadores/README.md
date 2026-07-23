@@ -206,9 +206,6 @@ Esto permite:
 - Escalonamiento 1:2 y 1:2:4
 - Ajuste de fórmulas reales
 
-### v1.5 – Integración
-- Preparado para embed en Notion
-
 ---
 
 ## ⚠️ Limitaciones
