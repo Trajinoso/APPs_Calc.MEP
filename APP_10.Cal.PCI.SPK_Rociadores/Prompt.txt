@@ -1,0 +1,30 @@
+Prompt para Generación de Aplicación de Rociadores (UNE-EN 12845)
+Objetivo: Crear una aplicación interactiva en Python para el cálculo de las características de una instalación de rociadores automáticos, cumpliendo estrictamente con la norma UNE-EN 12845.
+
+Requisitos Generales:
+
+Idioma: Toda la interfaz de usuario, mensajes, comentarios y variables deben estar en español.
+Unidades: Utilizar exclusivamente el Sistema Internacional (SI): caudales en l/min, densidades en mm/min, áreas en m², alturas en metros y volúmenes de reserva en m³.
+Estructura del Código: Separar los datos de las tablas (diccionarios/constantes) de la lógica de cálculo y la interfaz (CLI) en archivos modulares.
+Funcionalidades Técnicas:
+
+Criterios de Diseño (Tabla 3):
+
+Riesgos: RL, RO1-RO4, REP1-REP3.
+Seleccionar entre Sistema Mojada/Acción Previa o Sistema Seco/Alterno.
+Áreas de operación según la tabla (ej. RO3 Mojada = 216 m², Seca = 270 m²).
+Riesgo Extra de Almacenamiento (REA / Tabla 4):
+
+Protección solo en techo para configuraciones ST1 a ST6 y categorías I a IV.
+Lógica de Altura: Si la altura supera el máximo permitido en la Tabla 4, asignar los valores máximos y advertir: "¡ATENCIÓN! Se requieren rociadores intermedios".
+Sistema Seco en REA: Incrementar el área de operación un 25% automáticamente si se selecciona sistema seco.
+Cálculos Finales:
+
+Caudal por rociador: Densidad × Área de cobertura (permitir entrada personalizada).
+Caudal total: Densidad × Área de operación.
+Reserva de agua: (Caudal total × Tiempo de actuación) / 1000. Tiempos: RL (30 min), RO (60 min), REP/REA (90 min).
+Interfaz (CLI):
+
+Menú para elegir riesgo.
+Entrada de datos validada.
+Resumen de resultados con advertencias de seguridad.
