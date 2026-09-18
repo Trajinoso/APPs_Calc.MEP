@@ -927,33 +927,46 @@ function calcular() {
   const R_anillo = (2 * rho) / L_anillo;
 
   // ── Necesidad de picas ────────────────────────────────────
+  // "anillo_suficiente" es SIEMPRE la lectura técnica de si el anillo por sí
+  // solo cumple el objetivo. No determina por sí sola cuántas picas se
+  // calculan: eso depende del modo.
   const anillo_suficiente = R_anillo <= Rt_objetivo;
+
+  // Nº de picas introducido a mano, se lee siempre que el modo sea manual,
+  // sea o no estrictamente necesario según el anillo.
+  let n_picas_manual_input = 0;
+  if (modo === 'manual') {
+    n_picas_manual_input = parseInt(document.getElementById('n_picas_manual').value) || 0;
+  }
 
   let R_picas_necesaria, n_picas_calc, n_picas_final, R_picas_real, Rt_total;
 
-  if (anillo_suficiente) {
-    R_picas_necesaria = null;
-    n_picas_calc  = 0;
-    n_picas_final = 0;
-    R_picas_real  = Infinity;
-    Rt_total      = R_anillo;
-  } else {
-    // R_picas necesaria en paralelo con el anillo
+  if (!anillo_suficiente) {
+    // El anillo no cumple por sí solo: se calcula cuántas picas harían falta
     R_picas_necesaria = (R_anillo * Rt_objetivo) / (R_anillo - Rt_objetivo);
-    // n = ρ / (R_picas_nec × L_pica)
     n_picas_calc = Math.ceil(rho / (R_picas_necesaria * L_pica));
-
-    if (modo === 'manual') {
-      n_picas_final = parseInt(document.getElementById('n_picas_manual').value) || 0;
-    } else {
-      n_picas_final = n_picas_calc;
-    }
-
-    R_picas_real = (n_picas_final > 0) ? rho / (n_picas_final * L_pica) : Infinity;
-    Rt_total = (n_picas_final > 0)
-      ? 1 / ((1 / R_anillo) + (1 / R_picas_real))
-      : R_anillo;
+  } else {
+    // El anillo ya cumple: no hay "necesidad" que calcular
+    R_picas_necesaria = null;
+    n_picas_calc = 0;
   }
+
+  if (modo === 'manual') {
+    // Modo manual: el nº de picas SIEMPRE es el que introduce el usuario,
+    // se necesiten o no según el cálculo anterior.
+    n_picas_final = n_picas_manual_input;
+  } else {
+    // Modo automático: "suficiente" sigue significando 0 picas.
+    n_picas_final = anillo_suficiente ? 0 : n_picas_calc;
+  }
+
+  R_picas_real = (n_picas_final > 0) ? rho / (n_picas_final * L_pica) : Infinity;
+  Rt_total = (n_picas_final > 0)
+    ? 1 / ((1 / R_anillo) + (1 / R_picas_real))
+    : R_anillo;
+
+  // Picas instaladas por decisión del usuario aunque el anillo ya cumplía
+  const picas_voluntarias = anillo_suficiente && n_picas_final > 0;
 
   // ── Evaluación de cumplimiento ────────────────────────────
   const cumple_rebt  = Rt_total <= Rmax_ohm  + 0.001;
@@ -992,9 +1005,11 @@ function calcular() {
       <div class="result-unit">V (máx. ${Vc} V)</div>
     </div>
     <div class="result-card ${anillo_suficiente ? 'highlight' : cumple_total ? 'highlight' : 'danger'}">
-      <div class="result-label">Picas necesarias</div>
+      <div class="result-label">${anillo_suficiente ? 'Picas instaladas' : 'Picas necesarias'}</div>
       <div class="result-value" style="font-size:42px">${n_picas_final}</div>
-      <div class="result-unit">${anillo_suficiente ? 'No se necesitan picas' : `picas de ${L_pica} m`}</div>
+      <div class="result-unit">${picas_voluntarias
+        ? `de ${L_pica} m (voluntarias, modo manual)`
+        : anillo_suficiente ? 'No se necesitan picas' : `picas de ${L_pica} m`}</div>
     </div>
     <div class="result-card">
       <div class="result-label">Objetivo de diseño</div>
@@ -1032,14 +1047,18 @@ function calcular() {
           <tr>
             <td style="border:1px solid var(--border); padding:8px 12px; color:var(--text);" colspan="3">
               <span style="color:${anillo_suficiente ? 'var(--green)' : 'var(--accent2)'}; font-size:13px; font-weight:bold;">
-                ${anillo_suficiente
-                  ? `✅ El anillo de cimentación es suficiente. NO se necesitan picas.`
-                  : `⚠ El anillo solo no es suficiente. Se necesitan ${n_picas_final} pica${n_picas_final !== 1 ? 's' : ''} de ${L_pica} m.`}
+                ${picas_voluntarias
+                  ? `✅ El anillo de cimentación es suficiente por sí solo. Se han añadido igualmente ${n_picas_final} pica${n_picas_final !== 1 ? 's' : ''} de ${L_pica} m (modo manual).`
+                  : anillo_suficiente
+                    ? `✅ El anillo de cimentación es suficiente. NO se necesitan picas.`
+                    : `⚠ El anillo solo no es suficiente. Se necesitan ${n_picas_final} pica${n_picas_final !== 1 ? 's' : ''} de ${L_pica} m.`}
               </span><br>
               <span style="color:var(--muted); font-size:11px;">
-                ${anillo_suficiente
-                  ? `R_anillo = ${fmt(R_anillo)} Ω ≤ objetivo ${fmt(Rt_objetivo)} Ω`
-                  : `R_anillo = ${fmt(R_anillo)} Ω > objetivo ${fmt(Rt_objetivo)} Ω → picas reducen R_total a ${fmt(Rt_total)} Ω`}
+                ${picas_voluntarias
+                  ? `R_anillo = ${fmt(R_anillo)} Ω ≤ objetivo ${fmt(Rt_objetivo)} Ω → picas voluntarias reducen R_total a ${fmt(Rt_total)} Ω`
+                  : anillo_suficiente
+                    ? `R_anillo = ${fmt(R_anillo)} Ω ≤ objetivo ${fmt(Rt_objetivo)} Ω`
+                    : `R_anillo = ${fmt(R_anillo)} Ω > objetivo ${fmt(Rt_objetivo)} Ω → picas reducen R_total a ${fmt(Rt_total)} Ω`}
               </span>
             </td>
             <td style="border:1px solid var(--border); padding:8px 12px; text-align:center; font-weight:bold; color:${cumple_total ? 'var(--green)' : 'var(--danger)'};">${cumple_total ? '✅ OK' : '❌ REVISAR'}</td>
@@ -1050,66 +1069,67 @@ function calcular() {
   `;
 
   // ── Proceso paso a paso ───────────────────────────────────
+  // Los pasos se construyen como lista dinámica para que la numeración se
+  // adapte cuando hay picas voluntarias en modo manual (anillo suficiente
+  // + picas instaladas igualmente).
+  const pasos = [];
+
+  pasos.push(`
+    <div class="ps-title">Umbrales normativos aplicables</div>
+    <div class="ps-formula">R_REBT = Vc / Id = ${Vc} V / ${Id*1000} mA = ${fmt(Rmax_ohm, 0)} Ω</div>
+    <div class="ps-formula">R_ITC-BT-26 = ${R_BT26} Ω (${tiene_pararrayos ? 'con pararrayos' : 'sin pararrayos'})</div>
+    <div class="ps-result">→ Objetivo de diseño = min(${fmt(Rmax_ohm, 0)}, ${R_BT26}) = <b>${fmt(Rt_objetivo, 0)} Ω</b></div>
+  `);
+
+  pasos.push(`
+    <div class="ps-title">Resistencia del anillo enterrado (conductor horizontal)</div>
+    <div class="ps-formula">R_anillo = (2 × ρ) / L = (2 × ${rho}) / ${L_anillo} = ${fmt(R_anillo)} Ω</div>
+    <div class="ps-result">${anillo_suficiente
+      ? `✅ El anillo solo es SUFICIENTE (${fmt(R_anillo)} Ω ≤ ${fmt(Rt_objetivo)} Ω)${picas_voluntarias ? ' — no obligatorio, pero se añaden picas por indicación manual' : ' — No se necesitan picas'}`
+      : `⚠ El anillo NO es suficiente (${fmt(R_anillo)} Ω > ${fmt(Rt_objetivo)} Ω) — Se necesitan picas`}
+    </div>
+  `);
+
+  if (!anillo_suficiente) {
+    pasos.push(`
+      <div class="ps-title">Resistencia necesaria del conjunto de picas (circuito paralelo)</div>
+      <div class="ps-formula">R_picas = (R_anillo × Rt) / (R_anillo − Rt) = (${fmt(R_anillo)} × ${Rt_objetivo}) / (${fmt(R_anillo)} − ${Rt_objetivo}) = ${fmt(R_picas_necesaria)} Ω</div>
+    `);
+    pasos.push(`
+      <div class="ps-title">Número de picas necesarias (fórmula pica vertical)</div>
+      <div class="ps-formula">n = ρ / (R_picas × L_pica) = ${rho} / (${fmt(R_picas_necesaria)} × ${L_pica}) = ${fmt(n_picas_calc, 2)}</div>
+      <div class="ps-result">→ ${modo === 'manual'
+        ? `Nº introducido manualmente: <b>${n_picas_final} pica${n_picas_final !== 1 ? 's' : ''}</b> (el cálculo automático sugería ${n_picas_calc})`
+        : `Redondeo al entero superior: <b>${n_picas_final} pica${n_picas_final !== 1 ? 's' : ''}</b>`}</div>
+    `);
+  }
+
+  if (n_picas_final > 0) {
+    pasos.push(`
+      <div class="ps-title">Resistencia real del conjunto de ${n_picas_final} pica${n_picas_final !== 1 ? 's' : ''}${picas_voluntarias ? ' (instaladas voluntariamente, modo manual)' : ''}</div>
+      <div class="ps-formula">R_picas_real = ρ / (n × L) = ${rho} / (${n_picas_final} × ${L_pica}) = ${fmt(R_picas_real)} Ω</div>
+    `);
+  }
+
+  pasos.push(`
+    <div class="ps-title">Resistencia total de la instalación (verificación)</div>
+    <div class="ps-formula">${n_picas_final > 0
+      ? `R_total = 1 / [(1/${fmt(R_anillo)}) + (1/${fmt(R_picas_real)})] = ${fmt(Rt_total)} Ω`
+      : `R_total = R_anillo = ${fmt(R_anillo)} Ω`}
+    </div>
+    <div class="ps-result">${cumple_total
+      ? `✅ CUMPLE: ${fmt(Rt_total)} Ω ≤ ${fmt(Rt_objetivo)} Ω (objetivo)`
+      : `❌ NO CUMPLE: ${fmt(Rt_total)} Ω > ${fmt(Rt_objetivo)} Ω → aumentar nº de picas`}
+    </div>
+  `);
+
   const pb = document.getElementById('process-box');
-  pb.innerHTML = normBox + `
+  pb.innerHTML = normBox + pasos.map((body, i) => `
     <div class="process-step">
-      <div class="ps-num">1</div>
-      <div class="ps-body">
-        <div class="ps-title">Umbrales normativos aplicables</div>
-        <div class="ps-formula">R_REBT = Vc / Id = ${Vc} V / ${Id*1000} mA = ${fmt(Rmax_ohm, 0)} Ω</div>
-        <div class="ps-formula">R_ITC-BT-26 = ${R_BT26} Ω (${tiene_pararrayos ? 'con pararrayos' : 'sin pararrayos'})</div>
-        <div class="ps-result">→ Objetivo de diseño = min(${fmt(Rmax_ohm, 0)}, ${R_BT26}) = <b>${fmt(Rt_objetivo, 0)} Ω</b></div>
-      </div>
+      <div class="ps-num">${i + 1}</div>
+      <div class="ps-body">${body}</div>
     </div>
-    <div class="process-step">
-      <div class="ps-num">2</div>
-      <div class="ps-body">
-        <div class="ps-title">Resistencia del anillo enterrado (conductor horizontal)</div>
-        <div class="ps-formula">R_anillo = (2 × ρ) / L = (2 × ${rho}) / ${L_anillo} = ${fmt(R_anillo)} Ω</div>
-        <div class="ps-result">${R_anillo <= Rt_objetivo
-          ? `✅ El anillo solo es SUFICIENTE (${fmt(R_anillo)} Ω ≤ ${fmt(Rt_objetivo)} Ω) — No se necesitan picas`
-          : `⚠ El anillo NO es suficiente (${fmt(R_anillo)} Ω > ${fmt(Rt_objetivo)} Ω) — Se necesitan picas`}
-        </div>
-      </div>
-    </div>
-    ${!anillo_suficiente && R_picas_necesaria !== null ? `
-    <div class="process-step">
-      <div class="ps-num">3</div>
-      <div class="ps-body">
-        <div class="ps-title">Resistencia necesaria del conjunto de picas (circuito paralelo)</div>
-        <div class="ps-formula">R_picas = (R_anillo × Rt) / (R_anillo − Rt) = (${fmt(R_anillo)} × ${Rt_objetivo}) / (${fmt(R_anillo)} − ${Rt_objetivo}) = ${fmt(R_picas_necesaria)} Ω</div>
-      </div>
-    </div>
-    <div class="process-step">
-      <div class="ps-num">4</div>
-      <div class="ps-body">
-        <div class="ps-title">Número de picas necesarias (fórmula pica vertical)</div>
-        <div class="ps-formula">n = ρ / (R_picas × L_pica) = ${rho} / (${fmt(R_picas_necesaria)} × ${L_pica}) = ${fmt(n_picas_calc, 2)}</div>
-        <div class="ps-result">→ Redondeo al entero superior: <b>${n_picas_final} pica${n_picas_final !== 1 ? 's' : ''}</b></div>
-      </div>
-    </div>
-    <div class="process-step">
-      <div class="ps-num">5</div>
-      <div class="ps-body">
-        <div class="ps-title">Resistencia real del conjunto de ${n_picas_final} pica${n_picas_final !== 1 ? 's' : ''}</div>
-        <div class="ps-formula">R_picas_real = ρ / (n × L) = ${rho} / (${n_picas_final} × ${L_pica}) = ${fmt(R_picas_real)} Ω</div>
-      </div>
-    </div>` : ''}
-    <div class="process-step">
-      <div class="ps-num">${anillo_suficiente ? '3' : '6'}</div>
-      <div class="ps-body">
-        <div class="ps-title">Resistencia total de la instalación (verificación)</div>
-        <div class="ps-formula">${anillo_suficiente
-          ? `R_total = R_anillo = ${fmt(R_anillo)} Ω`
-          : `R_total = 1 / [(1/${fmt(R_anillo)}) + (1/${fmt(R_picas_real)})] = ${fmt(Rt_total)} Ω`}
-        </div>
-        <div class="ps-result">${cumple_total
-          ? `✅ CUMPLE: ${fmt(Rt_total)} Ω ≤ ${fmt(Rt_objetivo)} Ω (objetivo)`
-          : `❌ NO CUMPLE: ${fmt(Rt_total)} Ω > ${fmt(Rt_objetivo)} Ω → aumentar nº de picas`}
-        </div>
-      </div>
-    </div>
-  `;
+  `).join('');
 
   // ── Status bar ────────────────────────────────────────────
   const sbc = document.getElementById('status-bar-container');
@@ -1131,7 +1151,7 @@ function calcular() {
     sc.style.display = 'block';
     scontent.innerHTML = `
       <div style="font-family:'Share Tech Mono',monospace; font-size:13px; line-height:2.4;">
-        <div>Nº de picas instaladas: <span style="color:var(--green)">${n_picas_final}</span></div>
+        <div>Nº de picas instaladas: <span style="color:var(--green)">${n_picas_final}</span>${picas_voluntarias ? ' <span style="color:var(--muted); font-size:11px;">(voluntarias, modo manual)</span>' : ''}</div>
         <div>Longitud de cada pica: <span style="color:var(--accent)">${L_pica} m</span></div>
         <div>Separación mínima recomendada: <span style="color:var(--accent2)">≥ ${L_pica} m</span> (= longitud enterrada)</div>
         ${n_picas_final > 2 ? `<div>Para ${n_picas_final} picas en paralelo: separación <span style="color:var(--warn)">mayor que ${L_pica} m</span></div>` : ''}
@@ -1153,6 +1173,8 @@ function calcular() {
     Rmax_ohm, R_BT26, Rt_objetivo,
     R_anillo,
     anillo_suficiente,
+    modo,
+    picas_voluntarias,
     R_picas_necesaria: R_picas_necesaria || 0,
     n_picas_calc: n_picas_calc || 0,
     n_picas_final,
@@ -1314,9 +1336,11 @@ function generarInforme() {
     <div class="res-uni">Ω</div>
   </div>
   <div class="res-box ${d.anillo_suficiente ? 'verde' : d.cumple_total ? 'verde' : 'rojo'}">
-    <div class="res-lbl">Picas necesarias</div>
+    <div class="res-lbl">${d.anillo_suficiente ? 'Picas instaladas' : 'Picas necesarias'}</div>
     <div class="res-val">${d.n_picas_final}</div>
-    <div class="res-uni">${d.anillo_suficiente ? 'No se precisan' : 'picas de ' + d.L_pica + ' m'}</div>
+    <div class="res-uni">${d.picas_voluntarias
+      ? 'de ' + d.L_pica + ' m (voluntarias, modo manual)'
+      : d.anillo_suficiente ? 'No se precisan' : 'picas de ' + d.L_pica + ' m'}</div>
   </div>
   <div class="res-box">
     <div class="res-lbl">Tensión contacto real</div>
@@ -1357,13 +1381,17 @@ function generarInforme() {
     </tr>
     <tr>
       <td colspan="3"><strong style="color:${d.anillo_suficiente ? '#1a7a3a' : '#c04000'}">
-        ${d.anillo_suficiente
-          ? '✅ El anillo de cimentación es SUFICIENTE. No se requieren picas adicionales.'
-          : `⚠ El anillo de cimentación NO es suficiente. Se requieren ${d.n_picas_final} pica${d.n_picas_final !== 1 ? 's' : ''} de ${d.L_pica} m.`}
+        ${d.picas_voluntarias
+          ? `✅ El anillo de cimentación es SUFICIENTE por sí solo. Se han añadido igualmente ${d.n_picas_final} pica${d.n_picas_final !== 1 ? 's' : ''} de ${d.L_pica} m (modo manual).`
+          : d.anillo_suficiente
+            ? '✅ El anillo de cimentación es SUFICIENTE. No se requieren picas adicionales.'
+            : `⚠ El anillo de cimentación NO es suficiente. Se requieren ${d.n_picas_final} pica${d.n_picas_final !== 1 ? 's' : ''} de ${d.L_pica} m.`}
       </strong><br>
-      <small style="color:#888">${d.anillo_suficiente
-        ? `R_anillo = ${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} Ω ≤ objetivo ${d.Rt_objetivo} Ω`
-        : `R_anillo = ${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} Ω > objetivo ${d.Rt_objetivo} Ω → las picas reducen R_total a ${parseFloat(d.Rt_total.toFixed(2)).toLocaleString('es-ES')} Ω`}
+      <small style="color:#888">${d.picas_voluntarias
+        ? `R_anillo = ${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} Ω ≤ objetivo ${d.Rt_objetivo} Ω → picas voluntarias reducen R_total a ${parseFloat(d.Rt_total.toFixed(2)).toLocaleString('es-ES')} Ω`
+        : d.anillo_suficiente
+          ? `R_anillo = ${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} Ω ≤ objetivo ${d.Rt_objetivo} Ω`
+          : `R_anillo = ${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} Ω > objetivo ${d.Rt_objetivo} Ω → las picas reducen R_total a ${parseFloat(d.Rt_total.toFixed(2)).toLocaleString('es-ES')} Ω`}
       </small></td>
       <td class="num">${ok(d.cumple_total)}</td>
     </tr>
@@ -1373,66 +1401,65 @@ function generarInforme() {
 <!-- DESARROLLO DEL CÁLCULO -->
 <h2>Desarrollo del Cálculo</h2>
 
-<div class="paso">
-  <div class="paso-num">1</div>
-  <div class="paso-body">
+${(() => {
+  const pasosInforme = [];
+
+  pasosInforme.push(`
     <div class="paso-title">Umbrales normativos aplicables</div>
     <div class="paso-formula">R_REBT = Vc / Id = ${d.Vc} V / ${d.Id * 1000} mA = ${parseFloat(d.Rmax_ohm.toFixed(0)).toLocaleString('es-ES')} Ω</div>
     <div class="paso-formula">R_ITC-BT-26 = ${d.R_BT26} Ω (${d.tiene_pararrayos ? 'con pararrayos' : 'sin pararrayos'})</div>
     <div class="paso-result">→ Objetivo de diseño = min(${parseFloat(d.Rmax_ohm.toFixed(0)).toLocaleString('es-ES')}, ${d.R_BT26}) = ${d.Rt_objetivo} Ω</div>
-  </div>
-</div>
+  `);
 
-<div class="paso">
-  <div class="paso-num">2</div>
-  <div class="paso-body">
+  pasosInforme.push(`
     <div class="paso-title">Resistencia del anillo de cimentación (conductor enterrado horizontal)</div>
     <div class="paso-formula">R_anillo = (2 × ρ) / L = (2 × ${d.rho}) / ${d.L_anillo} = ${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} Ω</div>
     <div class="paso-result ${d.anillo_suficiente ? '' : 'nok'}">${d.anillo_suficiente
-      ? `✅ El anillo es SUFICIENTE: ${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} Ω ≤ ${d.Rt_objetivo} Ω — No se necesitan picas`
+      ? `✅ El anillo es SUFICIENTE: ${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} Ω ≤ ${d.Rt_objetivo} Ω${d.picas_voluntarias ? ' — no obligatorio, picas añadidas por indicación manual' : ' — No se necesitan picas'}`
       : `⚠ El anillo NO es suficiente: ${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} Ω > ${d.Rt_objetivo} Ω — Se necesitan picas`}
     </div>
-  </div>
-</div>
+  `);
 
-${!d.anillo_suficiente ? `
-<div class="paso">
-  <div class="paso-num">3</div>
-  <div class="paso-body">
-    <div class="paso-title">Resistencia necesaria del conjunto de picas (circuito en paralelo)</div>
-    <div class="paso-formula">R_picas = (R_anillo × Rt_obj) / (R_anillo − Rt_obj) = (${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} × ${d.Rt_objetivo}) / (${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} − ${d.Rt_objetivo}) = ${parseFloat(d.R_picas_necesaria.toFixed(2)).toLocaleString('es-ES')} Ω</div>
-  </div>
-</div>
-<div class="paso">
-  <div class="paso-num">4</div>
-  <div class="paso-body">
-    <div class="paso-title">Número de picas necesarias (electrodos verticales)</div>
-    <div class="paso-formula">n = ρ / (R_picas_nec × L_pica) = ${d.rho} / (${parseFloat(d.R_picas_necesaria.toFixed(2)).toLocaleString('es-ES')} × ${d.L_pica}) = ${parseFloat(d.n_picas_calc.toFixed(2)).toLocaleString('es-ES')}</div>
-    <div class="paso-result">→ Redondeo al entero superior: ${d.n_picas_final} pica${d.n_picas_final !== 1 ? 's' : ''}</div>
-  </div>
-</div>
-<div class="paso">
-  <div class="paso-num">5</div>
-  <div class="paso-body">
-    <div class="paso-title">Resistencia real del conjunto de ${d.n_picas_final} pica${d.n_picas_final !== 1 ? 's' : ''} instaladas</div>
-    <div class="paso-formula">R_picas_real = ρ / (n × L) = ${d.rho} / (${d.n_picas_final} × ${d.L_pica}) = ${parseFloat(d.R_picas_real.toFixed(2)).toLocaleString('es-ES')} Ω</div>
-  </div>
-</div>` : ''}
+  if (!d.anillo_suficiente) {
+    pasosInforme.push(`
+      <div class="paso-title">Resistencia necesaria del conjunto de picas (circuito en paralelo)</div>
+      <div class="paso-formula">R_picas = (R_anillo × Rt_obj) / (R_anillo − Rt_obj) = (${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} × ${d.Rt_objetivo}) / (${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} − ${d.Rt_objetivo}) = ${parseFloat(d.R_picas_necesaria.toFixed(2)).toLocaleString('es-ES')} Ω</div>
+    `);
+    pasosInforme.push(`
+      <div class="paso-title">Número de picas necesarias (electrodos verticales)</div>
+      <div class="paso-formula">n = ρ / (R_picas_nec × L_pica) = ${d.rho} / (${parseFloat(d.R_picas_necesaria.toFixed(2)).toLocaleString('es-ES')} × ${d.L_pica}) = ${parseFloat(d.n_picas_calc.toFixed(2)).toLocaleString('es-ES')}</div>
+      <div class="paso-result">→ ${d.modo === 'manual'
+        ? `Nº introducido manualmente: ${d.n_picas_final} pica${d.n_picas_final !== 1 ? 's' : ''} (el cálculo automático sugería ${d.n_picas_calc})`
+        : `Redondeo al entero superior: ${d.n_picas_final} pica${d.n_picas_final !== 1 ? 's' : ''}`}</div>
+    `);
+  }
 
-<div class="paso">
-  <div class="paso-num">${d.anillo_suficiente ? '3' : '6'}</div>
-  <div class="paso-body">
+  if (d.n_picas_final > 0) {
+    pasosInforme.push(`
+      <div class="paso-title">Resistencia real del conjunto de ${d.n_picas_final} pica${d.n_picas_final !== 1 ? 's' : ''} instaladas${d.picas_voluntarias ? ' (voluntarias, modo manual)' : ''}</div>
+      <div class="paso-formula">R_picas_real = ρ / (n × L) = ${d.rho} / (${d.n_picas_final} × ${d.L_pica}) = ${parseFloat(d.R_picas_real.toFixed(2)).toLocaleString('es-ES')} Ω</div>
+    `);
+  }
+
+  pasosInforme.push(`
     <div class="paso-title">Resistencia total de la instalación de puesta a tierra (verificación final)</div>
-    <div class="paso-formula">${d.anillo_suficiente
-      ? `R_total = R_anillo = ${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} Ω`
-      : `R_total = 1 / [(1/${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')}) + (1/${parseFloat(d.R_picas_real.toFixed(2)).toLocaleString('es-ES')})] = ${parseFloat(d.Rt_total.toFixed(2)).toLocaleString('es-ES')} Ω`}
+    <div class="paso-formula">${d.n_picas_final > 0
+      ? `R_total = 1 / [(1/${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')}) + (1/${parseFloat(d.R_picas_real.toFixed(2)).toLocaleString('es-ES')})] = ${parseFloat(d.Rt_total.toFixed(2)).toLocaleString('es-ES')} Ω`
+      : `R_total = R_anillo = ${parseFloat(d.R_anillo.toFixed(2)).toLocaleString('es-ES')} Ω`}
     </div>
     <div class="paso-result ${d.cumple_total ? '' : 'nok'}">${d.cumple_total
       ? `✅ CUMPLE: ${parseFloat(d.Rt_total.toFixed(2)).toLocaleString('es-ES')} Ω ≤ ${d.Rt_objetivo} Ω`
       : `❌ NO CUMPLE: ${parseFloat(d.Rt_total.toFixed(2)).toLocaleString('es-ES')} Ω > ${d.Rt_objetivo} Ω → Aumentar el número de picas`}
     </div>
-  </div>
-</div>
+  `);
+
+  return pasosInforme.map((body, i) => `
+    <div class="paso">
+      <div class="paso-num">${i + 1}</div>
+      <div class="paso-body">${body}</div>
+    </div>
+  `).join('');
+})()}
 
 <!-- SEPARACIÓN ENTRE PICAS -->
 ${d.n_picas_final >= 2 ? `
@@ -1459,7 +1486,9 @@ ${d.n_picas_final >= 2 ? `
 <div class="conclusion ${d.cumple_total ? 'verde' : 'rojo'}">
   <h3>${d.cumple_total ? '✅ Instalación VÁLIDA' : '❌ Instalación NO VÁLIDA — Revisar dimensionado'}</h3>
   <p>${d.cumple_total
-    ? `La instalación de puesta a tierra con ${d.anillo_suficiente ? 'anillo de cimentación (sin picas adicionales)' : `anillo de cimentación y ${d.n_picas_final} pica${d.n_picas_final !== 1 ? 's' : ''} de ${d.L_pica} m`} proporciona una resistencia total de <strong>${parseFloat(d.Rt_total.toFixed(2)).toLocaleString('es-ES')} Ω</strong>, cumpliendo los requisitos del REBT ITC-BT-18 (R &lt; ${parseFloat(d.Rmax_ohm.toFixed(0)).toLocaleString('es-ES')} Ω) y de la Guía Técnica ITC-BT-26 para edificios ${d.tiene_pararrayos ? 'con pararrayos' : 'sin pararrayos'} (R &lt; ${d.R_BT26} Ω). La tensión de contacto máxima es de ${parseFloat((d.Rt_total * d.Id).toFixed(1)).toLocaleString('es-ES')} V, inferior al límite de ${d.Vc} V establecido por el REBT.`
+    ? `La instalación de puesta a tierra con ${d.n_picas_final === 0
+        ? 'anillo de cimentación (sin picas adicionales)'
+        : `anillo de cimentación y ${d.n_picas_final} pica${d.n_picas_final !== 1 ? 's' : ''} de ${d.L_pica} m${d.picas_voluntarias ? ' (picas no obligatorias, instaladas voluntariamente en modo manual)' : ''}`} proporciona una resistencia total de <strong>${parseFloat(d.Rt_total.toFixed(2)).toLocaleString('es-ES')} Ω</strong>, cumpliendo los requisitos del REBT ITC-BT-18 (R &lt; ${parseFloat(d.Rmax_ohm.toFixed(0)).toLocaleString('es-ES')} Ω) y de la Guía Técnica ITC-BT-26 para edificios ${d.tiene_pararrayos ? 'con pararrayos' : 'sin pararrayos'} (R &lt; ${d.R_BT26} Ω). La tensión de contacto máxima es de ${parseFloat((d.Rt_total * d.Id).toFixed(1)).toLocaleString('es-ES')} V, inferior al límite de ${d.Vc} V establecido por el REBT.`
     : `La resistencia total obtenida es <strong>${parseFloat(d.Rt_total.toFixed(2)).toLocaleString('es-ES')} Ω</strong>, superando el objetivo de diseño de ${d.Rt_objetivo} Ω. Se debe aumentar el número de picas o revisar la configuración del sistema para que la instalación sea conforme con la normativa aplicable.`}
   </p>
 </div>
