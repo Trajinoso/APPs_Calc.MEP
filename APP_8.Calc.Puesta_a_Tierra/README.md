@@ -10,9 +10,12 @@ Aquí tienes el texto del documento convertido a formato Markdown de forma ínte
 
 **ITC-BT-18 / ITC-BT-26 / Guía Técnica de Aplicación**
 
-**Versión 1.0**
+**Versión 2.0**
 
-**6 de marzo de 2026**
+**18 de septiembre de 2026**
+
+---
+Fix (v4.1): Corregido el modo manual de picas — cuando el anillo de cimentación ya cumple el objetivo por sí solo, el número de picas introducido manualmente dejaba de calcularse y no se sumaba a la resistencia total. Ahora, en modo manual, las picas introducidas se calculan siempre (se necesiten o no) y se muestran identificadas como "voluntarias" en resultados, tabla normativa, separación entre picas e informe. En modo automático no cambia el comportamiento: anillo suficiente sigue significando 0 picas.
 
 ---
 
