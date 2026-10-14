@@ -1,163 +1,153 @@
-Aquí tienes un archivo `README.md` completo, riguroso y estructurado a nivel profesional para el repositorio del proyecto. Está diseñado integrando las especificaciones de la aplicación HTML/JS, la lógica de ingeniería detallada en el Informe de Requerimientos Técnicos (ITR) y las directrices del Master Prompt (PM), incluyendo la bitácora de cambios oficial.
+# CalcPisc Multi-Vaso v1.4 — Calculadora Hidráulica de Piscinas
+
+> **Herramienta de cálculo, dimensionamiento y justificación hidráulica para proyectos de piscinas multi-vaso conforme a la normativa española y europea.**  
+> *Referencia técnica: ITR.CPSC_260410-01 v1.4*
 
 ---
 
-# CalcPisc — Calculadora Hidráulica de Piscinas (v1.3)
+## 📋 Normativa Técnica Aplicada
 
-`CalcPisc` es una aplicación de ingeniería web interactiva de código abierto diseñada para el **cálculo, dimensionado preliminar y verificación hidráulica de piscinas** de uso público y colectivo. La herramienta automatiza la evaluación geométrica, los caudales de renovación normativos, el área de filtración requerida, la velocidad de paso por tuberías por tramos y la caracterización de los grupos de bombeo, emitiendo un informe técnico dinámico y estructurado listo para su exportación a PDF.
-
-Este desarrollo se rige de forma estricta bajo el principio de **Documentation-Driven Development (DDD)**, asegurando que toda línea de código ejecute exactamente los algoritmos convalidados en el Informe de Requisitos Técnicos adjunto.
-
----
-
-## 🚀 Características y Módulos Principales
-
-La aplicación se estructura en una arquitectura limpia dividida en tres pestañas operativas:
-
-### 1. Pestaña: Calculadora Hidráulica
-
-* **M1 · Geometría:** Deducción automática del volumen total ($m^3$), superficie de lámina de agua ($m^2$) y profundidad media a partir de datos de longitud, anchura y profundidades extremas.
-* **M2 · Filtración:** Cálculo de caudales de diseño según tiempos de renovación normativos (con factor de compensación por vaso). Selección de filtros comerciales normalizados basados en la velocidad de filtración real y máxima admisible ($m/h$).
-* **M3 · Tuberías:** Pre-dimensionado y cálculo de diámetros comerciales e internos en PVC PN10 para los colectores críticos del sistema: Aspiración, Impulsión, Recogida/Rebosadero y Lavado.
-* **M4 · Bomba:** Estimación paramétrica de la potencia teórica del motor ($kW$ y $CV$) requerida en el punto de diseño a partir del número de bombas en paralelo, la Altura Manométrica Total ($HMT$) introducida y la eficiencia termomecánica del conjunto.
-
-### 2. Pestaña: Tablas de Referencia
-
-Centraliza las bases de datos técnicas estáticas utilizadas para las restricciones de cálculo:
-
-* Velocidades máximas normativas por tramo de tubería.
-* Catálogo de diámetros comerciales de filtros normalizados con sus respectivas superficies de filtración ($m^2$).
-* Catálogo de tuberías de PVC PN10 con sus diámetros interiores netos y caudales máximos límite recomendados por velocidad.
-
-### 3. Pestaña: Informe Resumen
-
-* Generación en tiempo real de una memoria de cálculo dividida en 6 secciones formalizadas.
-* Maquetación CSS nativa con directivas `@media print` para generar un reporte PDF limpio y profesional a través de la función de impresión del sistema (`window.print()`), ocultando la interfaz interactiva.
+* **RD 742/2013**: Criterios técnico-sanitarios de las piscinas (tiempos máximos de renovación, velocidad máxima en sumideros $\le 0,5\text{ m/s}$ contra atrapamiento).
+* **CTE DB-HS4**: Código Técnico de la Edificación — Suministro y evacuación de agua (rangos de velocidades de diseño en tuberías).
+* **UNE-EN 13451**: Equipamiento para piscinas (requisitos de seguridad hidráulica y elementos empotrados).
+* **UNE-EN 16713-1**: Sistemas de filtración para piscinas (velocidades superficiales de diseño y diámetros comerciales normalizados).
+* **UNE-EN ISO 1452 / PVC PN10**: Serie de tuberías de policloruro de vinilo no plastificado para conducciones de agua a presión.
 
 ---
 
-## 🧮 Fundamentos de Ingeniería y Algoritmos
+## 🚀 Módulos de Cálculo Hidráulico
 
-Toda la lógica de computación utiliza de forma estricta el **Sistema Internacional de Unidades (SI)**.
+1. **M1 — Geometría y Volúmenes**:
+   * Cálculo del volumen del vaso principal ($V_{\text{vaso}} = L \times A \times h_{\text{med}}$).
+   * Vaso de compensación para piscinas desbordantes ($V_{\text{comp}}$).
+   * Caudal de recirculación simultáneo según tiempo de renovación normativo ($Q_{\text{total}} = V_{\text{total}} / T_{\text{renov}}$).
+   * Tipologías admitidas: Privada/Residencial, Pública/Polivalente, Infantil/Chapoteo, Deportiva/Competición, Spa/Hidromasaje.
 
-### A. Volumen y Superficie
+2. **M2 — Sistema de Filtración**:
+   * Cálculo de superficie filtrante mínima necesaria ($S_{\text{tot}} = Q / v_{\text{filtr}}$).
+   * Selector automático y manual de diámetros comerciales normalizados (**Ø400 mm hasta Ø1800 mm**).
+   * Verificación de velocidad real de paso y caudal admisible máximo ($Q_{\text{máx}}$).
+   * Alertas automáticas de filtro suficiente o infradimensionado.
 
-$$S_{vaso} = L \times A$$
+3. **M3 — Red de Tuberías PVC PN10**:
+   * Dimensionamiento tramo por tramo:
+     * *Aspiración principal* ($0,8\text{ – }1,5\text{ m/s}$)
+     * *Aspiración unitaria por bomba*
+     * *Impulsión principal* ($1,5\text{ – }2,5\text{ m/s}$)
+     * *Colector / batería de válvulas de filtros* ($1,2\text{ – }2,5\text{ m/s}$)
+     * *Recogida superficial / rebosadero* ($0,3\text{ – }1,0\text{ m/s}$)
+     * *Lavado de filtros a contracorriente* ($2,0\text{ – }3,0\text{ m/s}$)
+     * *Sumidero de fondo de seguridad* ($\le 0,5\text{ m/s}$)
+   * **Selección y personalización de DN comercial**: El software propone el diámetro comercial PVC PN10 recomendado por cálculo automático (**DN25 a DN500**), pero **permite al técnico modificar manualmente el DN de cualquier tramo**, recalculando al instante el diámetro interior ($DI$), la velocidad real ($v_{\text{real}}$) y el estado de cumplimiento (**OK / Revisar / Fuera de rango**).
+   * **Sumideros de fondo por normativa**: Se dimensionan siempre con un **mínimo de 2 unidades** separadas **como mínimo 2 metros entre ejes/centros** según RD 742/2013 y UNE-EN 13451, con velocidad límite $\le 0,5\text{ m/s}$ contra riesgo de atrapamiento. Boquillas de impulsión calculadas según caudal unitario de diseño.
 
-$$V_{vaso} = S_{vaso} \times \left(\frac{h_{min} + h_{max}}{2}\right)$$
+4. **M4 — Grupo de Bombeo en Paralelo**:
+   * Reparto de caudal entre bombas en paralelo ($Q_{\text{bomba}} = Q_{\text{total}} / N$).
+   * Potencia hidráulica ($P_{\text{hid}}$) y potencia absorbida del motor en **kW** y **CV** considerando rendimientos de bomba ($\eta_b$) y motor ($\eta_m$).
+   * Comprobación de compatibilidad hidráulica bomba-filtro ($Q_{\text{bomba}} \le Q_{\text{máx\_filtro}}$).
 
-$$V_{total} = V_{vaso} \times \left(1 + \frac{\%_{comp}}{100}\right)$$
-
-### B. Caudales y Filtración
-
-El caudal mínimo de recirculación exigido por diseño:
-
-
-$$Q_{dise\tilde{n}o} = \frac{V_{total}}{t_{renovacion}}$$
-
-Para la validación de filtros de área comercial ($S_{com}$):
-
-
-$$Q_{real} = S_{com} \times v_{filtracion} \times N_{filtros}$$
-
-$$Q_{max} = S_{com} \times v_{filtracion\_max} \times N_{filtros}$$
-
-### C. Dimensionado de Tuberías (PVC PN10)
-
-A partir de la velocidad máxima paramétrica ($v_{tramo}$), se obtiene el diámetro interior mínimo teórico ($D_{int\_teorico}$):
-
-
-$$D_{int\_teorico} = \sqrt{\frac{4 \times Q_{tramo}}{\pi \times v_{tramo}}}$$
-
-
-El script realiza un barrido matricial sobre la serie normalizada de PVC PN10 para seleccionar el diámetro comercial cuyo diámetro interior neto ($D_{interior}$) sea inmediatamente superior al teórico, recalculando la velocidad real de paso para comprobar que no supere los límites físicos del material.
-
-### D. Potencia Hidráulica de Bombeo
-
-$$Q_{bomba} = \frac{Q_{real}}{N_{bombas}}$$
-
-$$P_{motor} = \frac{\rho \times g \times Q_{bomba} \times HMT}{3600 \times \eta_{bomba} \times \eta_{motor}}$$
-
-
-*Donde $\rho \approx 1000 \text{ kg/m}^3$, $g \approx 9.81 \text{ m/s}^2$, con eficiencias ($\eta$) expresadas en base 1.*
+5. **Cuadro General Comparativo Multi-Vaso**:
+   * Vista consolidada con el volumen total de la instalación, caudal conjunto de recirculación, superficie total de lecho filtrante y potencia eléctrica instalada.
 
 ---
 
-## 🛠️ Tecnologías e Implementación
+## 📁 Modos de Uso y Organización de Proyectos
 
-* **Core Lógico:** JavaScript Vanilla (ES6). Cálculos deterministas directos y mapeo matricial de arrays para la selección de componentes. No requiere librerías ni frameworks pesados de terceros.
-* **Interfaz de Usuario:** HTML5 semántico y CSS3 avanzado utilizando propiedades personalizadas (`--variables`), transiciones suaves y arquitectura adaptativa mediante Flexbox y CSS Grid (Mobile-First de alta fidelidad).
-* **Fuentes:** Integración de la familia tipográfica *IBM Plex Sans* e *IBM Plex Mono* para garantizar legibilidad técnica.
-* **Dependencias:** 0% dependencias externas. No requiere conexión a CDNs para operar los motores de cálculo principales.
+Tienes **3 formas de trabajar**, según cómo organice los archivos tu oficina técnica:
 
----
+### MODO 1: Archivo Autónomo Todo en Uno (`.html`) por Carpeta de Proyecto
+*Es la opción más directa: no necesita instalar Node.js, no necesita servidores y funciona sin internet.*
 
-## 💻 Despliegue y Uso
+1. **Obtener la plantilla base**:
+   * En la barra superior, pulsa **Exportar** $\rightarrow$ **Archivo HTML Autónomo (`.html`)**.
+   * Guarda ese archivo en una carpeta de plantillas como `CalcPisc_Plantilla_Base.html`.
 
-Al tratarse de una aplicación basada estrictamente en **Client-Side Rendering (CSR)**, su ejecución es local e instantánea:
+2. **Organización en carpetas**:
+   Copia el archivo dentro de la carpeta del proyecto correspondiente:
+   ```text
+   📁 Proyectos_MEP/
+   └── 📁 2026_EXP-042_Piscina_Residencial/
+       ├── 📄 CalcPisc_EXP-042.html    <-- Doble clic directo
+       ├── 📄 EXP-042_Piscina.json     <-- Copia de seguridad JSON
+       ├── 📄 Planos.dwg
+       └── 📄 Memoria.pdf
+   ```
 
-1. Clonar el repositorio:
-```bash
-git clone https://github.com/tu-usuario/calcpisc.git
+3. **Aislamiento total entre proyectos**:
+   * Cada archivo HTML autónomo genera su propio **Identificador Único (`projectId`)**.
+   * Esto garantiza que abrir y modificar `Proyecto_A.html` **NUNCA modifique ni sobreescriba** los datos de `Proyecto_B.html`, aunque ambos estén abiertos a la vez en el mismo navegador.
 
-```
-
-
-2. Abrir el entorno:
-* Haga doble clic en el archivo `CalcPisc_CPSC_260410-01_v1.3.html` desde cualquier navegador web moderno (Chrome, Edge, Firefox, Safari).
-* Alternativamente, si desea servirlo en una red local de la oficina técnica:
-```bash
-python -m http.server 8000
-
-```
-
-
-E ingrese a `http://localhost:8000`.
-
-
+4. **Guardar cambios en el archivo físico**:
+   * Al pulsar **`💾 Guardar este HTML`**:
+     * En navegadores modernos (Chrome, Edge) con soporte de la *File System Access API*, se abre el diálogo para seleccionar el archivo original y **sobrescribirlo directamente** con 1 clic.
+     * En otros navegadores, descarga una copia actualizada con los datos incrustados.
 
 ---
 
-## 📋 Cumplimiento Normativo (Marco de Referencia)
+### MODO 2: Flujo con Archivo de Datos JSON por Proyecto (`.json`)
+*Flujo recomendado para oficinas técnicas con servidores compartidos, copias de seguridad o control de versiones.*
 
-Los algoritmos y rangos recomendados en la interfaz están parametrizados en conformidad con los siguientes textos legales y normas técnicas vigentes en territorio español y europeo:
+1. En la carpeta de cada proyecto se guarda únicamente el archivo de datos:
+   ```text
+   📁 2026_Polideportivo/
+   └── 📄 EXP-2026-01_Polideportivo_San_Fernando.json
+   ```
 
-* **RD 742/2013:** Criterios técnico-sanitarios de las piscinas.
-* **CTE DB-HS4:** Código Técnico de la Edificación - Salubridad (Suministro de agua).
-* **UNE-EN 13451 / UNE-EN 16713-1:** Equipamiento para piscinas y sistemas de distribución hidráulica.
-* **Especificación de Materiales:** Dimensiones e interiores normativos para tuberías de PVC Presión PN10.
-
----
-
-## 📜 Bitácora de Cambios (Versionado Oficial)
-
-* **v1.3 (2026-04-10) — Estado: ACEPTADO [Versión Actual]**
-* *M4:* Eliminación completa del campo de texto de modelo comercial de bomba y sus referencias en el árbol del DOM y JavaScript para evitar duplicidades con las curvas de selección de fabricantes.
-* *M3:* Adición de bloques de texto descriptivos inline (`.vel-desc`) bajo cada input de velocidad, indicando el rango normativo y el criterio técnico de diseño.
-* *Tablas:* Implementación de la pestaña "Tablas de Referencia" poblada dinámicamente mediante funciones JS (`poblarTablasFiltros`, `poblarTablasPVC`) al inicializar la aplicación.
-* *Informe:* Rediseño del módulo de informe dinámico (`generarInforme`), estructurado en 6 secciones completas con soporte optimizado para exportación PDF mediante `window.print()` y reglas `@media print`.
-
-
-* **v1.2 (2026-04-10) — Estado: ACEPTADO**
-* Corrección y ajuste fino en las ecuaciones de cálculo y acoplamiento hidráulico de bombas en configuración paralelo.
-
-
-* **v1.1 (2026-04-10) — Estado: ACEPTADO**
-* Eliminación del cálculo automático preliminar de pérdidas de carga singulares en favor de un campo de entrada manual para la Altura Manométrica Total ($HMT$) requerida en el proyecto.
-
-
-* **v1.0 (2026-04-10) — Estado: ACEPTADO**
-* Lanzamiento del informe inicial y estructura base del motor de cálculo geométrico y de filtración.
-
-
+2. **Carga y guardado**:
+   * Pulsa **`📂 Cargar JSON`** para abrir los datos de cualquier proyecto guardado en esa carpeta.
+   * Al terminar, pulsa **`💾 Guardar JSON [REF]`** y la aplicación descargará el archivo nombrado automáticamente con la referencia y nombre del proyecto:
+     `[CODIGO]_[Nombre_Proyecto].json` (ejemplo: `EXP-2026-01_Piscina_Privada.json`).
 
 ---
 
-## ⚠️ Limitaciones del Modelo
+### MODO 3: Ejecución en Local con Node.js en tu PC
+*Ideal si deseas disponer de la aplicación completa con React, TypeScript y Tailwind CSS en tu entorno local.*
 
-> [!IMPORTANT]
-> * **Curvas de Bomba:** La aplicación estima la potencia del motor requerida basándose en un punto de diseño estático de caudal y presión ($HMT$). No sustituye la simulación sobre la curva característica del fabricante ni valida el punto de operación real (BEP).
-> * **NPSH (Cavitación):** No se realiza la comprobación del NPSH disponible frente al requerido. Dicha validación debe ser ejecutada por el ingeniero responsable considerando la geometría específica de la tubería de aspiración y la temperatura del fluido.
-> * **Pérdidas de Carga:** La $HMT$ es un valor de entrada parametrizado manualmente; las pérdidas lineales y singulares del circuito hidráulico exterior deben calcularse previamente mediante métodos tradicionales (Darcy-Weisbach o Hazen-Williams).
-> 
->
+#### Requisitos Previos
+* **Node.js** (versión 20 LTS o superior) instalado desde [nodejs.org](https://nodejs.org).
+
+#### Instalación y Puesta en Marcha
+1. Abre un terminal en la raíz de la carpeta del proyecto y ejecuta:
+   ```bash
+   npm install
+   ```
+
+2. Arranca el servidor de desarrollo:
+   ```bash
+   npm run dev
+   ```
+
+3. Abre en tu navegador:
+   ```text
+   http://localhost:3000
+   ```
+
+4. Para compilar una versión optimizada para producción:
+   ```bash
+   npm run build
+   npm run preview
+   ```
+
+---
+
+## 📊 Formatos de Exportación Disponibles
+
+| Formato | Botón | Uso Principal |
+| :--- | :--- | :--- |
+| **JSON (`.json`)** | `⬇ JSON` / `Guardar JSON` | Portabilidad total de datos, copias de seguridad y reapertura instantánea. Nombrado automático `[CODIGO]_[NOMBRE].json`. |
+| **HTML Autónomo (`.html`)** | `Archivo HTML Autónomo` | Aplicación ejecutable autocontenida para mover de carpeta en carpeta con doble clic. |
+| **CSV (`.csv`)** | `⬇ CSV` | Tabla estructurada con codificación UTF-8 BOM para importar directamente a **Excel** o **LibreOffice Calc** (mediciones, presupuestos). |
+| **PDF / Impresión** | `🖨 Imprimir / PDF` | Memoria técnica con diseño oficial de ingeniería para visado colegial o entrega al cliente. Permite elegir entre imprimir el vaso activo o el informe consolidado de todos los vasos. |
+
+---
+
+## ❓ Preguntas Frecuentes (FAQ)
+
+### ¿Por qué antes se mezclaban los datos de dos archivos HTML distintos?
+En los navegadores web, todos los archivos abiertos mediante `file:///` comparten el mismo dominio local. Si dos archivos no tenían código de proyecto o usaban la misma clave de almacenamiento, compartían el `localStorage`. **Esto ha quedado completamente resuelto**: ahora cada archivo HTML autónomo genera y conserva un identificador único aleatorio e independiente (`projectId`), aislando los datos de cada proyecto de forma definitiva.
+
+### ¿Se puede usar sin conexión a internet?
+**Sí, al 100%.** Toda la lógica matemática, fórmulas hidráulicas, tablas de diámetros de PVC PN10 y filtros normalizados están programadas de forma nativa en JavaScript sin dependencias externas.
+
+### ¿Puedo tener un proyecto con 4 o 5 piscinas diferentes?
+**Sí.** Puedes añadir tantos vasos como requiera la instalación mediante el botón **`+ Añadir Vaso`** (por ejemplo: Vaso Polivalente, Vaso de Chapoteo Infantil, Vaso de Hidromasaje y Piscina de Saltos). La pestaña **Comparativa Global** y el **Informe PDF** consolidarán automáticamente toda la instalación.
