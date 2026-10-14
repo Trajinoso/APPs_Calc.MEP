@@ -2,220 +2,230 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard MEP</title>
-
   <style>
+    :root {
+      --bg-main: #0f172a;
+      --bg-card: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --border: #334155;
+    }
+
     body {
       margin: 0;
-      font-family: "Segoe UI", Arial, sans-serif;
-      background: #0f172a;
-      color: #e2e8f0;
-
+      font-family: 'Inter', "Segoe UI", Arial, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
       display: flex;
       flex-direction: column;
       min-height: 100vh;
     }
 
     header {
-      background: #1e293b;
-      padding: 15px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(8px);
+      padding: 20px 40px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     header h1 {
       margin: 0;
-      font-size: 20px;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
     .container {
-      padding: 30px;
+      padding: 40px 20px;
       flex: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      box-sizing: border-box;
     }
 
-    h2 {
-      margin-top: 30px;
-      border-bottom: 1px solid #334155;
+    .category-section {
+      margin-bottom: 40px;
+    }
+
+    .category-section h2 {
+      font-size: 20px;
+      color: var(--text-main);
+      border-bottom: 2px solid var(--border);
       padding-bottom: 10px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 20px;
-      margin-top: 20px;
     }
 
     .card {
-      background: #1e293b;
-      padding: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 24px;
       border-radius: 12px;
-      transition: 0.3s;
-      border: 1px solid transparent;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
     }
 
     .card:hover {
       transform: translateY(-5px);
-      border: 1px solid #3b82f6;
+      border-color: var(--accent);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
     }
 
     .card h3 {
-      margin-top: 0;
-      color: #38bdf8;
+      margin: 0 0 10px 0;
+      color: var(--text-main);
+      font-size: 18px;
     }
 
     .card p {
       font-size: 14px;
-      opacity: 0.8;
+      color: var(--text-muted);
+      margin: 0 0 20px 0;
+      flex: 1;
+      line-height: 1.5;
     }
 
     .btn {
-      display: inline-block;
-      margin-top: 10px;
-      padding: 8px 12px;
-      background: #3b82f6;
-      color: white;
-      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 16px;
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      border-radius: 8px;
       text-decoration: none;
       font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s ease;
     }
 
     .btn:hover {
-      background: #2563eb;
+      background: var(--accent);
+      color: #fff;
     }
 
     footer {
-      width: 100%;
-      background:#1e293b;
-      color:#94a3b8;
-      text-align:center;
-      padding:15px;
-      font-size:14px;
-      border-top:1px solid #334155;
+      background: var(--bg-card);
+      color: var(--text-muted);
+      text-align: center;
+      padding: 20px;
+      font-size: 14px;
+      border-top: 1px solid var(--border);
     }
-
   </style>
 </head>
-
 <body>
 
 <header>
   <h1>⚙️ Dashboard APPs MEP</h1>
 </header>
 
-<div class="container">
-
-  <!-- 🔵 Hidráulica -->
-  <h2>Hidráulica</h2>
-  <div class="grid">
-
-    <div class="card">
-      <h3>HS5 PB SAN</h3>
-      <p>Pozo Bombeo Fecales saneamiento_HS4</p>
-      <a href="APP_1.Calc.PB_SAN/" class="btn">Abrir</a>
-    </div>
-
-    <div class="card">
-      <h3>HS1 PB NF</h3>
-      <p>Pozo Bombeo Nivel Freático_HS1</p>
-      <a href="APP_2.Calc.PB_NF/" class="btn">Abrir</a>
-    </div>
-
-    <div class="card">
-      <h3>HID Bombas Múltiples</h3>
-      <p>Cálculos hidráulicos Curvas Bombas</p>
-      <a href="APP_3.Calc_B.HID_Multiples/" class="btn">Abrir</a>
-    </div>
-
-    <div class="card">
-      <h3>Caudales Agua AA</h3>
-      <p>Cálculo de caudales de agua climatización</p>
-      <a href="APP_4.Calc.Caudales-AA/" class="btn">Abrir</a>
-    </div>
-
-    <div class="card">
-      <h3>Piscina Full</h3>
-      <p>Herramienta completa Filtración</p>
-      <a href="APP_5.1.Calc.HID_Piscina_Full/" class="btn">Abrir</a>
-    </div>
-
-    <div class="card">
-      <h3>Piscinas</h3>
-      <p>Cálculo básico Filtración</p>
-      <a href="APP_5.Calc.HID_Piscinas/" class="btn">Abrir</a>
-    </div>
-
-    <div class="card">
-      <h3>Deshumectadora</h3>
-      <p>Cálculo básico caudal a deshumectar</p>
-      <a href="APP_7.Calc.DESH_Piscina/" class="btn">Abrir</a>
-    </div>
-    
-  </div>
-  <!-- 🔵 Electricidad y Protección -->
-  <h2>BT, Protección y Puesta a Tierra</h2>
-  <div class="grid">
-
-    <div class="card">
-      <h3>Fotovoltáica</h3>
-      <p>Cálculo Fotovoltáico: Condiciones de trabajo y Seguridad</p>
-      <a href="APP_12.Calc.FV_Fotovoltaica/" class="btn">Abrir</a>
-    </div>
-    
-    <div class="card">
-      <h3>SUA8 Pararrayos</h3>
-      <p>Cálculo SUA8: Necesidad Pararrayos</p>
-      <a href="APP_6.Calc.SUA8_Pararrayos/" class="btn">Abrir</a>
-    </div>
-
-    <div class="card">
-      <h3>Anillo Puesta a Tierra</h3>
-      <p>Cálculo Puesta a Tierra_Anillos y Picas</p>
-      <a href="APP_8.Calc.Puesta_a_Tierra/" class="btn">Abrir</a>
-    </div>
-
-    <div class="card">
-      <h3>Batería condensadores</h3>
-      <p>Cálculo compensación Energía Reactiva</p>
-      <a href="APP_9.Calc.BT.Bateria_Condensadores/" class="btn">Abrir</a>
-    </div>
-  
-  </div>
-
-   <!-- 🔵 PCI -->
-  <h2>Protección Contra Incendios</h2>
-  <div class="grid">
-
-     <div class="card">
-      <h3>UNE 12845: SPK</h3>
-      <p>Cálculo SPK: Condiciones mínima Rociadores</p>
-      <a href="APP_10.Cal.PCI.SPK_Rociadores/" class="btn">Abrir</a>
-    </div>
-    
- </div>
-     <!-- 🔵 AA -->
-  <h2>Climatización y Ventilación</h2>
-  <div class="grid">
-
-    <div class="card">
-      <h3>Climatización</h3>
-      <p>Caudales Agua Refrigerada</p>
-      <a href="APP_11.Calc.AA_Caudales_Agua/" class="btn">Abrir</a>
-    </div>
-    
- </div>
-    
+<div class="container" id="app-container">
+  <!-- El contenido se generará dinámicamente con JavaScript -->
 </div>
 
 <footer>
-  <p>⚙️ Apps MEP</p>
-  <p id="version"></p>
+  <p>⚙️ Apps MEP | <span id="version"></span></p>
   <p>Desarrollado por rpulido_ELECNOR SA · © 2026</p>
 </footer>
 
 <script>
+  // ==========================================
+  // 🛠️ CONFIGURACIÓN DE ENLACES (DATA)
+  // Añade o modifica los enlaces a tus repositorios aquí
+  // ==========================================
+  const appsData = [
+    {
+      title: "Hidráulica",
+      icon: "🔵",
+      apps: [
+        { name: "HS5 PB SAN", desc: "Pozo Bombeo Fecales saneamiento_HS4", url: "APP_1.Calc.PB_SAN/" },
+        { name: "HS1 PB NF", desc: "Pozo Bombeo Nivel Freático_HS1", url: "APP_2.Calc.PB_NF/" },
+        { name: "HID Bombas Múltiples", desc: "Cálculos hidráulicos Curvas Bombas", url: "APP_3.Calc_B.HID_Multiples/" },
+        { name: "Caudales Agua AA", desc: "Cálculo de caudales de agua climatización", url: "APP_4.Calc.Caudales-AA/" },
+        { name: "Piscina Full", desc: "Herramienta completa Filtración", url: "APP_5.1.Calc.HID_Piscina_Full/" },
+        { name: "Piscinas", desc: "Cálculo básico Filtración", url: "APP_5.Calc.HID_Piscinas/" },
+        { name: "Deshumectadora", desc: "Cálculo básico caudal a deshumectar", url: "APP_7.Calc.DESH_Piscina/" }
+      ]
+    },
+    {
+      title: "BT, Protección y Puesta a Tierra",
+      icon: "⚡",
+      apps: [
+        { name: "Fotovoltáica", desc: "Cálculo Fotovoltáico: Condiciones de trabajo y Seguridad", url: "APP_12.Calc.FV_Fotovoltaica/" },
+        { name: "SUA8 Pararrayos", desc: "Cálculo SUA8: Necesidad Pararrayos", url: "APP_6.Calc.SUA8_Pararrayos/" },
+        { name: "Anillo Puesta a Tierra", desc: "Cálculo Puesta a Tierra_Anillos y Picas", url: "APP_8.Calc.Puesta_a_Tierra/" },
+        { name: "Batería condensadores", desc: "Cálculo compensación Energía Reactiva", url: "APP_9.Calc.BT.Bateria_Condensadores/" }
+      ]
+    },
+    {
+      title: "Protección Contra Incendios",
+      icon: "🔥",
+      apps: [
+        { name: "UNE 12845: SPK", desc: "Cálculo SPK: Condiciones mínima Rociadores", url: "APP_10.Cal.PCI.SPK_Rociadores/" }
+      ]
+    },
+    {
+      title: "Climatización y Ventilación",
+      icon: "❄️",
+      apps: [
+        { name: "Climatización", desc: "Caudales Agua Refrigerada", url: "APP_11.Calc.AA_Caudales_Agua/" }
+      ]
+    }
+  ];
+
+  // ==========================================
+  // 🚀 RENDERIZADO AUTOMÁTICO
+  // No necesitas tocar esto para añadir nuevos enlaces
+  // ==========================================
+  const container = document.getElementById('app-container');
+
+  appsData.forEach(category => {
+    const section = document.createElement('div');
+    section.className = 'category-section';
+    
+    const title = document.createElement('h2');
+    title.innerHTML = `${category.icon} ${category.title}`;
+    section.appendChild(title);
+
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+
+    category.apps.forEach(app => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <h3>${app.name}</h3>
+        <p>${app.desc}</p>
+        <a href="${app.url}" class="btn">Abrir Aplicación ➔</a>
+      `;
+      grid.appendChild(card);
+    });
+
+    section.appendChild(grid);
+    container.appendChild(section);
+  });
+
+  // Autogeneración de versión y fecha
   const fecha = new Date();
   const version = "v" + fecha.getFullYear() + "." + (fecha.getMonth()+1) + "." + fecha.getDate();
   document.getElementById("version").innerText = "Versión " + version;
