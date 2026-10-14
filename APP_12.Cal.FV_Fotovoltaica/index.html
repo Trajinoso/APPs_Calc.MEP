@@ -1,0 +1,2040 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CalcFV v5.0 — Configurador Fotovoltaico Multi-Inversor</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700;900&family=Barlow+Condensed:wght@400;700;900&display=swap');
+
+:root{
+  --bg:#0a0d12;--bg-p:#0f141c;--bg-c:#151c28;--bg-i:#1a2235;
+  --bdr:#1f2d45;--bdr-l:#2a3d58;
+  --sol:#f59e0b;--sol-d:#92600a;--sol-g:rgba(245,158,11,0.12);
+  --cy:#22d3ee;--cy-d:#0e6878;--cy-g:rgba(34,211,238,0.08);
+  --gr:#10b981;--gr-d:#065f46;--gr-g:rgba(16,185,129,0.08);
+  --rd:#ef4444;--rd-d:#7f1d1d;--rd-g:rgba(239,68,68,0.08);
+  --or:#f97316;--or-d:#7c2d12;--or-g:rgba(249,115,22,0.08);
+  --pu:#a78bfa;--pu-d:#4c1d95;--pu-g:rgba(167,139,250,0.08);
+  --tx:#e2e8f0;--tx-d:#64748b;--tx-m:#94a3b8;
+  --r:6px;--rl:12px;
+  --hdr:52px;--tabs:38px;--shell:90px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--tx);font-family:'Barlow',sans-serif;font-size:14px;
+  background-image:radial-gradient(ellipse 80% 40% at 50% -10%,rgba(245,158,11,0.06) 0%,transparent 60%),
+  repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(31,45,69,0.18) 40px),
+  repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(31,45,69,0.18) 40px);}
+
+/* ── HEADER ── */
+header{background:var(--bg-p);border-bottom:1px solid var(--bdr);padding:0 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  height:var(--hdr);position:sticky;top:0;z-index:300;box-shadow:0 2px 20px rgba(0,0,0,0.6);}
+.logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px;color:var(--sol);letter-spacing:2px}
+.logo-sub{font-size:11px;color:var(--tx-d);letter-spacing:1px;font-family:'Share Tech Mono',monospace;margin-left:10px}
+.hbadges{display:flex;gap:7px;align-items:center}
+.badge{font-family:'Share Tech Mono',monospace;font-size:10px;padding:3px 8px;border-radius:3px;
+  border:1px solid var(--sol-d);color:var(--sol);background:var(--sol-g);letter-spacing:1px}
+.badge.v{border-color:var(--pu-d);color:var(--pu);background:var(--pu-g)}
+
+/* ── TABS ── */
+.tabs{display:flex;background:var(--bg-p);border-bottom:1px solid var(--bdr);
+  position:sticky;top:var(--hdr);z-index:200;height:var(--tabs);}
+.tab{padding:0 18px;height:100%;display:flex;align-items:center;
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--tx-d);cursor:pointer;
+  border-bottom:2px solid transparent;transition:all .2s;user-select:none;white-space:nowrap;}
+.tab:hover{color:var(--tx-m);background:rgba(255,255,255,0.02)}
+.tab.active{color:var(--sol);border-bottom-color:var(--sol);background:rgba(245,158,11,0.04)}
+
+/* ── TABS PANEL — STICKY ARCH v3.2 ── */
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ── LAYOUT CALCULADORA ── */
+.calc-layout{display:grid;grid-template-columns:440px 1fr;align-items:start}
+
+/* ── SIDEBAR — sticky scroll ── */
+.sidebar{
+  position:sticky;top:var(--shell);
+  height:calc(100vh - var(--shell));
+  overflow-y:auto;overflow-x:hidden;
+  background:var(--bg-p);border-right:1px solid var(--bdr);
+  display:flex;flex-direction:column;
+}
+.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--bdr-l);border-radius:2px}
+
+.sb-fixed{position:sticky;top:0;z-index:10;flex-shrink:0;
+  padding:10px 13px;border-bottom:1px solid var(--bdr);
+  display:flex;flex-direction:column;gap:7px;background:var(--bg-p);}
+.sb-fixed-row{display:flex;gap:7px}
+.btn-c{background:var(--sol);color:#000;border:none;border-radius:var(--r);
+  padding:9px 10px;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:13px;
+  letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;flex:1;
+  box-shadow:0 0 14px rgba(245,158,11,0.25);transition:background .2s;}
+.btn-c:hover{background:#fbbf24}
+.btn-pdf{background:transparent;color:var(--cy);border:1px solid var(--cy-d);border-radius:var(--r);
+  padding:9px 10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;
+  letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.btn-pdf:hover{background:var(--cy-g)}
+.btn-r{background:transparent;color:var(--tx-d);border:1px solid var(--bdr-l);border-radius:var(--r);
+  padding:8px 10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;
+  letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+.btn-r:hover{border-color:var(--tx-m);color:var(--tx)}
+.sb-nref{font-size:10px;color:var(--tx-d);font-family:'Share Tech Mono',monospace;
+  background:rgba(0,0,0,0.25);border:1px solid var(--bdr);border-radius:4px;
+  padding:5px 9px;line-height:1.6;display:flex;gap:8px;flex-wrap:wrap;}
+
+/* v5.0 Storage Badge */
+.storage-badge{display:none; align-items:center; gap:6px; font-family:'Share Tech Mono',monospace;
+  font-size:10px; color:var(--gr); background:var(--gr-g); border:1px solid var(--gr-d);
+  padding:5px 9px; border-radius:4px;}
+
+.sb-scroll{padding:10px 13px;display:flex;flex-direction:column;gap:8px}
+
+/* Cards */
+.stitle{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;
+  letter-spacing:2px;text-transform:uppercase;color:var(--sol);
+  padding:3px 0;border-bottom:1px solid var(--sol-d);display:flex;align-items:center;gap:5px;margin-bottom:1px}
+.card{background:var(--bg-c);border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden}
+.ch{padding:8px 12px;background:rgba(31,45,69,0.4);border-bottom:1px solid var(--bdr);
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--tx-m);display:flex;align-items:center;gap:7px;
+  cursor:pointer;user-select:none;}
+.ch .cv{margin-left:auto;transition:transform .2s;color:var(--tx-d)}
+.ch.col .cv{transform:rotate(-90deg)}
+.cb{padding:11px 12px;display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.cb.hidden{display:none}
+.fld{display:flex;flex-direction:column;gap:3px}
+.fld.s2{grid-column:1/-1}
+.fld.s3{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
+label{font-size:11px;color:var(--tx-d);line-height:1.3}
+label .u{color:var(--cy);font-family:'Share Tech Mono',monospace;font-size:10px;margin-left:2px}
+label .up{color:var(--gr);font-family:'Share Tech Mono',monospace;font-size:10px;margin-left:2px}
+label .un{color:var(--or);font-family:'Share Tech Mono',monospace;font-size:10px;margin-left:2px}
+input[type=number],input[type=text],select{
+  background:var(--bg-i);border:1px solid var(--bdr-l);border-radius:var(--r);
+  color:var(--tx);font-family:'Share Tech Mono',monospace;font-size:13px;padding:6px 8px;
+  width:100%;outline:none;transition:border-color .2s;-moz-appearance:textfield;}
+input[type=number]:focus,input[type=text]:focus,select:focus{border-color:var(--sol);box-shadow:0 0 0 2px var(--sol-g)}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+.hint{font-size:10px;color:var(--tx-d);font-style:italic;line-height:1.3}
+
+/* Panel inversores en sidebar */
+.inv-header-sb{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px;background:rgba(31,45,69,0.4);border-bottom:1px solid var(--bdr);
+  cursor:pointer;user-select:none;
+}
+.inv-header-sb:hover{background:rgba(31,45,69,0.7)}
+.inv-lbl-sb{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:12px;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--sol);display:flex;align-items:center;gap:8px}
+.inv-badge-sb{font-size:9px;padding:2px 6px;border-radius:2px;font-family:'Share Tech Mono',monospace;font-weight:bold}
+.inv-badge-sb.ok{background:var(--gr-g);color:var(--gr);border:1px solid var(--gr-d)}
+.inv-del{background:transparent;color:var(--rd);border:1px solid var(--rd-d);border-radius:3px;
+  padding:2px 7px;font-size:11px;cursor:pointer;font-family:'Share Tech Mono',monospace;transition:all .2s}
+.inv-del:hover{background:var(--rd-g)}
+.inv-controls{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.inv-n-lbl{font-size:11px;color:var(--tx-d);white-space:nowrap}
+.inv-n-inp{width:60px}
+.btn-add-inv{background:var(--sol-g);color:var(--sol);border:1px solid var(--sol-d);border-radius:var(--r);
+  padding:6px 12px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;
+  letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn-add-inv:hover{background:var(--sol);color:#000}
+
+/* ── MAIN ── */
+.main{
+  position:sticky;top:var(--shell);
+  height:calc(100vh - var(--shell));
+  overflow-y:auto;padding:14px;
+  display:flex;flex-direction:column;gap:16px;
+}
+.main::-webkit-scrollbar{width:4px}
+.main::-webkit-scrollbar-thumb{background:var(--bdr-l);border-radius:2px}
+
+/* ── GLOBAL PLANT BANNER ── */
+.plant-banner{
+  background:linear-gradient(135deg,rgba(245,158,11,0.1) 0%,rgba(167,139,250,0.08) 100%);
+  border:1px solid var(--sol-d);border-radius:var(--rl);
+  padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.pb-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:13px;
+  letter-spacing:2px;text-transform:uppercase;color:var(--sol);white-space:nowrap}
+.pb-item{display:flex;flex-direction:column;gap:1px}
+.pb-lbl{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--tx-d);font-family:'Share Tech Mono',monospace}
+.pb-val{font-family:'Share Tech Mono',monospace;font-size:16px;font-weight:bold;color:var(--sol)}
+.pb-val.cy{color:var(--cy)}.pb-val.gr{color:var(--gr)}.pb-val.pu{color:var(--pu)}.pb-val.or{color:var(--or)}.pb-val.rd{color:var(--rd)}
+.pb-sub{font-size:9px;color:var(--tx-d)}
+.pb-div{width:1px;height:32px;background:var(--bdr);flex-shrink:0}
+
+/* ── TEMP BAR ── */
+.temp-bar{background:var(--bg-c);border:1px solid var(--bdr);border-radius:var(--rl);
+  padding:10px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.tb-item{display:flex;flex-direction:column;gap:1px}
+.tb-lbl{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--tx-d);font-family:'Share Tech Mono',monospace}
+.tb-val{font-family:'Share Tech Mono',monospace;font-size:13px;font-weight:bold}
+.tb-val.cold{color:var(--cy)}.tb-val.hot{color:var(--or)}
+.tb-sub{font-size:9px;color:var(--tx-d);font-family:'Share Tech Mono',monospace}
+.tb-div{width:1px;height:28px;background:var(--bdr);flex-shrink:0}
+
+/* ── INVERSOR ACCORDION en resultados ── */
+.inv-block{background:var(--bg-c);border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden}
+.inv-block-hdr{
+  background:rgba(245,158,11,0.08);border-bottom:1px solid var(--bdr);
+  padding:10px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  cursor:pointer;user-select:none;transition:background .2s;
+}
+.inv-block-hdr:hover{background:rgba(245,158,11,0.13)}
+.inv-block-name{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:15px;
+  letter-spacing:2px;color:var(--sol);text-transform:uppercase}
+.inv-block-meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-left:auto}
+.inv-bm-item{display:flex;flex-direction:column;gap:1px;align-items:flex-end}
+.inv-bm-lbl{font-size:9px;color:var(--tx-d);font-family:'Share Tech Mono',monospace;text-transform:uppercase;letter-spacing:0.5px}
+.inv-bm-val{font-family:'Share Tech Mono',monospace;font-size:12px;font-weight:bold;color:var(--tx-m)}
+.inv-block-cv{color:var(--tx-d);font-size:14px;margin-left:6px;transition:transform .2s;flex-shrink:0}
+.inv-block-hdr.col .inv-block-cv{transform:rotate(-90deg)}
+.inv-block-body{padding:14px;display:flex;flex-direction:column;gap:12px}
+.inv-block-body.hidden{display:none}
+
+/* ── RANGE BANNER ── */
+.rbanner{background:var(--bg-i);border:1px solid var(--bdr);border-radius:var(--r);
+  padding:9px 13px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.ri{display:flex;flex-direction:column;gap:1px}
+.ri .rl2{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--tx-d);font-family:'Share Tech Mono',monospace}
+.ri .rv{font-family:'Share Tech Mono',monospace;font-size:16px;font-weight:bold;color:var(--sol)}
+.ri .rv.cy{color:var(--cy)}.ri .rv.gr{color:var(--gr)}.ri .rv.rd{color:var(--rd)}
+.ri .rs{font-size:9px;color:var(--tx-d)}
+.rdiv{width:1px;height:28px;background:var(--bdr);flex-shrink:0}
+
+/* ── COUNTER ── */
+.mcount{background:var(--bg-i);border:1px solid var(--bdr);border-radius:var(--r);
+  padding:8px 12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.mcl{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--tx-m);flex:1}
+.mcn{display:flex;align-items:center;gap:5px;font-family:'Share Tech Mono',monospace}
+.mcc{font-size:20px;font-weight:bold;transition:color .3s}
+.mcc.ok{color:var(--gr)}.mcc.warn{color:var(--or)}.mcc.err{color:var(--rd)}
+.mcs,.mct{font-size:14px;color:var(--tx-d)}
+.mcm{font-size:11px;padding:3px 8px;border-radius:3px;font-family:'Share Tech Mono',monospace}
+.mcm.ok{background:var(--gr-g);color:var(--gr);border:1px solid var(--gr-d)}
+.mcm.warn{background:var(--or-g);color:var(--or);border:1px solid var(--or-d)}
+.mcm.err{background:var(--rd-g);color:var(--rd);border:1px solid var(--rd-d)}
+
+/* ── MPPT ── */
+.mst{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:11px;letter-spacing:2px;
+  text-transform:uppercase;color:var(--tx-m);margin-bottom:7px;display:flex;align-items:center;gap:8px}
+.mst::after{content:'';flex:1;height:1px;background:var(--bdr)}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px}
+.mcard{background:var(--bg-c);border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden}
+.mhdr{background:rgba(245,158,11,.07);border-bottom:1px solid var(--bdr);
+  padding:7px 11px;display:flex;align-items:center;justify-content:space-between;}
+.mlbl{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:13px;letter-spacing:2px;color:var(--sol)}
+.msm{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--tx-d);text-align:right}
+.mbody{padding:9px;display:flex;flex-direction:column;gap:7px}
+.sbox{background:var(--bg-i);border:1px solid var(--bdr);border-left:3px solid var(--bdr);
+  border-radius:var(--r);padding:9px;display:flex;flex-direction:column;gap:6px;transition:border-left-color .2s}
+.sbox.ok{border-left-color:var(--gr)}.sbox.warn{border-left-color:var(--or)}.sbox.err{border-left-color:var(--rd)}
+.stop{display:flex;align-items:center;gap:8px}
+.sname{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;
+  letter-spacing:1px;color:var(--tx-m);min-width:50px}
+.snw{flex:1;display:flex;flex-direction:column;gap:2px}
+.snlbl{font-size:9px;color:var(--tx-d);font-family:'Share Tech Mono',monospace}
+.snrow{display:flex;align-items:center;gap:6px}
+.sni{background:var(--bg);border:1px solid var(--bdr-l);border-radius:var(--r);color:var(--sol);
+  font-family:'Share Tech Mono',monospace;font-size:18px;font-weight:bold;
+  padding:3px 7px;width:65px;outline:none;text-align:center;transition:border-color .2s;-moz-appearance:textfield;}
+.sni:focus{border-color:var(--sol);box-shadow:0 0 0 2px var(--sol-g)}
+.sni::-webkit-inner-spin-button{-webkit-appearance:none}
+.snrng{font-size:10px;color:var(--tx-d);font-family:'Share Tech Mono',monospace;line-height:1.4}
+.vpills{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+.vpill{background:rgba(0,0,0,.3);border:1px solid var(--bdr);border-radius:4px;padding:4px 6px}
+.vpill .vl{font-size:9px;color:var(--tx-d);font-family:'Share Tech Mono',monospace;display:block;margin-bottom:1px}
+.vpill .vv{font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:bold;white-space:nowrap}
+.vv.ok{color:var(--gr)}.vv.warn{color:var(--or)}.vv.err{color:var(--rd)}.vv.cy{color:var(--cy)}
+.salt{font-size:10px;padding:4px 7px;border-radius:3px;font-family:'Share Tech Mono',monospace;line-height:1.4}
+.salt.ok{background:var(--gr-g);color:var(--gr);border:1px solid var(--gr-d)}
+.salt.warn{background:var(--or-g);color:var(--or);border:1px solid var(--or-d)}
+.salt.err{background:var(--rd-g);color:var(--rd);border:1px solid var(--rd-d)}
+.mfoot{background:rgba(0,0,0,.3);border-top:1px solid var(--bdr);padding:5px 9px;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:3px}
+.mfs{text-align:center}
+.mfs .mfl{font-size:9px;color:var(--tx-d);font-family:'Share Tech Mono',monospace;display:block}
+.mfs .mfv{font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:bold;color:var(--cy)}
+.mfv.ok{color:var(--gr)}.mfv.err{color:var(--rd)}
+.mmw{background:var(--or-g);border:1px solid var(--or-d);border-radius:var(--r);
+  padding:5px 8px;font-size:10px;color:var(--or);font-family:'Share Tech Mono',monospace;line-height:1.4}
+
+/* ── RESULT CARDS ── */
+.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.rcard{background:var(--bg-c);border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden}
+.rch{padding:7px 11px;background:rgba(31,45,69,.4);border-bottom:1px solid var(--bdr);
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;
+  letter-spacing:2px;text-transform:uppercase;color:var(--tx-m);display:flex;align-items:center;gap:6px}
+.rcb{padding:10px;display:flex;flex-direction:column;gap:5px}
+.rrow{display:flex;justify-content:space-between;align-items:center;padding:3px 0;
+  border-bottom:1px solid rgba(31,45,69,.5)}
+.rrow:last-child{border-bottom:none}
+.rrl{font-size:11px;color:var(--tx-m);line-height:1.3;max-width:58%}
+.rrv{font-family:'Share Tech Mono',monospace;font-size:12px;font-weight:bold;color:var(--tx);text-align:right}
+.rrv.ok{color:var(--gr)}.rrv.warn{color:var(--or)}.rrv.err{color:var(--rd)}
+.rrv.sol{color:var(--sol)}.rrv.cy{color:var(--cy)}.rrv.pu{color:var(--pu)}
+.chip{display:inline-flex;align-items:center;font-size:10px;padding:2px 7px;border-radius:3px;
+  font-family:'Share Tech Mono',monospace;font-weight:bold}
+.chip.ok{background:var(--gr-g);color:var(--gr);border:1px solid var(--gr-d)}
+.chip.warn{background:var(--or-g);color:var(--or);border:1px solid var(--or-d)}
+.chip.err{background:var(--rd-g);color:var(--rd);border:1px solid var(--rd-d)}
+.fok{background:var(--gr-g);border:1px solid var(--gr-d);color:var(--gr);padding:5px 8px;border-radius:var(--r);font-family:'Share Tech Mono',monospace;font-size:11px}
+.frs{background:var(--sol-g);border:1px solid var(--sol-d);color:var(--sol);padding:5px 8px;border-radius:var(--r);font-family:'Share Tech Mono',monospace;font-size:11px}
+.sep{height:1px;background:var(--bdr);margin:2px 0}
+.derating-box{background:var(--pu-g);border:1px solid var(--pu-d);border-radius:var(--r);
+  padding:6px 9px;display:flex;flex-direction:column;gap:3px;margin-top:2px}
+.db-title{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--pu);font-family:'Share Tech Mono',monospace}
+.db-row{display:flex;justify-content:space-between;align-items:center}
+.db-lbl{font-size:11px;color:var(--tx-m)}.db-val{font-family:'Share Tech Mono',monospace;font-size:12px;font-weight:bold;color:var(--pu)}
+
+/* ── SUMMARY ── */
+.swrap{background:var(--bg-c);border:1px solid var(--sol-d);border-radius:var(--rl);overflow:hidden}
+.shdr{background:rgba(245,158,11,.08);border-bottom:1px solid var(--sol-d);padding:9px 14px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.shdr h2{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:14px;letter-spacing:3px;text-transform:uppercase;color:var(--sol)}
+.shdr-btns{display:flex;gap:6px;flex-wrap:wrap}
+.bgen{background:var(--sol);color:#000;border:none;border-radius:var(--r);padding:6px 14px;
+  font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:background .2s}
+.bgen:hover{background:#fbbf24}
+.bcop{background:transparent;color:var(--sol);border:1px solid var(--sol-d);border-radius:var(--r);padding:6px 14px;
+  font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.bcop:hover{background:var(--sol-g)}
+.sbody{padding:14px;font-family:'Share Tech Mono',monospace;font-size:11px;line-height:1.9;color:var(--tx-m);white-space:pre-wrap}
+.pend{color:var(--tx-d);font-style:italic}
+
+/* ── PLACEHOLDER ── */
+.ph{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;gap:10px;color:var(--tx-d)}
+.ph-i{font-size:48px;opacity:.16}.ph-t{font-family:'Share Tech Mono',monospace;font-size:12px;text-align:center;line-height:1.8;opacity:.4}
+
+/* ── CC WRAP ── */
+.cc-wrap{position:sticky;top:var(--shell);height:calc(100vh - var(--shell));overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;}
+.cc-wrap::-webkit-scrollbar{width:4px}
+.cc-wrap::-webkit-scrollbar-thumb{background:var(--bdr-l);border-radius:2px}
+.cc-inv-block{background:var(--bg-c);border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden}
+.cc-inv-hdr{background:rgba(245,158,11,.07);border-bottom:1px solid var(--bdr);
+  padding:9px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+.cc-inv-hdr:hover{background:rgba(245,158,11,.12)}
+.cc-inv-name{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:14px;letter-spacing:2px;color:var(--sol);text-transform:uppercase}
+.cc-inv-meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-left:auto}
+.cc-inv-cv{color:var(--tx-d);font-size:13px;margin-left:6px;transition:transform .2s}
+.cc-inv-hdr.col .cc-inv-cv{transform:rotate(-90deg)}
+.cc-inv-body{padding:12px;display:flex;flex-direction:column;gap:12px}
+.cc-inv-body.hidden{display:none}
+
+.cc-header-bar{background:var(--bg-i);border:1px solid var(--bdr);border-radius:var(--r);
+  padding:9px 13px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:4px}
+.cc-hb-item{display:flex;flex-direction:column;gap:1px}
+.cc-hb-lbl{font-size:9px;color:var(--tx-d);font-family:'Share Tech Mono',monospace;text-transform:uppercase;letter-spacing:1px}
+.cc-hb-val{font-family:'Share Tech Mono',monospace;font-size:13px;font-weight:bold;color:var(--cy)}
+
+.cc-line{background:var(--bg-c);border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden;transition:border-color .3s}
+.cc-line.ok{border-color:var(--gr-d)}.cc-line.err{border-color:var(--rd-d)}
+.cc-line-hdr{background:rgba(245,158,11,.05);border-bottom:1px solid var(--bdr);
+  padding:7px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.cc-line-id{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:12px;letter-spacing:2px;color:var(--sol)}
+.cc-line-info{display:flex;gap:10px;flex-wrap:wrap}
+.cc-li-item{display:flex;flex-direction:column;gap:1px;align-items:flex-end}
+.cc-li-lbl{font-size:9px;color:var(--tx-d);font-family:'Share Tech Mono',monospace;text-transform:uppercase;letter-spacing:0.5px}
+.cc-li-val{font-family:'Share Tech Mono',monospace;font-size:12px;font-weight:bold;color:var(--tx-m)}
+.cc-table-wrap{overflow-x:auto}
+table.cc-tbl{width:100%;border-collapse:collapse;min-width:680px}
+.cc-tbl th{background:rgba(31,45,69,0.5);padding:6px 9px;font-family:'Barlow Condensed',sans-serif;
+  font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx-m);
+  text-align:center;border-bottom:1px solid var(--bdr);white-space:nowrap}
+.cc-tbl th:first-child{text-align:left}
+.cc-tbl td{padding:5px 8px;border-bottom:1px solid rgba(31,45,69,0.4);text-align:center;vertical-align:middle}
+.cc-tbl td:first-child{text-align:left;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;color:var(--tx-m)}
+.cc-tbl tr.cc-total td{background:rgba(31,45,69,0.3)}
+.cc-tbl tr.inactive td{opacity:0.4}
+.cc-tbl tr.inactive td:first-child{opacity:1;text-decoration:line-through;color:var(--tx-d)}
+.cc-inp{background:var(--bg-i);border:1px solid var(--bdr-l);border-radius:4px;color:var(--tx);
+  font-family:'Share Tech Mono',monospace;font-size:12px;padding:4px 6px;
+  width:68px;outline:none;text-align:center;-moz-appearance:textfield;transition:border-color .2s}
+.cc-inp:focus{border-color:var(--sol)}
+.cc-sel{background:var(--bg-i);border:1px solid var(--bdr-l);border-radius:4px;color:var(--tx);
+  font-family:'Share Tech Mono',monospace;font-size:12px;padding:4px 6px;width:90px;outline:none;transition:border-color .2s}
+.cc-sel:focus{border-color:var(--sol)}
+.cc-val{font-family:'Share Tech Mono',monospace;font-size:12px;font-weight:bold}
+.cc-val.ok{color:var(--gr)}.cc-val.warn{color:var(--or)}.cc-val.err{color:var(--rd)}.cc-val.neutral{color:var(--tx-m)}.cc-val.inactive{color:var(--tx-d)}
+.cc-total-pct{font-family:'Share Tech Mono',monospace;font-size:14px;font-weight:bold}
+.cc-total-pct.ok{color:var(--gr)}.cc-total-pct.err{color:var(--rd)}
+.cc-chip{display:inline-flex;align-items:center;font-size:10px;padding:2px 7px;border-radius:3px;font-family:'Share Tech Mono',monospace;font-weight:bold}
+.cc-chip.ok{background:var(--gr-g);color:var(--gr);border:1px solid var(--gr-d)}
+.cc-chip.err{background:var(--rd-g);color:var(--rd);border:1px solid var(--rd-d)}
+.cc-line-foot{background:rgba(0,0,0,0.2);border-top:1px solid var(--bdr);
+  padding:7px 12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px}
+.cc-smin-btn{background:transparent;color:var(--cy);border:1px solid var(--cy-d);border-radius:var(--r);
+  padding:4px 10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;
+  letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.cc-smin-btn:hover{background:var(--cy-g)}
+.cc-ph{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:260px;gap:10px;color:var(--tx-d);background:var(--bg-c);border:1px solid var(--bdr);border-radius:var(--rl)}
+.cc-ph-i{font-size:44px;opacity:.15}
+
+/* ── REFERENCIA TÉCNICA ── */
+.teoria-wrap{position:sticky;top:var(--shell);height:calc(100vh - var(--shell));overflow-y:auto;
+  padding:20px;display:flex;flex-direction:column;gap:16px;}
+.teoria-wrap::-webkit-scrollbar{width:4px}
+.teoria-wrap::-webkit-scrollbar-thumb{background:var(--bdr-l);border-radius:2px}
+.ts{background:var(--bg-c);border:1px solid var(--bdr);border-radius:var(--rl);overflow:visible}
+.ts-hdr{background:rgba(31,45,69,.5);border-bottom:1px solid var(--bdr);padding:9px 16px;
+  font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:13px;letter-spacing:2px;
+  text-transform:uppercase;color:var(--sol);display:flex;align-items:center;gap:8px}
+.ts-body{padding:16px;display:flex;flex-direction:column;gap:12px}
+.fc{background:var(--bg-i);border:1px solid var(--bdr);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:6px}
+.fc-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--tx-m);display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.fc-tag{font-size:9px;padding:2px 6px;border-radius:2px;font-family:'Share Tech Mono',monospace;font-weight:bold;white-space:nowrap}
+.fc-tag.seg{background:var(--rd-g);color:var(--rd);border:1px solid var(--rd-d)}
+.fc-tag.func{background:var(--cy-g);color:var(--cy);border:1px solid var(--cy-d)}
+.fc-tag.dim{background:var(--sol-g);color:var(--sol);border:1px solid var(--sol-d)}
+.fc-tag.real{background:var(--pu-g);color:var(--pu);border:1px solid var(--pu-d)}
+.fc-tag.cdt{background:var(--gr-g);color:var(--gr);border:1px solid var(--gr-d)}
+.fc-f{background:rgba(0,0,0,.4);border:1px solid var(--bdr-l);border-radius:var(--r);
+  padding:9px 12px;font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--tx);
+  line-height:1.9;white-space:pre-wrap;overflow-x:auto;word-break:break-word;}
+.fc-f .sym{color:var(--sol)}.fc-f .coef{color:var(--cy)}.fc-f .tmp{color:var(--or)}.fc-f .res{color:var(--gr)}
+.fc-note{font-size:11px;color:var(--tx-d);font-family:'Share Tech Mono',monospace;
+  background:rgba(0,0,0,.2);border-left:2px solid var(--sol-d);padding:5px 9px;line-height:1.5}
+.const-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:7px}
+.cpill{background:rgba(0,0,0,.3);border:1px solid var(--bdr);border-radius:var(--r);padding:8px 10px}
+.cpill .cn{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--sol);font-weight:bold;display:block;margin-bottom:2px}
+.cpill .cv2{font-family:'Share Tech Mono',monospace;font-size:15px;font-weight:bold;color:var(--tx);display:block}
+.cpill .cd{font-size:10px;color:var(--tx-d);line-height:1.4;display:block;margin-top:2px}
+.norm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:7px}
+.npill{background:rgba(0,0,0,.3);border:1px solid var(--bdr);border-radius:var(--r);padding:9px 11px}
+.npill .nid{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--sol);font-weight:bold;margin-bottom:3px}
+.npill .ndesc{font-size:11px;color:var(--tx-m);line-height:1.4}
+.leg-tbl{width:100%;border-collapse:collapse}
+.leg-tbl th{background:rgba(31,45,69,.6);padding:6px 10px;font-family:'Barlow Condensed',sans-serif;
+  font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--tx-m);text-align:left;border-bottom:1px solid var(--bdr)}
+.leg-tbl td{padding:5px 10px;border-bottom:1px solid rgba(31,45,69,.4);font-size:12px}
+
+/* ── PRINT ── */
+#print-area{display:none}
+@media print{
+  *{box-sizing:border-box}
+  body{background:#fff!important;color:#000!important;font-family:Arial,sans-serif;font-size:10pt;margin:0}
+  header,.tabs,.sidebar,.tab,.tab-panel{display:none!important}
+  #print-area{display:block!important;padding:12mm 14mm 8mm 14mm;color:#000;background:#fff}
+  .pr-break{page-break-before:always}
+  .pr-h1{font-size:15pt;font-weight:bold;border-bottom:2px solid #f59e0b;padding-bottom:4px;margin-bottom:8px}
+  .pr-h2{font-size:11pt;font-weight:bold;background:#f5f5f5;padding:4px 8px;margin:10px 0 5px;border-left:3px solid #f59e0b}
+  .pr-h3{font-size:10pt;font-weight:bold;color:#555;margin:6px 0 3px;border-left:2px solid #ccc;padding-left:6px}
+  .pr-meta{font-size:8pt;color:#666;margin-bottom:10px;font-style:italic}
+  .pr-tbl{width:100%;border-collapse:collapse;margin-bottom:8px;font-size:9pt}
+  .pr-tbl th{background:#333;color:#fff;padding:4px 8px;text-align:left;font-size:9pt}
+  .pr-tbl th.c{text-align:center}
+  .pr-tbl td{padding:3px 8px;border-bottom:1px solid #ddd;vertical-align:top}
+  .pr-tbl td.c{text-align:center}
+  .pr-tbl td.mono{font-family:'Courier New',monospace;font-size:9pt}
+  .pr-tbl td.ok{color:#065f46;font-weight:bold}
+  .pr-tbl td.err{color:#7f1d1d;font-weight:bold}
+  .pr-tbl td.warn{color:#7c2d12;font-weight:bold}
+  .pr-tbl tr:nth-child(even) td{background:#f9f9f9}
+  .pr-tbl tr.total-row td{background:#fff3cd;font-weight:bold}
+  .pr-tbl tr.inactive-row td{color:#aaa;font-style:italic}
+  .pr-box{background:#f9f9f9;border:1px solid #ddd;padding:5px 9px;margin-bottom:7px;font-size:9pt}
+  .pr-norm{font-size:8pt;color:#444;line-height:1.6}
+  .pr-footer{margin-top:12px;font-size:8pt;color:#888;border-top:1px solid #ddd;padding-top:5px}
+  .pr-grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:7px}
+  .pr-plant-box{background:#fff8e1;border:1px solid #f59e0b;padding:8px 12px;margin-bottom:10px;font-size:9pt}
+}
+
+/* ════════════════════════════════════════
+   MÓDULO DE CLIPPING v5.0 (Actualizado)
+════════════════════════════════════════ */
+.clip-box{
+  background:rgba(239,68,68,0.06);border:1px solid var(--rd-d);
+  border-radius:var(--r);padding:8px 11px;display:flex;flex-direction:column;gap:4px;
+}
+.clip-box.ok{background:rgba(16,185,129,0.06);border-color:var(--gr-d)}
+.clip-box.warn{background:rgba(249,115,22,0.06);border-color:var(--or-d)}
+.clip-box.alert{background:rgba(239,68,68,0.09);border-color:var(--rd-d)}
+.clip-title{font-size:9px;letter-spacing:1px;text-transform:uppercase;
+  font-family:'Share Tech Mono',monospace;font-weight:bold;margin-bottom:2px}
+.clip-title.ok{color:var(--gr)}.clip-title.warn{color:var(--or)}.clip-title.alert{color:var(--rd)}
+.clip-row{display:flex;justify-content:space-between;align-items:center}
+.clip-lbl{font-size:11px;color:var(--tx-m)}
+.clip-val{font-family:'Share Tech Mono',monospace;font-size:12px;font-weight:bold;color:var(--tx)}
+.clip-val.ok{color:var(--gr)}.clip-val.warn{color:var(--or)}.clip-val.alert{color:var(--rd)}.clip-val.cy{color:var(--cy)}
+
+.clipping-section{background:var(--bg-c);border:1px solid var(--bdr);border-radius:var(--rl);overflow:hidden;}
+.clipping-section.ok{border-color:var(--gr-d)}
+.clipping-section.warn{border-color:var(--or-d)}
+.clipping-section.alert{border-color:var(--rd-d)}
+.clip-hdr{padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--bdr);}
+.clip-hdr.ok{background:rgba(16,185,129,0.07)}
+.clip-hdr.warn{background:rgba(249,115,22,0.07)}
+.clip-hdr.alert{background:rgba(239,68,68,0.09)}
+.clip-hdr-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:14px;letter-spacing:2px;text-transform:uppercase}
+.clip-hdr-title.ok{color:var(--gr)}.clip-hdr-title.warn{color:var(--or)}.clip-hdr-title.alert{color:var(--rd)}
+.clip-body{padding:14px;display:flex;flex-direction:column;gap:12px}
+
+.clip-metrics{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.clip-metric{background:var(--bg-i);border:1px solid var(--bdr);border-radius:var(--r);padding:10px 12px;display:flex;flex-direction:column;gap:3px;}
+.cm-lbl{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--tx-d);font-family:'Share Tech Mono',monospace}
+.cm-val{font-family:'Share Tech Mono',monospace;font-size:20px;font-weight:bold;color:var(--tx)}
+.cm-val.ok{color:var(--gr)}.cm-val.warn{color:var(--or)}.cm-val.alert{color:var(--rd)}.cm-val.cy{color:var(--cy)}.cm-val.pu{color:var(--pu)}
+.cm-sub{font-size:10px;color:var(--tx-d);font-family:'Share Tech Mono',monospace}
+
+.clip-inv-table{width:100%;border-collapse:collapse}
+.clip-inv-table th{background:rgba(31,45,69,0.5);padding:6px 10px;font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx-m);text-align:center;border-bottom:1px solid var(--bdr)}
+.clip-inv-table th:first-child{text-align:left}
+.clip-inv-table td{padding:5px 10px;border-bottom:1px solid rgba(31,45,69,0.4);text-align:center;font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--tx)}
+.clip-inv-table td:first-child{text-align:left;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:1px;color:var(--tx-m)}
+.clip-inv-table tr:last-child td{border-bottom:none}
+.clip-inv-table tr.total-row td{background:rgba(31,45,69,0.3);font-weight:bold}
+
+.clip-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 10px;border-radius:3px;font-family:'Share Tech Mono',monospace;font-weight:bold}
+.clip-chip.ok{background:rgba(16,185,129,0.15);color:var(--gr);border:1px solid var(--gr-d)}
+.clip-chip.aceptable{background:rgba(34,211,238,0.12);color:var(--cy);border:1px solid var(--cy-d)}
+.clip-chip.justificar{background:rgba(249,115,22,0.15);color:var(--or);border:1px solid var(--or-d)}
+.clip-chip.warn{background:rgba(249,115,22,0.15);color:var(--or);border:1px solid var(--or-d)}
+.clip-chip.revisar{background:rgba(239,68,68,0.15);color:var(--rd);border:1px solid var(--rd-d)}
+
+.clip-text-box{background:rgba(0,0,0,0.25);border:1px solid var(--bdr);border-radius:var(--r);padding:10px 13px;font-size:12px;color:var(--tx-m);line-height:1.7;font-style:italic;}
+.clip-text-box .clip-alarm{margin-top:8px;padding:6px 10px;border-radius:3px;font-family:'Share Tech Mono',monospace;font-size:11px;font-style:normal;font-weight:bold;}
+.clip-alarm.crit{background:var(--rd-g);color:var(--rd);border:1px solid var(--rd-d)}
+.clip-alarm.warn{background:var(--or-g);color:var(--or);border:1px solid var(--or-d)}
+@media(max-width:860px){.clip-metrics{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<div id="print-area"></div>
+
+<header>
+  <div style="display:flex;align-items:baseline">
+    <span class="logo">⚡ CalcFV</span>
+    <span class="logo-sub">CONFIGURADOR FOTOVOLTAICO MULTI-INVERSOR</span>
+  </div>
+  <div class="hbadges">
+    <span class="badge v">v5.0</span>
+    <span class="badge">INF-20260410-08</span>
+    <span class="badge">IEC 62548 · UNE-HD 60364-7-712</span>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('calc',this)">⚡ Calculadora</div>
+  <div class="tab" onclick="showTab('cc',this)">📐 Secciones CC</div>
+  <div class="tab" onclick="showTab('teoria',this)">📋 Referencia Técnica</div>
+</div>
+
+<div class="tab-panel active" id="tab-calc">
+<div class="calc-layout">
+
+<aside class="sidebar">
+  <div class="sb-fixed">
+    <div id="storage-status" class="storage-badge">💾 Datos restaurados desde última sesión</div>
+    <div class="sb-fixed-row">
+      <button class="btn-c" onclick="calculate()">⚡ CALCULAR</button>
+      <button class="btn-pdf" onclick="printPDF()">🖨 PDF</button>
+      <button class="btn-r" onclick="resetAll()">↺</button>
+    </div>
+    <div class="sb-nref" style="margin-top:7px">
+      <span>REBT ITC-BT-40</span><span>IEC 62548</span>
+      <span>UNE-HD 60364-7-712</span><span>IEC 61215</span>
+    </div>
+  </div>
+
+  <div class="sb-scroll">
+
+    <div class="stitle">☀️ MÓDULO FV</div>
+    <div class="card">
+      <div class="ch" onclick="tog(this)"><span>Parámetros STC</span><span class="cv">▾</span></div>
+      <div class="cb">
+        <div class="fld"><label>Pmax <span class="u">Wp</span></label><input type="number" id="pmax" value="460" min="50" max="800"></div>
+        <div class="fld"><label>Voc STC <span class="u">V</span></label><input type="number" id="voc_stc" value="52.1" min="20" max="100" step="0.1"></div>
+        <div class="fld"><label>Vmpp STC <span class="u">V</span></label><input type="number" id="vmpp_stc" value="43.5" min="15" max="90" step="0.1"></div>
+        <div class="fld"><label>Isc STC <span class="u">A</span></label><input type="number" id="isc" value="11.20" min="1" max="30" step="0.01"></div>
+        <div class="fld"><label>Impp STC <span class="u">A</span></label><input type="number" id="impp" value="10.58" min="1" max="28" step="0.01"></div>
+        <div class="fld"><label>Fusible máx. <span class="u">A</span></label><input type="number" id="ifus" value="25" min="5" max="50"></div>
+        <div class="fld s2"><label>βVoc <span class="un">%/°C · negativo</span></label>
+          <input type="number" id="beta_voc" value="-0.24" min="-0.6" max="0.6" step="0.01">
+          <span class="hint">Forzado negativo internamente</span></div>
+        <div class="fld s2"><label>αIsc <span class="up">%/°C · positivo</span></label>
+          <input type="number" id="alpha_isc" value="0.04" min="-0.2" max="0.2" step="0.01">
+          <span class="hint">Forzado positivo internamente</span></div>
+        <div class="fld s2"><label>βPmpp <span class="un">%/°C · negativo</span></label>
+          <input type="number" id="bpmpp" value="-0.30" min="-0.6" max="0.6" step="0.01">
+          <span class="hint">Para P_real en caliente</span></div>
+      </div>
+    </div>
+
+    <div class="stitle">🏗️ INSTALACIÓN Y UBICACIÓN</div>
+    <div class="card">
+      <div class="ch" onclick="tog(this)"><span>Condiciones de sitio</span><span class="cv">▾</span></div>
+      <div class="cb">
+        <div class="fld"><label>T_amb mín. <span class="u">°C</span></label>
+          <input type="number" id="t_amb_min" value="-5" min="-30" max="20">
+          <span class="hint">T_cell_cold = T_amb_min</span></div>
+        <div class="fld"><label>T_amb máx. <span class="u">°C</span></label>
+          <input type="number" id="t_amb_max" value="40" min="10" max="60">
+          <span class="hint">T_cell_hot = T+25°C</span></div>
+        <div class="fld s2"><label>Tensión red AC</label>
+          <select id="v_red"><option value="400" selected>400 V — Trifásico</option><option value="230">230 V — Monofásico</option></select></div>
+        <div class="fld">
+          <label>Factor pérd. DC <span class="u">f_loss</span></label>
+          <input type="number" id="f_loss_dc" value="0.95" min="0.70" max="1.00" step="0.01">
+          <span class="hint">Suciedad+mismatch+cable<br>Típico: 0,90–0,98</span>
+        </div>
+        <div class="fld">
+          <label>HSP anuales <span class="u">h/año</span></label>
+          <input type="number" id="hsp_anual" value="1700" min="800" max="2500" step="10">
+          <span class="hint">Horas Sol Pico del<br>emplazamiento</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stitle">⚙️ INVERSORES</div>
+    <div class="card">
+      <div class="ch" onclick="tog(this)"><span>Configuración de inversores</span><span class="cv">▾</span></div>
+      <div class="cb" id="inv-container">
+        <div class="fld s2">
+          <div class="inv-controls">
+            <span class="inv-n-lbl">Nº de inversores:</span>
+            <input type="number" class="inv-n-inp" id="n_inv_input" value="1" min="1" max="20" oninput="onNInvChange(this.value)">
+            <button class="btn-add-inv" onclick="addInversor()">+ Añadir</button>
+          </div>
+        </div>
+        <div class="fld s2" id="inv-list">
+          </div>
+      </div>
+    </div>
+
+  </div></aside>
+
+<main class="main" id="main">
+  <div class="ph" id="ph">
+    <div class="ph-i">⚡</div>
+    <div class="ph-t">Configura el módulo, las condiciones de sitio<br>y los inversores, luego pulsa<br><strong style="color:var(--sol)">⚡ CALCULAR</strong></div>
+  </div>
+  <div id="res" style="display:none;flex-direction:column;gap:16px"></div>
+</main>
+
+</div>
+</div>
+
+<div class="tab-panel" id="tab-cc">
+<div class="cc-wrap" id="cc-wrap">
+  <div class="cc-ph" id="cc-ph">
+    <div class="cc-ph-i">🔌</div>
+    <div class="cc-ph-t">Primero calcula en<br><strong style="color:var(--sol)">⚡ Calculadora</strong></div>
+  </div>
+  <div id="cc-content" style="display:none;flex-direction:column;gap:16px"></div>
+</div>
+</div>
+
+<div class="tab-panel" id="tab-teoria">
+<div class="teoria-wrap">
+  <div class="ts"><div class="ts-hdr">📐 Constantes del Sistema</div>
+    <div class="ts-body"><div class="const-grid">
+      <div class="cpill"><span class="cn">T_REF</span><span class="cv2">25 °C</span><span class="cd">Temperatura de referencia STC</span></div>
+      <div class="cpill"><span class="cn">T_OFFSET</span><span class="cv2">25 °C</span><span class="cd">Calentamiento célula sobre ambiente</span></div>
+      <div class="cpill"><span class="cn">G_STC</span><span class="cv2">1000 W/m²</span><span class="cd">Irradiancia de referencia STC</span></div>
+      <div class="cpill"><span class="cn">ρ_Cu (ext.)</span><span class="cv2">0,024 Ω·mm²/m</span><span class="cd">Resistividad cobre exterior PV1-F</span></div>
+      <div class="cpill"><span class="cn">CDT máx. CC</span><span class="cv2">1,5 %</span><span class="cd">Caída de tensión máxima admisible</span></div>
+      <div class="cpill"><span class="cn">Factor I_DC</span><span class="cv2">1,25 × Isc</span><span class="cd">Factor diseño conductores DC (UNE-HD 60364-7-712)</span></div>
+    </div></div>
+  </div>
+  <div class="ts"><div class="ts-hdr">📋 Normativa de Aplicación</div>
+    <div class="ts-body"><div class="norm-grid">
+      <div class="npill"><div class="nid">REBT ITC-BT-40</div><div class="ndesc">Instalaciones generadoras de baja tensión.</div></div>
+      <div class="npill"><div class="nid">REBT ITC-BT-23</div><div class="ndesc">Protección contra sobretensiones. SPDs.</div></div>
+      <div class="npill"><div class="nid">IEC 62548</div><div class="ndesc">Diseño instalaciones FV. Fusibles (≥3 strings).</div></div>
+      <div class="npill"><div class="nid">UNE-HD 60364-7-712</div><div class="ndesc">Instalaciones FV. I_diseño = 1,25 × Isc_max.</div></div>
+      <div class="npill"><div class="nid">UNE-EN 61643</div><div class="ndesc">SPD Tipos I, II y III.</div></div>
+      <div class="npill"><div class="nid">IEC 61215 / 61730</div><div class="ndesc">Cualificación y seguridad de módulos FV.</div></div>
+      <div class="npill"><div class="nid">IEC 60364-5-52</div><div class="ndesc">Selección de conductores. Secciones normalizadas.</div></div>
+      <div class="npill"><div class="nid">UNE-EN 60228</div><div class="ndesc">Resistividad Cu: 0,024 Ω·mm²/m (exterior).</div></div>
+    </div></div>
+  </div>
+  <div class="ts"><div class="ts-hdr">🌡️ 1. Temperaturas de Operación</div>
+    <div class="ts-body">
+      <div class="fc"><div class="fc-title"><span class="fc-tag func">FRÍO</span> Peor escenario de frío</div>
+        <div class="fc-f"><span class="res">T_cell_min</span> = <span class="tmp">T_amb_min</span>   → máxima tensión (criterio seguridad)</div></div>
+      <div class="fc"><div class="fc-title"><span class="fc-tag dim">CALOR</span> Peor escenario de calor</div>
+        <div class="fc-f"><span class="res">T_cell_max</span> = <span class="tmp">T_amb_max</span> + <span class="coef">25</span>   → mínima tensión + máxima corriente</div>
+        <div class="fc-note">Regla práctica (+25°C). Alternativa: T_cell = T_amb + (NOCT − 20) × G/800</div></div>
+    </div>
+  </div>
+  <div class="ts"><div class="ts-hdr">⚡ 2. Tensiones</div>
+    <div class="ts-body">
+      <div class="fc"><div class="fc-title"><span class="fc-tag seg">SEGURIDAD</span> Tensión Máxima — por inversor</div>
+        <div class="fc-f"><span class="res">V_max</span> = <span class="sym">Voc_STC</span> × [ 1 + ( <span class="coef">βVoc/100</span> × ( <span class="tmp">T_amb_min</span> − 25 ) ) ]
+<span class="res">V_max_string</span> = <span class="res">V_max</span> × N   →  &lt; Vdc_max_inversor[i]
+<span class="res">N_max[i]</span> = floor( Vdc_max[i] / V_max_unitaria )</div></div>
+      <div class="fc"><div class="fc-title"><span class="fc-tag func">FUNCIONAMIENTO</span> Tensión Mínima — por inversor</div>
+        <div class="fc-f"><span class="res">V_min</span> = <span class="sym">Vmpp_STC</span> × [ 1 + ( <span class="coef">βVoc/100</span> × ( <span class="tmp">T_cell_max</span> − 25 ) ) ]
+<span class="res">V_min_string</span> = <span class="res">V_min</span> × N   →  Vmpp_min[i] ≤ V_min ≤ Vmpp_max[i]
+<span class="res">N_min[i]</span> = ceil( Vmpp_min[i] / V_min_unitaria )
+
+Nota: V_max_u y V_min_u son iguales para todos los inversores (módulo único).
+El rango [N_min, N_max] puede diferir por inversor si tienen distinto Vdc_max o Vmpp_min.</div></div>
+    </div>
+  </div>
+  <div class="ts"><div class="ts-hdr">🔌 3. Corrientes y Potencia</div>
+    <div class="ts-body">
+      <div class="fc"><div class="fc-title"><span class="fc-tag seg">DIMENSIONADO</span> Corrientes en caliente — comunes a todos los inversores</div>
+        <div class="fc-f"><span class="res">Isc_max</span>   = <span class="sym">Isc_STC</span>  × [ 1 + ( <span class="coef">αIsc/100</span> × ΔT_hot ) ]
+<span class="res">Impp_real</span> = <span class="sym">Impp_STC</span> × [ 1 + ( <span class="coef">αIsc/100</span> × ΔT_hot ) ]
+<span class="res">I_diseño</span>  = 1,25 × <span class="res">Isc_max</span>   [UNE-HD 60364-7-712]
+
+Por inversor:
+  Verificar: <span class="res">Isc_max</span> × n_ch[i] ≤ Imax_MPPT[i]</div></div>
+      <div class="fc"><div class="fc-title"><span class="fc-tag real">DERATING</span> Potencia real — por inversor</div>
+        <div class="fc-f"><span class="res">P_real_mod</span>   = <span class="sym">Pmax</span> × [ 1 + ( <span class="coef">βPmpp/100</span> × ΔT_hot ) ]   [común]
+<span class="res">P_real[i]</span>    = P_real_mod × n_mod[i] / 1000   [kW]
+<span class="res">ratio_real[i]</span>= P_real[i] / Pac[i]
+clipping[i]  = ratio_real[i] ≥ 1,0
+
+Planta completa:
+  Pdc_total = Σ Pdc[i]   Pac_total = Σ Pac[i]   P_real_total = Σ P_real[i]</div></div>
+    </div>
+  </div>
+  <div class="ts"><div class="ts-hdr">📐 4. Caída de Tensión CC</div>
+    <div class="ts-body">
+      <div class="fc"><div class="fc-title"><span class="fc-tag cdt">CDT</span> Fórmula por tramo</div>
+        <div class="fc-f">I_diseño = 1,25 × Isc_max   [UNE-HD 60364-7-712]
+ρ = 0,024 Ω·mm²/m   [Cu exterior PV1-F]
+
+cdt_V   = 2 × L × I_diseño × ρ / S
+cdt_%   = (cdt_V / V_max_string) × 100
+CDT_total_% = Σ cdt_%(tramos activos) ≤ 1,5 %
+
+S=0 mm² → tramo inexistente, CDT=0 (excluido del total)
+
+S_mín proporcional:
+  CDT_disp_tramo = V_string × 0,015 × (L_tramo / L_total_activa)
+  S_min = 2 × L × I_diseño × ρ / CDT_disp_tramo</div></div>
+    </div>
+  </div>
+  <div class="ts"><div class="ts-hdr">🏭 5. Nomenclatura Multi-Inversor</div>
+    <div class="ts-body">
+      <div class="fc"><div class="fc-title">Identificadores de string y línea CC</div>
+        <div class="fc-f">Formato string:   INV[ii]-MPPT[m]-[cc]
+  ii = nº inversor 2 dígitos (01, 02, ...)
+  m  = nº MPPT sin ceros (1, 2, ...)
+  cc = nº canal 2 dígitos (01, 02, ...)
+
+Ejemplos:
+  INV01-MPPT1-01  →  Inversor 1, MPPT 1, Canal 1
+  INV01-MPPT2-03  →  Inversor 1, MPPT 2, Canal 3
+  INV02-MPPT1-01  →  Inversor 2, MPPT 1, Canal 1
+
+Identificador CC: INV[ii]-MPPT[m]-[cc] Tramo CC</div></div>
+    </div>
+  </div>
+  <div class="ts"><div class="ts-hdr">📋 6. Leyenda de Variables</div>
+    <div class="ts-body" style="padding:0">
+      <table class="leg-tbl">
+        <thead><tr><th>Variable</th><th>Descripción</th><th>Unidad</th></tr></thead>
+        <tbody>
+          <tr><td>Voc_STC</td><td>Tensión circuito abierto en STC</td><td>V</td></tr>
+          <tr><td>Vmpp_STC</td><td>Tensión punto máx. potencia en STC</td><td>V</td></tr>
+          <tr><td>Isc_STC / Isc_max</td><td>Corriente cortocircuito STC / en caliente</td><td>A</td></tr>
+          <tr><td>I_diseño</td><td>1,25 × Isc_max — diseño conductores DC</td><td>A</td></tr>
+          <tr><td>βVoc / αIsc / βPmpp</td><td>Coeficientes de temperatura de tensión / corriente / potencia</td><td>%/°C</td></tr>
+          <tr><td>N_min[i] / N_max[i]</td><td>Rango válido de módulos en serie para el inversor i</td><td>—</td></tr>
+          <tr><td>n_mod[i]</td><td>Módulos asignados al inversor i</td><td>—</td></tr>
+          <tr><td>Pdc[i] / Pac[i]</td><td>Potencia DC STC / AC nominal del inversor i</td><td>kWp / kW</td></tr>
+          <tr><td>ratio_real[i]</td><td>P_real[i] / Pac[i] — derating térmico por inversor</td><td>—</td></tr>
+          <tr><td>Pdc_total</td><td>Suma de todas las Pdc[i] — potencia total de la planta</td><td>kWp</td></tr>
+          <tr><td>ρ</td><td>Resistividad Cu exterior: 0,024 Ω·mm²/m</td><td>Ω·mm²/m</td></tr>
+          <tr><td>CDT_total_%</td><td>Suma de CDT de tramos activos ≤ 1,5%</td><td>%</td></tr>
+          <tr><td>Clipping</td><td>P_DC &gt; P_AC — inversor limita potencia</td><td>—</td></tr>
+          <tr><td>STC</td><td>25°C, 1000 W/m², AM 1.5</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  UTILIDADES Y PERSISTENCIA (v5.0)
+// ═══════════════════════════════════════════
+const S_KEY = 'calcfv_v5_state';
+const gv  = id => parseFloat(document.getElementById(id).value);
+const gvi = id => parseInt(document.getElementById(id).value);
+const f   = (n,d=2) => (isNaN(n)||n===null)?'—':n.toFixed(d);
+const RHO=0.024, CDT_MAX=1.5;
+const S_NORM=[1.5,2.5,4,6,10,16,25,35,50,70,95,120];
+const S_SEL=[0,...S_NORM];
+
+function tog(h){h.classList.toggle('col');h.nextElementSibling.classList.toggle('hidden');}
+function showTab(name,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='cc') renderCC();
+}
+
+// ═══════════════════════════════════════════
+//  ESTADO GLOBAL
+// ═══════════════════════════════════════════
+let invDefs=[];
+let cfgArr=[];
+let ccData={};
+let P=null;
+let Tglobal=null, CIglobal=null, CPglobal=null;
+window._sumTxt='';
+
+// LocalStorage Funciones (v5.0)
+function saveState() {
+  const inputs = ['pmax','voc_stc','vmpp_stc','isc','impp','beta_voc','alpha_isc','bpmpp',
+                  't_amb_min','t_amb_max','v_red','f_loss_dc','hsp_anual','ifus'];
+  const state = {
+    vals: inputs.reduce((a,id)=>{ a[id] = document.getElementById(id).value; return a; }, {}),
+    invDefs: invDefs,
+    cfgArr: cfgArr,
+    ccData: ccData
+  };
+  localStorage.setItem(S_KEY, JSON.stringify(state));
+}
+
+function loadState() {
+  const raw = localStorage.getItem(S_KEY);
+  if(!raw) return false;
+  try {
+    const state = JSON.parse(raw);
+    Object.keys(state.vals).forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.value = state.vals[id];
+    });
+    if(state.invDefs) invDefs = state.invDefs;
+    if(state.cfgArr) cfgArr = state.cfgArr;
+    if(state.ccData) ccData = state.ccData;
+    document.getElementById('storage-status').style.display = 'flex';
+    return true;
+  } catch(e){ return false; }
+}
+
+// ═══════════════════════════════════════════
+//  GESTIÓN DE INVERSORES EN SIDEBAR
+// ═══════════════════════════════════════════
+const INV_DEFAULT={nombre:'Inversor',vdc_max:1100,pac:25,vmpp_min:200,vmpp_max:1000,imax_str:13,imax_mppt:26,n_mppt:2,n_ch:2,n_mod:70};
+
+function initInvs(){
+  invDefs=[{...INV_DEFAULT,nombre:'INV01'}];
+  renderInvList();
+}
+
+function onNInvChange(val){
+  let n=parseInt(val)||1;
+  n=Math.max(1,Math.min(20,n));
+  document.getElementById('n_inv_input').value=n;
+  while(invDefs.length<n) invDefs.push({...INV_DEFAULT,nombre:'INV'+(String(invDefs.length+1).padStart(2,'0'))});
+  while(invDefs.length>n) invDefs.pop();
+  renderInvList();
+  saveState();
+}
+
+function addInversor(){
+  invDefs.push({...INV_DEFAULT,nombre:'INV'+(String(invDefs.length+1).padStart(2,'0'))});
+  document.getElementById('n_inv_input').value=invDefs.length;
+  renderInvList();
+  saveState();
+}
+
+function delInversor(idx){
+  if(invDefs.length<=1){alert('Debe haber al menos un inversor.');return;}
+  invDefs.splice(idx,1);
+  document.getElementById('n_inv_input').value=invDefs.length;
+  renderInvList();
+  saveState();
+}
+
+function readInvFromDOM(){
+  invDefs=invDefs.map((_,i)=>({
+    nombre:  (document.getElementById(`inv-nombre-${i}`)?.value||`INV${String(i+1).padStart(2,'0')}`),
+    vdc_max: parseFloat(document.getElementById(`inv-vdc-${i}`)?.value||1100),
+    pac:     parseFloat(document.getElementById(`inv-pac-${i}`)?.value||25),
+    vmpp_min:parseFloat(document.getElementById(`inv-vmin-${i}`)?.value||200),
+    vmpp_max:parseFloat(document.getElementById(`inv-vmax-${i}`)?.value||1000),
+    imax_str:parseFloat(document.getElementById(`inv-imxs-${i}`)?.value||13),
+    imax_mppt:parseFloat(document.getElementById(`inv-imxm-${i}`)?.value||26),
+    n_mppt:  parseInt(document.getElementById(`inv-nmppt-${i}`)?.value||2),
+    n_ch:    parseInt(document.getElementById(`inv-nch-${i}`)?.value||2),
+    n_mod:   parseInt(document.getElementById(`inv-nmod-${i}`)?.value||70),
+  }));
+}
+
+function renderInvList(){
+  const list=document.getElementById('inv-list');
+  if(!list)return;
+  list.innerHTML=invDefs.map((inv,i)=>`
+<div class="card" style="margin-bottom:6px" id="inv-card-${i}">
+  <div class="inv-header-sb" onclick="togInvCard(${i})">
+    <span class="inv-lbl-sb">
+      <span id="inv-badge-${i}" class="inv-badge-sb ok">INV${String(i+1).padStart(2,'0')}</span>
+      <span id="inv-name-disp-${i}" style="font-size:11px;color:var(--tx-m)">${inv.nombre}</span>
+    </span>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button class="inv-del" onclick="event.stopPropagation();delInversor(${i})">×</button>
+      <span class="cv" id="inv-cv-${i}">▾</span>
+    </div>
+  </div>
+  <div class="cb hidden" id="inv-body-${i}">
+    <div class="fld s2"><label>Nombre / modelo</label>
+      <input type="text" id="inv-nombre-${i}" value="${inv.nombre}" oninput="document.getElementById('inv-name-disp-${i}').textContent=this.value"></div>
+    <div class="fld"><label>Vdc máx. <span class="u">V</span></label><input type="number" id="inv-vdc-${i}" value="${inv.vdc_max}" min="500" max="1500" step="10"></div>
+    <div class="fld"><label>Pac nominal <span class="u">kW</span></label><input type="number" id="inv-pac-${i}" value="${inv.pac}" min="1" max="500" step="0.1"></div>
+    <div class="fld"><label>Vmpp mín. <span class="u">V</span></label><input type="number" id="inv-vmin-${i}" value="${inv.vmpp_min}" min="50" max="500" step="5"></div>
+    <div class="fld"><label>Vmpp máx. <span class="u">V</span></label><input type="number" id="inv-vmax-${i}" value="${inv.vmpp_max}" min="200" max="1500" step="5"></div>
+    <div class="fld"><label>Imax string <span class="u">A</span></label><input type="number" id="inv-imxs-${i}" value="${inv.imax_str}" min="5" max="50" step="0.5"></div>
+    <div class="fld"><label>Imax MPPT <span class="u">A</span></label><input type="number" id="inv-imxm-${i}" value="${inv.imax_mppt}" min="5" max="100" step="0.5"></div>
+    <div class="fld"><label>Nº MPPTs</label><input type="number" id="inv-nmppt-${i}" value="${inv.n_mppt}" min="1" max="12"></div>
+    <div class="fld"><label>Canales/MPPT</label><input type="number" id="inv-nch-${i}" value="${inv.n_ch}" min="1" max="6"></div>
+    <div class="fld s2"><label>Módulos asignados</label><input type="number" id="inv-nmod-${i}" value="${inv.n_mod}" min="1" max="5000"></div>
+  </div>
+</div>`).join('');
+}
+
+function togInvCard(i){
+  const body=document.getElementById(`inv-body-${i}`);
+  const cv=document.getElementById(`inv-cv-${i}`);
+  if(!body)return;
+  body.classList.toggle('hidden');
+  if(cv)cv.style.transform=body.classList.contains('hidden')?'':'rotate(-90deg)';
+}
+
+// ═══════════════════════════════════════════
+//  MOTORES DE CÁLCULO
+// ═══════════════════════════════════════════
+function calcTensiones(panel,env){
+  const T_REF=25,T_OFFSET=25;
+  const coeff_V=-(Math.abs(panel.beta_voc))/100;
+  const t_cell_cold=env.t_amb_min;
+  const t_cell_hot=env.t_amb_max+T_OFFSET;
+  const dT_cold=t_cell_cold-T_REF, dT_hot=t_cell_hot-T_REF;
+  const v_max_u=panel.voc_stc*(1+coeff_V*dT_cold);
+  const v_min_u=panel.vmpp_stc*(1+coeff_V*dT_hot);
+  return{coeff_V,t_cell_cold,t_cell_hot,dT_cold,dT_hot,v_max_u,v_min_u,
+         vStringMax:n=>v_max_u*n, vStringMin:n=>v_min_u*n};
+}
+function calcCorrientes(panel,env){
+  const coeff_I=Math.abs(panel.alpha_isc)/100;
+  const t_cell_hot=env.t_amb_max+25;
+  const dT_hot=t_cell_hot-25;
+  return{coeff_I,dT_hot,Isc_max:panel.isc*(1+coeff_I*dT_hot),Impp_real:panel.impp*(1+coeff_I*dT_hot)};
+}
+function calcPotencia(panel,env){
+  const coeff_P=-(Math.abs(panel.bpmpp))/100;
+  const dT_hot=env.t_amb_max+25-25;
+  return{coeff_P,P_real_mod:panel.pmax*(1+coeff_P*dT_hot)};
+}
+
+// ═══════════════════════════════════════════
+//  MOTOR DE CLIPPING v5.0 (Actualizado)
+//  Base: P_real_mod × f_loss_dc
+// ═══════════════════════════════════════════
+function calcClipping(invResults, f_loss_dc, hsp_anual){
+  const results = invResults.map(r => {
+    // v5.0: Usamos r.P_real en lugar de r.Pdc_stc
+    const P_dc_Treal = r.P_real * f_loss_dc;             // kW
+    const P_ac_max  = r.inv.pac;                         // kW
+    const P_clip_T  = Math.max(0, P_dc_Treal - P_ac_max); // kW
+    const P_ac_ent  = Math.min(P_dc_Treal, P_ac_max);    // kW
+    const ratio_real_clip = P_dc_Treal / P_ac_max;       // Indicador director
+    return { P_dc_Treal, P_ac_max, P_clip_T, P_ac_ent, ratio_real_clip };
+  });
+
+  // Planta completa
+  const P_dc_total  = results.reduce((a,r)=>a+r.P_dc_Treal,0);
+  const P_clip_total= results.reduce((a,r)=>a+r.P_clip_T,0);
+  const P_ac_total  = results.reduce((a,r)=>a+r.P_ac_ent,0);
+  const ratio_real_clip_planta = P_ac_total > 0 ? (P_dc_total / P_ac_total) : 0;
+
+  // Integración temporal con HSP
+  const E_dc_total  = P_dc_total   * hsp_anual / 1000;  // MWh/año
+  const E_clip      = P_clip_total * hsp_anual / 1000;  // MWh/año
+  const E_ac        = P_ac_total   * hsp_anual / 1000;  // MWh/año
+
+  // % Clipping (ahora solo informativo)
+  const pct_clip_info = P_dc_total > 0 ? (P_clip_total / P_dc_total) * 100 : 0;
+
+  return {
+    f_loss_dc, hsp_anual,
+    perInv: results,
+    P_dc_total, P_clip_total, P_ac_total, ratio_real_clip_planta,
+    E_dc_total, E_clip, E_ac,
+    pct_clip_info,
+  };
+}
+
+// v5.0: Semáforo MEP de 7 tramos por RATIO REAL
+function clipStatus(ratio){
+  if(ratio <= 1.00) return {cls:'ok', label:'🟢 SIN CLIPPING', color:'var(--gr)'};
+  if(ratio <= 1.05) return {cls:'ok', label:'🟢 EXCELENTE', color:'var(--gr)'};
+  if(ratio <= 1.10) return {cls:'ok', label:'✅ ÓPTIMO', color:'var(--gr)'};
+  if(ratio <= 1.15) return {cls:'aceptable', label:'✅ ACEPTABLE', color:'var(--cy)'};
+  if(ratio <= 1.20) return {cls:'justificar', label:'⚠️ JUSTIFICAR', color:'var(--or)'};
+  if(ratio <= 1.25) return {cls:'warn', label:'⚠️ ALTO', color:'var(--or)'};
+  return {cls:'revisar', label:'🚨 EXCESIVO', color:'var(--rd)'};
+}
+
+// Texto normativo automático actualizado a v5.0
+function clipTextoNormativo(ratio, ratio_str, pct_info){
+  const base = `El cálculo del clipping se ha realizado utilizando como base la Potencia DC Real del generador, deduciendo el derating por alta temperatura de la célula y el factor de pérdidas DC del sistema (f_loss_DC). Las energías resultantes se obtienen mediante la integración con las Horas de Sol Pico (HSP) anuales.`;
+
+  if(ratio <= 1.05)
+    return base + `\n\nEl Ratio Real DC/AC obtenido (${ratio_str}) y el nivel de clipping (${f(pct_info,2)}%) indican un diseño conservador donde las pérdidas por recorte son muy bajas o inexistentes.`;
+  if(ratio <= 1.15)
+    return base + `\n\nEl Ratio Real DC/AC obtenido (${ratio_str}) se encuentra en un rango óptimo/aceptable. El nivel de clipping estimado (${f(pct_info,2)}%) refleja un buen equilibrio entre aprovechamiento de los inversores y coste de los paneles.`;
+  if(ratio <= 1.25)
+    return base + `\n\nEl Ratio Real DC/AC obtenido (${ratio_str}) es elevado. El clipping resultante (${f(pct_info,2)}%) implicará una pérdida económica notable. Este diseño requiere justificación técnica en memoria (frecuentemente asociado a instalaciones con orientación Este-Oeste).`;
+  
+  return base + `\n\n🚨 ALARMA CLP-01: El Ratio Real DC/AC obtenido (${ratio_str}) es excesivo. El inversor sufrirá un estrés térmico continuo. Se exige imperativamente revisar el dimensionamiento DC/AC del campo solar.`;
+}
+
+function strId(i,m,c){ return `INV${String(i+1).padStart(2,'0')}-MPPT${m+1}-${String(c+1).padStart(2,'0')}`; }
+function sNorm(sMin){for(const s of S_NORM)if(s>=sMin)return s;return S_NORM[S_NORM.length-1];}
+function calcCDT(L,S,I,V){
+  if(S===0)return{cdt_V:0,cdt_pct:0,inactive:true};
+  const cdt_V=2*L*I*RHO/S;
+  return{cdt_V,cdt_pct:(cdt_V/V)*100,inactive:false};
+}
+function buildSelOpts(current){
+  return S_SEL.map(s=>`<option value="${s}" ${current===s?'selected':''}>${s===0?'0 (no existe)':s+' mm²'}</option>`).join('');
+}
+
+// ═══════════════════════════════════════════
+//  CÁLCULO PRINCIPAL
+// ═══════════════════════════════════════════
+function calculate(){
+  readInvFromDOM();
+  const panel={pmax:gv('pmax'),voc_stc:gv('voc_stc'),vmpp_stc:gv('vmpp_stc'),
+    isc:gv('isc'),impp:gv('impp'),beta_voc:gv('beta_voc'),alpha_isc:gv('alpha_isc'),bpmpp:gv('bpmpp')};
+  const env={t_amb_min:gv('t_amb_min'),t_amb_max:gv('t_amb_max')};
+  const Vred=gv('v_red');
+  const f_loss_dc = gv('f_loss_dc') || 0.95;
+  const hsp_anual = gv('hsp_anual') || 1700;
+
+  if(panel.vmpp_stc>=panel.voc_stc){alert('Error: Vmpp debe ser < Voc');return;}
+  if(panel.impp>=panel.isc){alert('Error: Impp debe ser < Isc');return;}
+  if(env.t_amb_min>=env.t_amb_max){alert('Error: T_amb_min debe ser < T_amb_max');return;}
+
+  // Motores comunes
+  const T=calcTensiones(panel,env);
+  const CI=calcCorrientes(panel,env);
+  const CP=calcPotencia(panel,env);
+  if(T.v_max_u<=T.v_min_u){alert(`Error: V_max(${f(T.v_max_u,2)}V) ≤ V_min(${f(T.v_min_u,2)}V)`);return;}
+  Tglobal=T; CIglobal=CI; CPglobal=CP;
+
+  // Por cada inversor
+  const invResults=[];
+  const oldCfg=cfgArr.map(a=>a?a.map(r=>r?[...r]:[]):[]);
+  cfgArr=[];
+
+  for(let i=0;i<invDefs.length;i++){
+    const inv=invDefs[i];
+    const Nmax=Math.floor(inv.vdc_max/T.v_max_u);
+    const Nmin=Math.ceil(inv.vmpp_min/T.v_min_u);
+    if(Nmin>Nmax){alert(`${inv.nombre}: Config imposible N_min(${Nmin})>N_max(${Nmax}). Revisa parámetros.`);return;}
+    const Nstr=inv.n_mppt*inv.n_ch;
+    const base=Math.floor(inv.n_mod/Nstr);
+    const extra=inv.n_mod%Nstr;
+    cfgArr[i]=[];
+    let asgn=0;
+    for(let m=0;m<inv.n_mppt;m++){
+      cfgArr[i][m]=[];
+      for(let c=0;c<inv.n_ch;c++){
+        const auto=(asgn<extra)?base+1:base;
+        const prev=(oldCfg[i]&&oldCfg[i][m]&&oldCfg[i][m][c]!==undefined)?oldCfg[i][m][c]:null;
+        cfgArr[i][m][c]=(prev!==null&&prev>=Nmin&&prev<=Nmax)?prev:auto;
+        asgn++;
+      }
+    }
+    const Pdc_stc=inv.n_mod*panel.pmax/1000;
+    const P_real=CP.P_real_mod*inv.n_mod/1000;
+    const ratio_STC=Pdc_stc/inv.pac;
+    const ratio_real=P_real/inv.pac;
+    const I_dc=1.25*CI.Isc_max;
+    const I_ac=Vred===400?(inv.pac*1000)/(Math.sqrt(3)*400):(inv.pac*1000)/230;
+    invResults.push({inv,Nmax,Nmin,Nstr,base,extra,Pdc_stc,P_real,
+      ratio_STC,ratio_real,clipping:ratio_real>=1.0,
+      I_dc,I_ac,needF:inv.n_ch>=3});
+  }
+
+  // Resumen global
+  const Pdc_total=invResults.reduce((a,r)=>a+r.Pdc_stc,0);
+  const Pac_total=invResults.reduce((a,r)=>a+r.inv.pac,0);
+  const Preal_total=invResults.reduce((a,r)=>a+r.P_real,0);
+  const N_mod_total=invDefs.reduce((a,d)=>a+d.n_mod,0);
+
+  P={panel,env,Vred,T,CI,CP,invResults,
+     Pdc_total,Pac_total,Preal_total,N_mod_total,
+     ratio_global:Pdc_total/Pac_total,
+     f_loss_dc, hsp_anual,
+     clip: calcClipping(invResults, f_loss_dc, hsp_anual)
+  };
+
+  saveState(); // v5.0: Guardar estado tras cálculo exitoso
+
+  // Render
+  document.getElementById('ph').style.display='none';
+  const res=document.getElementById('res');
+  res.style.display='flex';
+  res.innerHTML=buildUI();
+
+  // Refresh todos los strings
+  for(let i=0;i<invDefs.length;i++)
+    for(let m=0;m<invDefs[i].n_mppt;m++)
+      for(let c=0;c<invDefs[i].n_ch;c++)
+        refreshStr(i,m,c);
+
+  for(let i=0;i<invDefs.length;i++) refreshMPPT(i);
+  for(let i=0;i<invDefs.length;i++) refreshCounter(i);
+}
+
+// ═══════════════════════════════════════════
+//  BUILD UI
+// ═══════════════════════════════════════════
+function buildUI(){
+  const p=P,T=p.T,CI=p.CI,CP=p.CP;
+
+  // Barra de temperatura (común)
+  const tempBar=`<div class="temp-bar">
+  <div class="tb-item"><span class="tb-lbl">T_cell_cold</span><span class="tb-val cold">${T.t_cell_cold}°C</span><span class="tb-sub">ΔT_cold=${T.dT_cold}°C</span></div>
+  <div class="tb-div"></div>
+  <div class="tb-item"><span class="tb-lbl">T_cell_hot</span><span class="tb-val hot">${T.t_cell_hot}°C</span><span class="tb-sub">ΔT_hot=+${T.dT_hot}°C</span></div>
+  <div class="tb-div"></div>
+  <div class="tb-item"><span class="tb-lbl">V_max/mód</span><span class="tb-val" style="color:var(--rd)">${f(T.v_max_u,3)}V</span><span class="tb-sub">(común)</span></div>
+  <div class="tb-div"></div>
+  <div class="tb-item"><span class="tb-lbl">V_min/mód</span><span class="tb-val" style="color:var(--cy)">${f(T.v_min_u,3)}V</span><span class="tb-sub">(común)</span></div>
+  <div class="tb-div"></div>
+  <div class="tb-item"><span class="tb-lbl">Isc_max</span><span class="tb-val" style="color:var(--or)">${f(CI.Isc_max,3)}A</span><span class="tb-sub">(común)</span></div>
+  <div class="tb-div"></div>
+  <div class="tb-item"><span class="tb-lbl">P_real/mód</span><span class="tb-val" style="color:var(--pu)">${f(CP.P_real_mod,1)}W</span><span class="tb-sub">(común)</span></div>
+</div>`;
+
+  // Banner global de planta (Actualizado v5.0 a Ratio Real)
+  const cl=p.clip;
+  const cst=clipStatus(cl.ratio_real_clip_planta);
+  const plantBanner=`<div class="plant-banner">
+  <span class="pb-title">🏭 PLANTA SOLAR</span>
+  <div class="pb-div"></div>
+  <div class="pb-item"><span class="pb-lbl">Inversores</span><span class="pb-val">${p.invResults.length}</span></div>
+  <div class="pb-item"><span class="pb-lbl">Módulos totales</span><span class="pb-val cy">${p.N_mod_total}</span></div>
+  <div class="pb-item"><span class="pb-lbl">Pdc_STC total</span><span class="pb-val">${f(p.Pdc_total,2)} kWp</span></div>
+  <div class="pb-item"><span class="pb-lbl">Pac nominal</span><span class="pb-val">${f(p.Pac_total,1)} kW</span></div>
+  <div class="pb-div"></div>
+  <div class="pb-item"><span class="pb-lbl">P_DC Real (T+f_loss)</span><span class="pb-val pu">${f(cl.P_dc_total,2)} kW</span></div>
+  <div class="pb-item"><span class="pb-lbl">Ratio Real DC/AC</span><span class="pb-val" style="color:${cst.color}">${f(cl.ratio_real_clip_planta,3)}</span><span class="pb-sub">${cst.label}</span></div>
+  <div class="pb-div"></div>
+  <div class="pb-item"><span class="pb-lbl">P_clip planta</span><span class="pb-val" style="color:${cl.P_clip_total>0?cst.color:'var(--gr)'}">${f(cl.P_clip_total,2)} kW</span></div>
+  <div class="pb-item"><span class="pb-lbl">% Clipping</span><span class="pb-val">${f(cl.pct_clip_info,2)} %</span><span class="pb-sub">Informativo</span></div>
+</div>`;
+
+  // Bloques por inversor
+  let invBlocks='';
+  for(let i=0;i<p.invResults.length;i++){
+    const r=p.invResults[i];
+    const inv=r.inv;
+    const ratOk=r.ratio_STC>=1.10&&r.ratio_STC<=1.40;
+
+    // Grid MPPTs
+    let mpptCards='';
+    for(let m=0;m<inv.n_mppt;m++){
+      let rows='';
+      for(let c=0;c<inv.n_ch;c++){
+        const sid=strId(i,m,c);
+        rows+=`<div class="sbox" id="sb-${i}-${m}-${c}">
+  <div class="stop">
+    <div class="sname" style="font-size:10px">${sid.split('-').slice(1).join('-')}</div>
+    <div class="snw">
+      <div class="snlbl">Módulos (${r.Nmin}–${r.Nmax})</div>
+      <div class="snrow">
+        <input type="number" class="sni" id="si-${i}-${m}-${c}" value="${cfgArr[i][m][c]}" min="${r.Nmin}" max="${r.Nmax}" oninput="onInp(${i},${m},${c})">
+        <div class="snrng">mín <b>${r.Nmin}</b><br>máx <b>${r.Nmax}</b></div>
+      </div>
+    </div>
+  </div>
+  <div class="vpills" id="vp-${i}-${m}-${c}"></div>
+  <div class="salt" id="sa-${i}-${m}-${c}"></div>
+</div>`;
+      }
+      mpptCards+=`<div class="mcard">
+  <div class="mhdr"><span class="mlbl">MPPT ${m+1}</span><div class="msm" id="msm-${i}-${m}">—</div></div>
+  <div class="mbody">${rows}<div id="mmw-${i}-${m}"></div></div>
+  <div class="mfoot">
+    <div class="mfs"><span class="mfl">Impp_real</span><span class="mfv" id="mfim-${i}-${m}">—</span></div>
+    <div class="mfs"><span class="mfl">Isc_max</span><span class="mfv" id="mfis-${i}-${m}">—</span></div>
+    <div class="mfs"><span class="mfl">Límite</span><span class="mfv" id="mflim-${i}-${m}">—</span></div>
+    <div class="mfs"><span class="mfl">Estado I</span><span class="mfv" id="mfst-${i}-${m}">—</span></div>
+  </div>
+</div>`;
+    }
+
+    const fuse=r.needF?`<div class="frs">⚡ Fusibles RECOMENDADOS (IEC 62548)</div>`:`<div class="fok">✓ Fusibles NO necesarios</div>`;
+    const acLbl=p.Vred===400?'400V':'230V';
+
+    invBlocks+=`<div class="inv-block" id="invblock-${i}">
+  <div class="inv-block-hdr" onclick="togInvBlock(${i})">
+    <span class="inv-block-name">${strId(i,0,0).split('-')[0]}</span>
+    <span style="font-size:11px;color:var(--tx-m);margin-left:4px">${inv.nombre}</span>
+    <div class="inv-block-meta">
+      <div class="inv-bm-item"><span class="inv-bm-lbl">Módulos</span><span class="inv-bm-val">${inv.n_mod}</span></div>
+      <div class="inv-bm-item"><span class="inv-bm-lbl">Pdc STC</span><span class="inv-bm-val" style="color:var(--sol)">${f(r.Pdc_stc,2)} kWp</span></div>
+      <div class="inv-bm-item"><span class="inv-bm-lbl">Pac</span><span class="inv-bm-val">${f(inv.pac,1)} kW</span></div>
+      <div class="inv-bm-item"><span class="inv-bm-lbl">Rango N</span><span class="inv-bm-val" style="color:var(--cy)">${r.Nmin}–${r.Nmax}</span></div>
+    </div>
+    <span class="inv-block-cv" id="iblock-cv-${i}">▾</span>
+  </div>
+  <div class="inv-block-body" id="iblock-body-${i}">
+
+    <div class="rbanner">
+      <div class="ri"><span class="rl2">N_MIN</span><span class="rv">${r.Nmin}</span><span class="rs">mód</span></div>
+      <div style="color:var(--tx-d)">→</div>
+      <div class="ri"><span class="rl2">Rango</span><span class="rv cy">${r.Nmin}–${r.Nmax}</span><span class="rs">mód/string</span></div>
+      <div style="color:var(--tx-d)">→</div>
+      <div class="ri"><span class="rl2">N_MAX</span><span class="rv">${r.Nmax}</span><span class="rs">mód</span></div>
+      <div class="rdiv"></div>
+      <div class="ri"><span class="rl2">Vdc máx.</span><span class="rv" style="font-size:13px">${f(inv.vdc_max,0)} V</span></div>
+      <div class="ri"><span class="rl2">MPPT</span><span class="rv" style="font-size:13px">${f(inv.vmpp_min,0)}–${f(inv.vmpp_max,0)} V</span></div>
+      <div class="rdiv"></div>
+      <div class="ri"><span class="rl2">Strings</span><span class="rv gr">${r.Nstr}</span><span class="rs">${inv.n_mppt}×${inv.n_ch}</span></div>
+    </div>
+
+    <div class="mcount">
+      <div class="mcl">📦 Módulos asignados / declarados</div>
+      <div class="mcn"><span class="mcc" id="mcc-${i}">0</span><span class="mcs">/</span><span class="mct">${inv.n_mod}</span></div>
+      <span class="mcm" id="mcm-${i}">—</span>
+    </div>
+
+    <div><div class="mst">⚡ MPPTs — ${strId(i,0,0).split('-')[0]}</div><div class="mgrid">${mpptCards}</div></div>
+
+    <div class="rgrid">
+      <div class="rcard"><div class="rch">⚡ Potencias</div><div class="rcb">
+        <div class="rrow"><span class="rrl">Pdc STC</span><span class="rrv sol">${f(r.Pdc_stc,2)} kWp</span></div>
+        <div class="rrow"><span class="rrl">Pac inversor</span><span class="rrv">${f(inv.pac,1)} kW</span></div>
+        <div class="rrow"><span class="rrl">Ratio DC/AC (STC)</span><span class="rrv ${ratOk?'ok':'warn'}">${f(r.ratio_STC,3)}</span></div>
+        <div>${ratOk?'<span class="chip ok">✓ ÓPTIMO</span>':'<span class="chip warn">⚠ REVISAR</span>'}</div>
+        <div class="sep"></div>
+        <div class="derating-box">
+          <span class="db-title">🌡 Derating (${T.t_cell_hot}°C)</span>
+          <div class="db-row"><span class="db-lbl">P_real térmico</span><span class="db-val">${f(r.P_real,2)} kW</span></div>
+          <div class="db-row"><span class="db-lbl">P_DC_Treal (+f_loss)</span><span class="db-val">${f(p.clip.perInv[i].P_dc_Treal,2)} kW</span></div>
+        </div>
+      </div></div>
+      <div class="rcard"><div class="rch">🌡 Tensiones</div><div class="rcb">
+        <div class="rrow"><span class="rrl">V_max/mód</span><span class="rrv" style="color:var(--rd)">${f(T.v_max_u,3)} V</span></div>
+        <div class="rrow"><span class="rrl">V_min/mód</span><span class="rrv cy">${f(T.v_min_u,3)} V</span></div>
+        <div class="rrow"><span class="rrl">Vdc máx.</span><span class="rrv">${f(inv.vdc_max,0)} V</span></div>
+        <div class="rrow"><span class="rrl">Rango MPPT</span><span class="rrv">${f(inv.vmpp_min,0)}–${f(inv.vmpp_max,0)} V</span></div>
+      </div></div>
+      <div class="rcard"><div class="rch">⚡ Corrientes</div><div class="rcb">
+        <div class="rrow"><span class="rrl">Isc_max</span><span class="rrv warn">${f(CI.Isc_max,3)} A</span></div>
+        <div class="rrow"><span class="rrl">Impp_real</span><span class="rrv pu">${f(CI.Impp_real,3)} A</span></div>
+        <div class="rrow"><span class="rrl">I_diseño DC</span><span class="rrv sol">${f(r.I_dc,2)} A</span></div>
+        <div class="rrow"><span class="rrl">I AC (${acLbl})</span><span class="rrv sol">${f(r.I_ac,1)} A</span></div>
+      </div></div>
+      <div class="rcard"><div class="rch">🔌 Protecciones</div><div class="rcb">
+        ${fuse}<div class="sep"></div>
+        <div class="rrow"><span class="rrl">Magneto AC</span><span class="rrv">${recCB(r.I_ac)} A</span></div>
+        <div class="rrow"><span class="rrl">Diferencial</span><span class="rrv">Tipo A/B</span></div>
+        <div class="rrow"><span class="rrl">SPD DC/AC</span><span class="rrv ok">Tipo II</span></div>
+      </div></div>
+    </div>
+
+    ${buildClipInvBlock(p.clip.perInv[i], inv, i)}
+
+  </div>
+</div>`;
+  }
+
+  return tempBar+plantBanner+invBlocks
+    +buildClipGlobalSection(p.clip)
+    +`<div class="swrap"><div class="shdr"><h2>📄 Resumen Técnico</h2>
+       <div class="shdr-btns">
+         <button class="bgen" onclick="generateSummary()">📋 GENERAR</button>
+         <button class="bcop" onclick="copySummary()">⧉ COPIAR</button>
+       </div></div>
+       <div class="sbody" id="sbody"><span class="pend">Pulsa "GENERAR" para obtener el texto de memoria técnica.</span></div>
+     </div>`;
+}
+
+// ═══════════════════════════════════════════
+//  BLOQUE CLIPPING POR INVERSOR (v5.0)
+// ═══════════════════════════════════════════
+function buildClipInvBlock(clipInv, inv, i){
+  const P_clip = clipInv.P_clip_T;
+  const ratio  = clipInv.ratio_real_clip;
+  const st     = clipStatus(ratio);
+  const boxCls = st.cls === 'ok' ? 'ok' : st.cls === 'revisar' ? 'alert' : 'warn';
+  return `<div class="clip-box ${boxCls}">
+  <div class="clip-title ${boxCls}">⚡ CLIPPING REAL — ${inv.nombre}</div>
+  <div class="clip-row">
+    <span class="clip-lbl">P_DC_Treal (Derating × f_loss)</span>
+    <span class="clip-val cy">${f(clipInv.P_dc_Treal,2)} kW</span>
+  </div>
+  <div class="clip-row">
+    <span class="clip-lbl">P_AC entregada</span>
+    <span class="clip-val ok">${f(clipInv.P_ac_ent,2)} kW</span>
+  </div>
+  <div class="clip-row">
+    <span class="clip-lbl">P_clip instantáneo</span>
+    <span class="clip-val ${P_clip>0?(ratio>=1.25?'alert':'warn'):'ok'}">${f(P_clip,2)} kW</span>
+  </div>
+  <div class="clip-row" style="margin-top:3px">
+    <span class="clip-lbl">Ratio Real DC/AC</span>
+    <span class="clip-chip ${st.cls}" style="font-size:11px">${f(ratio,3)}  ${st.label}</span>
+  </div>
+</div>`;
+}
+
+// ═══════════════════════════════════════════
+//  SECCIÓN ANÁLISIS DE CLIPPING GLOBAL (v5.0)
+// ═══════════════════════════════════════════
+function buildClipGlobalSection(cl){
+  const st  = clipStatus(cl.ratio_real_clip_planta);
+  const sec = st.cls === 'ok' ? 'ok' : st.cls === 'revisar' ? 'alert' : 'warn';
+
+  // Filas por inversor en la tabla
+  let invRows = '';
+  P.invResults.forEach((r, i) => {
+    const ci = cl.perInv[i];
+    const st_i  = clipStatus(ci.ratio_real_clip);
+    invRows += `<tr>
+      <td>INV${String(i+1).padStart(2,'0')}</td>
+      <td>${r.inv.nombre}</td>
+      <td class="c mono">${f(r.Pdc_stc,2)}</td>
+      <td class="c mono">${f(r.inv.pac,1)}</td>
+      <td class="c mono">${f(ci.P_dc_Treal,2)}</td>
+      <td class="c mono">${f(ci.P_ac_ent,2)}</td>
+      <td class="c mono" style="color:${ci.P_clip_T>0?'var(--or)':'var(--gr)'}">${f(ci.P_clip_T,2)}</td>
+      <td class="c"><span class="clip-chip ${st_i.cls}">${f(ci.ratio_real_clip,3)}</span></td>
+    </tr>`;
+  });
+
+  const textoNorm = clipTextoNormativo(cl.ratio_real_clip_planta, f(cl.ratio_real_clip_planta,3), cl.pct_clip_info);
+  const alarmHtml = cl.ratio_real_clip_planta >= 1.25
+    ? `<div class="clip-alarm crit">🚨 ALARMA CLP-01 — Ratio Excesivo (≥ 1.25). Estrés térmico del inversor.</div>`
+    : cl.ratio_real_clip_planta >= 1.15
+    ? `<div class="clip-alarm warn">⚠ Ratio entre 1.15 y 1.25. Incluir justificación técnica en memoria.</div>`
+    : '';
+
+  return `<div class="clipping-section ${sec}">
+  <div class="clip-hdr ${sec}">
+    <span class="clip-hdr-title ${sec}">📊 Análisis de Clipping Real</span>
+    <span style="font-size:11px;color:var(--tx-m);margin-left:6px">
+      Base: P_real_mod × f_loss_DC (${f(cl.f_loss_dc,2)}) · HSP = ${cl.hsp_anual}
+    </span>
+    <span class="clip-chip ${st.cls}" style="margin-left:auto">${f(cl.ratio_real_clip_planta,3)}  ${st.label}</span>
+  </div>
+  <div class="clip-body">
+
+    <div class="clip-metrics">
+      <div class="clip-metric">
+        <span class="cm-lbl">P_DC_STC Planta</span>
+        <span class="cm-val">${f(P.Pdc_total,2)} kWp</span>
+      </div>
+      <div class="clip-metric">
+        <span class="cm-lbl">P_DC_Treal Planta</span>
+        <span class="cm-val cy">${f(cl.P_dc_total,2)} kW</span>
+      </div>
+      <div class="clip-metric">
+        <span class="cm-lbl">P_AC Nominal</span>
+        <span class="cm-val ok">${f(cl.P_ac_total,2)} kW</span>
+      </div>
+      <div class="clip-metric">
+        <span class="cm-lbl">Ratio Real DC/AC</span>
+        <span class="cm-val ${sec}">${f(cl.ratio_real_clip_planta,3)}</span>
+      </div>
+      <div class="clip-metric">
+        <span class="cm-lbl">E_DC Total Anual</span>
+        <span class="cm-val cy">${f(cl.E_dc_total,2)} MWh/año</span>
+      </div>
+      <div class="clip-metric">
+        <span class="cm-lbl">E_AC Entregada Anual</span>
+        <span class="cm-val ok">${f(cl.E_ac,2)} MWh/año</span>
+      </div>
+      <div class="clip-metric">
+        <span class="cm-lbl">E_clip Anual</span>
+        <span class="cm-val ${sec}">${f(cl.E_clip,3)} MWh/año</span>
+      </div>
+      <div class="clip-metric">
+        <span class="cm-lbl">% Clipping (Informativo)</span>
+        <span class="cm-val">${f(cl.pct_clip_info,2)} %</span>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;
+        letter-spacing:1.5px;text-transform:uppercase;color:var(--tx-m);margin-bottom:7px">
+        Detalle por inversor
+      </div>
+      <div style="overflow-x:auto">
+        <table class="clip-inv-table">
+          <thead><tr>
+            <th style="text-align:left">ID</th>
+            <th style="text-align:left">Nombre</th>
+            <th class="c">Pdc STC (kWp)</th>
+            <th class="c">Pac (kW)</th>
+            <th class="c">P_DC_Treal (kW)</th>
+            <th class="c">P_AC ent. (kW)</th>
+            <th class="c">P_clip_T (kW)</th>
+            <th class="c">Ratio Real</th>
+          </tr></thead>
+          <tbody>${invRows}</tbody>
+          <tr class="total-row">
+            <td colspan="2"><strong>PLANTA</strong></td>
+            <td class="c mono"><strong>${f(P.Pdc_total,2)}</strong></td>
+            <td class="c mono"><strong>${f(P.Pac_total,1)}</strong></td>
+            <td class="c mono"><strong>${f(cl.P_dc_total,2)}</strong></td>
+            <td class="c mono"><strong>${f(cl.P_ac_total,2)}</strong></td>
+            <td class="c mono" style="color:${cl.P_clip_total>0?'var(--or)':'var(--gr)'}"><strong>${f(cl.P_clip_total,2)}</strong></td>
+            <td class="c"><span class="clip-chip ${st.cls}"><strong>${f(cl.ratio_real_clip_planta,3)}</strong></span></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="clip-text-box">
+      ${textoNorm.replace(/\n\n/g,'<br><br>')}
+      ${alarmHtml}
+    </div>
+
+  </div>
+</div>`;
+}
+
+function togInvBlock(i){
+  const body=document.getElementById(`iblock-body-${i}`);
+  const hdr=document.querySelector(`#invblock-${i} .inv-block-hdr`);
+  const cv=document.getElementById(`iblock-cv-${i}`);
+  if(!body)return;
+  body.classList.toggle('hidden');
+  if(hdr)hdr.classList.toggle('col');
+  if(cv)cv.style.transform=body.classList.contains('hidden')?'rotate(-90deg)':'';
+}
+
+// ═══════════════════════════════════════════
+//  REFRESH STRING / MPPT / COUNTER
+// ═══════════════════════════════════════════
+function refreshStr(i,m,c){
+  if(!P)return;
+  const T=P.T, r=P.invResults[i], inv=r.inv;
+  const n=cfgArr[i][m][c];
+  const el=document.getElementById(`si-${i}-${m}-${c}`);
+  if(el)el.value=n;
+  const V_max_s=T.vStringMax(n), V_min_s=T.vStringMin(n);
+  const okVmax=V_max_s<inv.vdc_max;
+  const okVminL=V_min_s>=inv.vmpp_min, okVminH=V_min_s<=inv.vmpp_max;
+  const okVmin=okVminL&&okVminH;
+  const cls=(!okVmax||!okVminL)?'err':(!okVminH?'warn':'ok');
+  const margVdc=inv.vdc_max-V_max_s;
+  const margVmpL=V_min_s-inv.vmpp_min, margVmpH=inv.vmpp_max-V_min_s;
+  const vpEl=document.getElementById(`vp-${i}-${m}-${c}`);
+  if(vpEl)vpEl.innerHTML=`
+<div class="vpill"><span class="vl">V_max string</span><span class="vv ${okVmax?'ok':'err'}">${f(V_max_s,1)} V</span></div>
+<div class="vpill"><span class="vl">V_min string</span><span class="vv ${okVmin?'ok':(!okVminL?'err':'warn')}">${f(V_min_s,1)} V</span></div>
+<div class="vpill"><span class="vl">Margen vs Vdc_max</span><span class="vv ${okVmax?'ok':'err'}">${okVmax?'▼'+f(margVdc,1)+'V':'❌ SUPERA'}</span></div>
+<div class="vpill"><span class="vl">V_min vs MPPT</span><span class="vv ${!okVminL?'err':(!okVminH?'warn':'ok')}">${!okVminL?'❌ BAJO MÍN':(!okVminH?'⚠ SOBRE MÁX':'✓+'+f(margVmpL,0)+'V/−'+f(margVmpH,0)+'V')}</span></div>`;
+  const saEl=document.getElementById(`sa-${i}-${m}-${c}`);
+  if(saEl){
+    let msg;
+    if(!okVmax) msg=`❌ V_max(${f(V_max_s,1)}V) supera Vdc_max(${f(inv.vdc_max,0)}V)`;
+    else if(!okVminL) msg=`❌ V_min(${f(V_min_s,1)}V) bajo Vmpp_min(${f(inv.vmpp_min,0)}V)`;
+    else if(!okVminH) msg=`⚠ V_min(${f(V_min_s,1)}V) sobre Vmpp_max(${f(inv.vmpp_max,0)}V)`;
+    else msg=`✓ OK · V_max:${f(V_max_s,1)}V · V_min:${f(V_min_s,1)}V`;
+    saEl.className=`salt ${cls}`;saEl.textContent=msg;
+    const sboxEl=document.getElementById(`sb-${i}-${m}-${c}`);
+    if(sboxEl)sboxEl.className=`sbox ${cls}`;
+  }
+}
+
+function refreshMPPT(i){
+  if(!P)return;
+  const CI=P.CI, r=P.invResults[i], inv=r.inv;
+  for(let m=0;m<inv.n_mppt;m++){
+    const Isc_mppt=inv.n_ch*CI.Isc_max;
+    const Impp_mppt=inv.n_ch*CI.Impp_real;
+    const okI=Isc_mppt<=inv.imax_mppt;
+    const vals=cfgArr[i][m]?cfgArr[i][m].slice(0,inv.n_ch):[];
+    const eIm=document.getElementById(`mfim-${i}-${m}`);
+    const eIs=document.getElementById(`mfis-${i}-${m}`);
+    const eLim=document.getElementById(`mflim-${i}-${m}`);
+    const eSt=document.getElementById(`mfst-${i}-${m}`);
+    const eSm=document.getElementById(`msm-${i}-${m}`);
+    if(eIm){eIm.textContent=f(Impp_mppt,2)+' A';eIm.className='mfv';}
+    if(eIs){eIs.textContent=f(Isc_mppt,2)+' A';eIs.className=`mfv ${okI?'ok':'err'}`;}
+    if(eLim){eLim.textContent='≤'+f(inv.imax_mppt,0)+' A';eLim.className='mfv';}
+    if(eSt){eSt.textContent=okI?'✓ OK':'❌ EXCESO';eSt.className=`mfv ${okI?'ok':'err'}`;}
+    if(eSm)eSm.textContent=vals.map((v,c)=>`C${c+1}:${v}`).join(' · ')+' mód';
+    const eW=document.getElementById(`mmw-${i}-${m}`);
+    if(eW&&inv.n_ch>1){
+      const uniq=[...new Set(vals)];
+      eW.innerHTML=uniq.length>1?`<div class="mmw">⚠ Strings desiguales [${vals.join(', ')} mód] → mismatch</div>`:'';
+    }
+  }
+}
+
+function refreshCounter(i){
+  if(!P)return;
+  const inv=invDefs[i];
+  let total=0;
+  for(let m=0;m<inv.n_mppt;m++) for(let c=0;c<inv.n_ch;c++) total+=(cfgArr[i][m]&&cfgArr[i][m][c]!==undefined)?cfgArr[i][m][c]:0;
+  const cE=document.getElementById(`mcc-${i}`), mE=document.getElementById(`mcm-${i}`);
+  if(!cE||!mE)return;
+  cE.textContent=total;
+  const N=inv.n_mod;
+  if(total===N){cE.className='mcc ok';mE.className='mcm ok';mE.textContent='✓ Correcto';}
+  else if(total<N){cE.className='mcc warn';mE.className='mcm warn';mE.textContent=`⚠ Faltan ${N-total}`;}
+  else{cE.className='mcc err';mE.className='mcm err';mE.textContent=`❌ Exceso ${total-N}`;}
+}
+
+function onInp(i,m,c){
+  if(!P)return;
+  const el=document.getElementById(`si-${i}-${m}-${c}`);
+  let val=parseInt(el.value);
+  if(isNaN(val))return;
+  const r=P.invResults[i];
+  val=Math.max(r.Nmin,Math.min(r.Nmax,val));
+  el.value=val; cfgArr[i][m][c]=val;
+  refreshStr(i,m,c); refreshMPPT(i); refreshCounter(i);
+  saveState();
+}
+
+// ═══════════════════════════════════════════
+//  SECCIONES CC
+// ═══════════════════════════════════════════
+function renderCC(){
+  const ph=document.getElementById('cc-ph');
+  const content=document.getElementById('cc-content');
+  if(!P){ph.style.display='flex';content.style.display='none';return;}
+  ph.style.display='none';
+  content.style.display='flex';
+
+  const T=P.T, CI=P.CI;
+  const I_dis=1.25*CI.Isc_max;
+
+  let html=`<div class="cc-header-bar">
+  <div class="cc-hb-item"><span class="cc-hb-lbl">I_diseño</span><span class="cc-hb-val">${f(I_dis,3)} A</span></div>
+  <div class="cc-hb-item"><span class="cc-hb-lbl">ρ Cu ext.</span><span class="cc-hb-val">0,024 Ω·mm²/m</span></div>
+  <div class="cc-hb-item"><span class="cc-hb-lbl">CDT máx.</span><span class="cc-hb-val" style="color:var(--or)">≤ 1,5 %</span></div>
+  <div class="cc-hb-item"><span class="cc-hb-lbl">Inversores</span><span class="cc-hb-val">${P.invResults.length}</span></div>
+</div>`;
+
+  for(let i=0;i<P.invResults.length;i++){
+    const r=P.invResults[i], inv=r.inv;
+    const invId=`INV${String(i+1).padStart(2,'0')}`;
+
+    let linesHtml='';
+    for(let m=0;m<inv.n_mppt;m++){
+      for(let c=0;c<inv.n_ch;c++){
+        const id=strId(i,m,c);
+        const n=cfgArr[i][m][c];
+        const V_str=T.vStringMax(n);
+        if(!ccData[id])ccData[id]={L:[10,5,50],S:[4,4,6]};
+        const d=ccData[id];
+        const cdts=d.L.map((l,t)=>calcCDT(l,d.S[t],I_dis,V_str));
+        const totalV=cdts.reduce((a,b)=>a+b.cdt_V,0);
+        const totalPct=cdts.reduce((a,b)=>a+b.cdt_pct,0);
+        const ok=totalPct<=CDT_MAX;
+        const totalL_act=d.L.reduce((a,l,t)=>d.S[t]>0?a+l:a,0);
+        const smins=d.L.map((l,t)=>{
+          if(d.S[t]===0)return 0;
+          const cdtD=V_str*0.015*(totalL_act>0?l/totalL_act:1/3);
+          return 2*l*I_dis*RHO/cdtD;
+        });
+        const trN=['Cableado paneles','Paneles–Fusibles','Fusibles–Inversor'];
+        let rows='';
+        for(let t=0;t<3;t++){
+          const inactive=cdts[t].inactive;
+          const cdtCls=inactive?'inactive':cdts[t].cdt_pct>CDT_MAX*0.8?'err':cdts[t].cdt_pct>CDT_MAX*0.6?'warn':'ok';
+          rows+=`<tr class="${inactive?'inactive':''}" id="ccrow-${id}-${t}">
+  <td>${trN[t]}</td>
+  <td><select class="cc-sel" onchange="onCCsec('${id}',${t},this.value)">${buildSelOpts(d.S[t])}</select></td>
+  <td>${inactive?'<span style="color:var(--tx-d)">—</span>':`<input type="number" class="cc-inp" value="${d.L[t]}" min="0.1" max="5000" step="0.5" oninput="onCClen('${id}',${t},this.value)">`}</td>
+  <td class="cc-val neutral">${inactive?'—':f(I_dis,2)+' A'}</td>
+  <td class="cc-val neutral">${inactive?'—':f(V_str,1)+' V'}</td>
+  <td class="cc-val ${cdtCls}" id="cdtv-${id}-${t}">${inactive?'—':f(cdts[t].cdt_V,3)+' V'}</td>
+  <td class="cc-val ${cdtCls}" id="cdtp-${id}-${t}">${inactive?'—':f(cdts[t].cdt_pct,3)+' %'}</td>
+  <td style="font-size:10px;color:var(--tx-d);font-family:'Share Tech Mono',monospace">${inactive?'—':sNorm(smins[t])+' mm²'}</td>
+</tr>`;
+        }
+        linesHtml+=`<div class="cc-line ${ok?'ok':'err'}" id="ccline-${id}">
+  <div class="cc-line-hdr">
+    <span class="cc-line-id">${id} Tramo CC</span>
+    <div class="cc-line-info">
+      <div class="cc-li-item"><span class="cc-li-lbl">Módulos</span><span class="cc-li-val">${n}</span></div>
+      <div class="cc-li-item"><span class="cc-li-lbl">V_max_string</span><span class="cc-li-val" style="color:var(--rd)">${f(V_str,1)} V</span></div>
+      <div class="cc-li-item"><span class="cc-li-lbl">I_diseño</span><span class="cc-li-val" style="color:var(--or)">${f(I_dis,2)} A</span></div>
+    </div>
+  </div>
+  <div class="cc-table-wrap"><table class="cc-tbl">
+    <thead><tr>
+      <th style="text-align:left;min-width:120px">Tramo</th>
+      <th>Sección</th><th>Long. (m)</th>
+      <th>I (A)</th><th>V (V)</th>
+      <th>cdt (V)</th><th>cdt (%)</th><th>S_mín</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+    <tbody class="cc-total"><tr>
+      <td colspan="5" style="text-align:right;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;color:var(--tx-m)">TOTAL CDT</td>
+      <td class="cc-val ${ok?'ok':'err'}" id="totalv-${id}">${f(totalV,3)} V</td>
+      <td id="totalp-${id}"><span class="cc-total-pct ${ok?'ok':'err'}">${f(totalPct,3)} %</span></td>
+      <td id="chips-${id}"><span class="cc-chip ${ok?'ok':'err'}">${ok?'✓ ≤1,5%':'❌ >1,5%'}</span></td>
+    </tr></tbody>
+  </table></div>
+  <div class="cc-line-foot">
+    <div style="font-size:10px;color:var(--tx-d);font-family:'Share Tech Mono',monospace">S=0 → tramo inexistente · S_mín distribuye 1,5% proporcionalmente</div>
+    <button class="cc-smin-btn" onclick="applySmins('${id}',${i},${m},${c})">⚡ Aplicar S_mín</button>
+  </div>
+</div>`;
+      }
+    }
+
+    html+=`<div class="cc-inv-block">
+  <div class="cc-inv-hdr" onclick="togCCInv(${i})">
+    <span class="cc-inv-name">${invId}</span>
+    <span style="font-size:11px;color:var(--tx-m);margin-left:6px">${inv.nombre}</span>
+    <div class="cc-inv-meta">
+      <div class="cc-li-item"><span class="cc-li-lbl">Strings</span><span class="cc-li-val">${r.Nstr}</span></div>
+      <div class="cc-li-item"><span class="cc-li-lbl">I_diseño</span><span class="cc-li-val" style="color:var(--or)">${f(I_dis,2)} A</span></div>
+    </div>
+    <span class="cc-inv-cv" id="ccinv-cv-${i}">▾</span>
+  </div>
+  <div class="cc-inv-body" id="ccinv-body-${i}">${linesHtml}</div>
+</div>`;
+  }
+
+  content.innerHTML=html;
+}
+
+function togCCInv(i){
+  const body=document.getElementById(`ccinv-body-${i}`);
+  const hdr=document.querySelector(`#ccinv-body-${i}`)?.previousElementSibling;
+  const cv=document.getElementById(`ccinv-cv-${i}`);
+  if(!body)return;
+  body.classList.toggle('hidden');
+  if(hdr)hdr.classList.toggle('col');
+  if(cv)cv.style.transform=body.classList.contains('hidden')?'rotate(-90deg)':'';
+}
+
+function onCClen(id,t,val){
+  if(!ccData[id])return;
+  const v=parseFloat(val);if(isNaN(v)||v<=0)return;
+  ccData[id].L[t]=v;refreshCCLine(id);saveState();
+}
+function onCCsec(id,t,val){
+  if(!ccData[id])return;
+  ccData[id].S[t]=parseFloat(val);refreshCCLine(id);saveState();
+}
+
+function refreshCCLine(id){
+  if(!P||!ccData[id])return;
+  const T=P.T, CI=P.CI;
+  const I_dis=1.25*CI.Isc_max;
+  let n=0;
+  outer:for(let i=0;i<invDefs.length;i++)
+    for(let m=0;m<invDefs[i].n_mppt;m++)
+      for(let c=0;c<invDefs[i].n_ch;c++)
+        if(strId(i,m,c)===id){n=cfgArr[i][m][c];break outer;}
+  const V_str=T.vStringMax(n);
+  const d=ccData[id];
+  const cdts=d.L.map((l,t)=>calcCDT(l,d.S[t],I_dis,V_str));
+  const totalV=cdts.reduce((a,b)=>a+b.cdt_V,0);
+  const totalPct=cdts.reduce((a,b)=>a+b.cdt_pct,0);
+  const ok=totalPct<=CDT_MAX;
+  const totalL_act=d.L.reduce((a,l,t)=>d.S[t]>0?a+l:a,0);
+  const smins=d.L.map((l,t)=>{
+    if(d.S[t]===0)return 0;
+    const cdtD=V_str*0.015*(totalL_act>0?l/totalL_act:1/3);
+    return 2*l*I_dis*RHO/cdtD;
+  });
+  for(let t=0;t<3;t++){
+    const inactive=cdts[t].inactive;
+    const cls=inactive?'inactive':cdts[t].cdt_pct>CDT_MAX*0.8?'err':cdts[t].cdt_pct>CDT_MAX*0.6?'warn':'ok';
+    const ev=document.getElementById(`cdtv-${id}-${t}`);
+    const ep=document.getElementById(`cdtp-${id}-${t}`);
+    const row=document.getElementById(`ccrow-${id}-${t}`);
+    if(ev){ev.textContent=inactive?'—':f(cdts[t].cdt_V,3)+' V';ev.className=`cc-val ${cls}`;}
+    if(ep){ep.textContent=inactive?'—':f(cdts[t].cdt_pct,3)+' %';ep.className=`cc-val ${cls}`;}
+    if(row){
+      row.className=inactive?'inactive':'';
+      const tds=row.querySelectorAll('td');
+      if(tds[7])tds[7].textContent=inactive?'—':sNorm(smins[t])+' mm²';
+      if(!inactive&&tds[2]){const inp=tds[2].querySelector('.cc-inp');if(inp)inp.value=d.L[t];}
+      else if(inactive&&tds[2])tds[2].innerHTML='<span style="color:var(--tx-d)">—</span>';
+    }
+  }
+  const etv=document.getElementById(`totalv-${id}`);
+  const etp=document.getElementById(`totalp-${id}`);
+  const ech=document.getElementById(`chips-${id}`);
+  const eline=document.getElementById(`ccline-${id}`);
+  if(etv){etv.textContent=f(totalV,3)+' V';etv.className=`cc-val ${ok?'ok':'err'}`;}
+  if(etp)etp.innerHTML=`<span class="cc-total-pct ${ok?'ok':'err'}">${f(totalPct,3)} %</span>`;
+  if(ech)ech.innerHTML=`<span class="cc-chip ${ok?'ok':'err'}">${ok?'✓ ≤1,5%':'❌ >1,5%'}</span>`;
+  if(eline)eline.className=`cc-line ${ok?'ok':'err'}`;
+}
+
+function applySmins(id,i,m,c){
+  if(!P||!ccData[id])return;
+  const T=P.T, CI=P.CI;
+  const I_dis=1.25*CI.Isc_max;
+  const n=cfgArr[i][m][c];
+  const V_str=T.vStringMax(n);
+  const d=ccData[id];
+  const totalL_act=d.L.reduce((a,l,t)=>d.S[t]>0?a+l:a,0);
+  for(let t=0;t<3;t++){
+    if(d.S[t]===0)continue;
+    const cdtD=V_str*0.015*(totalL_act>0?d.L[t]/totalL_act:1/3);
+    d.S[t]=sNorm(2*d.L[t]*I_dis*RHO/cdtD);
+    const rows=document.querySelectorAll(`#ccline-${id} .cc-tbl tbody:first-child tr`);
+    if(rows[t]){const sel=rows[t].querySelector('.cc-sel');if(sel)sel.value=d.S[t];}
+  }
+  refreshCCLine(id);
+  saveState();
+}
+
+// ═══════════════════════════════════════════
+//  GENERAR RESUMEN (v5.0 adaptado)
+// ═══════════════════════════════════════════
+function generateSummary(){
+  if(!P){alert('Primero calcula la instalación.');return;}
+  const p=P,T=p.T,CI=p.CI,CP=p.CP,cl=p.clip;
+  const st=clipStatus(cl.ratio_real_clip_planta);
+  let txt=`═══════════════════════════════════════════════════════
+  MEMORIA TÉCNICA — CAMPO SOLAR FOTOVOLTAICO
+  Ref: INF-20260410-08 v1.0 · App.Cal_FV 26 v5.0
+  REBT ITC-BT-40 / UNE-HD 60364-7-712 / IEC 62548
+═══════════════════════════════════════════════════════
+
+── MÓDULO FV (común a toda la planta) ─────────────
+  Pmax: ${f(p.panel.pmax,0)}Wp  Voc: ${f(p.panel.voc_stc,1)}V  Vmpp: ${f(p.panel.vmpp_stc,1)}V
+  Isc: ${f(p.panel.isc,2)}A  Impp: ${f(p.panel.impp,2)}A
+  βVoc: ${f(p.panel.beta_voc,2)}%/°C  αIsc: ${f(p.panel.alpha_isc,3)}%/°C  βPmpp: ${f(p.panel.bpmpp,2)}%/°C
+
+── TEMPERATURAS ─────────────────────────────────────
+  T_amb_min: ${p.env.t_amb_min}°C → T_cell_cold: ${T.t_cell_cold}°C (ΔT=${T.dT_cold}°C)
+  T_amb_max: ${p.env.t_amb_max}°C → T_cell_hot:  ${T.t_cell_hot}°C (ΔT=+${T.dT_hot}°C)
+  V_max/mód: ${f(T.v_max_u,3)}V  V_min/mód: ${f(T.v_min_u,3)}V
+  Isc_max: ${f(CI.Isc_max,3)}A  I_diseño: ${f(1.25*CI.Isc_max,3)}A  P_real/mód: ${f(CP.P_real_mod,2)}W
+
+── RESUMEN GLOBAL DE PLANTA ─────────────────────────
+  Inversores:     ${p.invResults.length}
+  Módulos totales: ${p.N_mod_total}
+  Pdc total STC:  ${f(p.Pdc_total,2)} kWp
+  Pac total:      ${f(p.Pac_total,1)} kW
+  P_DC_Treal total: ${f(cl.P_dc_total,2)} kW (P_real × f_loss)
+  Ratio global:   ${f(p.ratio_global,3)}
+  E baja (1600h): ${f(p.Pdc_total*1.6,1)} MWh/año
+  E alta (1850h): ${f(p.Pdc_total*1.85,1)} MWh/año
+
+── ANÁLISIS DE CLIPPING REAL (v5.0) ─────────────────
+  f_loss_DC:       ${f(cl.f_loss_dc,2)}
+  HSP anuales:     ${cl.hsp_anual} h/año
+  P_DC_Treal planta: ${f(cl.P_dc_total,2)} kW
+  P_AC entregada:   ${f(cl.P_ac_total,2)} kW
+  P_clip planta:    ${f(cl.P_clip_total,2)} kW
+  E_DC total:       ${f(cl.E_dc_total,2)} MWh/año
+  E_AC entregada:   ${f(cl.E_ac,2)} MWh/año
+  E_clip anual:     ${f(cl.E_clip,3)} MWh/año
+  Ratio Real DC/AC: ${f(cl.ratio_real_clip_planta,3)} → ${st.label}
+${cl.ratio_real_clip_planta>=1.25?'  🚨 ALARMA CLP-01: Ratio excesivo (>=1.25). Revisar dimensionamiento DC/AC.\n':''}
+  Detalle por inversor:
+${p.invResults.map((r,i)=>{
+    const ci=cl.perInv[i];
+    return `  INV${String(i+1).padStart(2,'0')} ${r.inv.nombre}: P_DC_Treal=${f(ci.P_dc_Treal,2)}kW  P_clip=${f(ci.P_clip_T,2)}kW  RatioReal=${f(ci.ratio_real_clip,3)}`;
+  }).join('\n')}
+
+`;
+  for(let i=0;i<p.invResults.length;i++){
+    const r=p.invResults[i], inv=r.inv;
+    const invId=`INV${String(i+1).padStart(2,'0')}`;
+    let cfgLines='';
+    for(let m=0;m<inv.n_mppt;m++)
+      for(let c=0;c<inv.n_ch;c++){
+        const n=cfgArr[i][m][c];
+        cfgLines+=`  ${strId(i,m,c)}: ${String(n).padStart(3)} mód  V_max=${f(T.vStringMax(n),1)}V  V_min=${f(T.vStringMin(n),1)}V\n`;
+      }
+    const okI=CI.Isc_max*inv.n_ch<=inv.imax_mppt;
+    txt+=`── ${invId}: ${inv.nombre} ${'─'.repeat(Math.max(0,35-inv.nombre.length))}
+  Módulos:       ${inv.n_mod}  (${inv.n_mppt} MPPT × ${inv.n_ch} canal)
+  N_min/N_max:   ${r.Nmin} / ${r.Nmax} módulos/string
+  Pdc STC:       ${f(r.Pdc_stc,2)} kWp   Pac: ${f(inv.pac,1)} kW
+  Ratio STC:     ${f(r.ratio_STC,3)}
+  P_DC_Treal:    ${f(cl.perInv[i].P_dc_Treal,2)} kW  Ratio Real: ${f(cl.perInv[i].ratio_real_clip,3)}
+  Isc_max MPPT:  ${f(CI.Isc_max*inv.n_ch,3)}A ≤ ${f(inv.imax_mppt,0)}A  ${okI?'✓ OK':'❌ EXCESO'}
+  I_diseño DC:   ${f(r.I_dc,2)} A   I_AC: ${f(r.I_ac,1)} A
+  Fusibles:      ${r.needF?'RECOMENDADOS (≥3 strings)':'No necesarios'}
+  Magneto AC:    ${recCB(r.I_ac)} A (curva C)
+  Strings:
+${cfgLines}
+`;
+  }
+  txt+=`═══════════════════════════════════════════════════════`;
+  document.getElementById('sbody').textContent=txt;
+  window._sumTxt=txt;
+}
+
+function copySummary(){
+  if(!window._sumTxt){alert('Primero pulsa "GENERAR".');return;}
+  navigator.clipboard.writeText(window._sumTxt).then(()=>{
+    const b=document.querySelector('.bcop');
+    if(b){b.textContent='✓ COPIADO';setTimeout(()=>b.textContent='⧉ COPIAR',2200);}
+  });
+}
+
+// ═══════════════════════════════════════════
+//  IMPRIMIR PDF (v5.0 adaptado)
+// ═══════════════════════════════════════════
+function printPDF(){
+  if(!P){alert('Primero calcula la instalación.');return;}
+  const p=P,T=p.T,CI=p.CI,CP=p.CP,cl=p.clip;
+  const I_dis=1.25*CI.Isc_max;
+  const now=new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
+
+  let invSections='';
+  for(let i=0;i<p.invResults.length;i++){
+    const r=p.invResults[i], inv=r.inv;
+    const invId=`INV${String(i+1).padStart(2,'0')}`;
+    const ratOk=r.ratio_STC>=1.10&&r.ratio_STC<=1.40;
+    const okI=CI.Isc_max*inv.n_ch<=inv.imax_mppt;
+
+    let strRows='';
+    for(let m=0;m<inv.n_mppt;m++)
+      for(let c=0;c<inv.n_ch;c++){
+        const n=cfgArr[i][m][c];
+        const Vmx=T.vStringMax(n), Vmn=T.vStringMin(n);
+        const okV=Vmx<inv.vdc_max&&Vmn>=inv.vmpp_min&&Vmn<=inv.vmpp_max;
+        strRows+=`<tr><td class="mono">${strId(i,m,c)}</td><td class="c">${n}</td>
+          <td class="c mono">${f(Vmx,1)} V</td><td class="c mono">${f(Vmn,1)} V</td>
+          <td class="c mono">${f(I_dis,2)} A</td>
+          <td class="c ${okV?'ok':'err'}">${okV?'✓ OK':'⚠'}</td></tr>`;
+      }
+
+    let ccRows='';
+    for(let m=0;m<inv.n_mppt;m++)
+      for(let c=0;c<inv.n_ch;c++){
+        const id=strId(i,m,c);
+        const n=cfgArr[i][m][c];
+        const V_str=T.vStringMax(n);
+        if(!ccData[id]){ccRows+=`<tr><td class="mono">${id}</td><td colspan="7" style="color:#aaa;font-style:italic">Sin datos CC</td></tr>`;continue;}
+        const d=ccData[id];
+        const cdts=d.L.map((l,t)=>calcCDT(l,d.S[t],I_dis,V_str));
+        const totalPct=cdts.reduce((a,b)=>a+b.cdt_pct,0);
+        const ok=totalPct<=CDT_MAX;
+        const trN=['Cableado paneles','Paneles–Fusibles','Fusibles–Inversor'];
+        for(let t=0;t<3;t++){
+          const inactive=cdts[t].inactive;
+          ccRows+=`<tr class="${inactive?'inactive-row':''}"><td class="mono">${t===0?id:''}</td>
+            <td>${trN[t]}</td><td class="c">${d.S[t]===0?'—':d.S[t]+' mm²'}</td>
+            <td class="c mono">${inactive?'—':d.L[t]+' m'}</td>
+            <td class="c mono">${inactive?'—':f(I_dis,2)+' A'}</td>
+            <td class="c mono">${inactive?'—':f(V_str,1)+' V'}</td>
+            <td class="c mono">${inactive?'—':f(cdts[t].cdt_V,3)+' V'}</td>
+            <td class="c mono ${inactive?'':cdts[t].cdt_pct>CDT_MAX?'err':''}">${inactive?'—':f(cdts[t].cdt_pct,3)+' %'}</td></tr>`;
+        }
+        ccRows+=`<tr class="total-row"><td></td><td><strong>TOTAL CDT</strong></td><td colspan="5"></td>
+          <td class="c mono ${ok?'ok':'err'}"><strong>${f(totalPct,3)} %  ${ok?'✓':'❌'}</strong></td></tr>`;
+      }
+
+    invSections+=`<div class="${i>0?'pr-break':''}">
+<div class="pr-h2">${invId} — ${inv.nombre}</div>
+<div class="pr-grid2">
+  <div class="pr-box"><strong>Parámetros DC</strong><br>
+    Vdc_max: ${f(inv.vdc_max,0)} V · Vmpp: ${f(inv.vmpp_min,0)}–${f(inv.vmpp_max,0)} V<br>
+    Imax_str: ${f(inv.imax_str,0)} A · Imax_MPPT: ${f(inv.imax_mppt,0)} A<br>
+    MPPTs: ${inv.n_mppt} · Canales: ${inv.n_ch} · Módulos: ${inv.n_mod}</div>
+  <div class="pr-box"><strong>Potencias y ratio</strong><br>
+    Pdc STC: ${f(r.Pdc_stc,2)} kWp · Pac: ${f(inv.pac,1)} kW<br>
+    Ratio STC: ${f(r.ratio_STC,3)} · P_DC_Treal: ${f(cl.perInv[i].P_dc_Treal,2)} kW<br>
+    Ratio Real: ${f(cl.perInv[i].ratio_real_clip,3)} · N_min/N_max: ${r.Nmin}/${r.Nmax}</div>
+</div>
+<div class="pr-h3">Configuración de strings</div>
+<table class="pr-tbl"><thead><tr>
+  <th>String</th><th class="c">Módulos</th>
+  <th class="c">V_max</th><th class="c">V_min</th>
+  <th class="c">I_diseño</th><th class="c">Estado</th>
+</tr></thead><tbody>${strRows}</tbody></table>
+<div class="pr-box">
+  Isc_max MPPT: ${f(CI.Isc_max*inv.n_ch,3)} A ≤ ${f(inv.imax_mppt,0)} A ${okI?'✓':'❌'} ·
+  I_diseño DC: ${f(r.I_dc,2)} A · I_AC: ${f(r.I_ac,1)} A ·
+  Magneto AC: ${recCB(r.I_ac)} A · Fusibles: ${r.needF?'RECOMENDADOS':'No necesarios'}
+</div>
+<div class="pr-h3">Secciones CC — Caída de tensión por tramos</div>
+<table class="pr-tbl"><thead><tr>
+  <th>String</th><th>Tramo</th><th class="c">Sección</th>
+  <th class="c">Long.</th><th class="c">I</th><th class="c">V</th>
+  <th class="c">cdt (V)</th><th class="c">cdt (%)</th>
+</tr></thead><tbody>${ccRows}</tbody></table>
+</div>`;
+  }
+
+  // Tabla resumen global — clipping
+  let globalRows='';
+  for(let i=0;i<p.invResults.length;i++){
+    const r=p.invResults[i],inv=r.inv;
+    const ci=cl.perInv[i];
+    const st_i=clipStatus(ci.ratio_real_clip);
+    const invId=`INV${String(i+1).padStart(2,'0')}`;
+    globalRows+=`<tr><td class="mono">${invId}</td><td>${inv.nombre}</td>
+      <td class="c">${inv.n_mod}</td>
+      <td class="c mono">${f(r.Pdc_stc,2)}</td><td class="c mono">${f(inv.pac,1)}</td>
+      <td class="c mono">${f(r.ratio_STC,3)}</td>
+      <td class="c mono">${f(ci.P_dc_Treal,2)}</td>
+      <td class="c mono ${st_i.cls === 'ok' ? 'ok' : 'err'}">${f(ci.ratio_real_clip,3)}</td></tr>`;
+  }
+
+  // Filas de clipping para la sección de análisis en PDF
+  const stCl=clipStatus(cl.ratio_real_clip_planta);
+  let clipInvRows='';
+  p.invResults.forEach((r,i)=>{
+    const ci=cl.perInv[i];
+    clipInvRows+=`<tr>
+      <td class="mono">INV${String(i+1).padStart(2,'0')}</td>
+      <td>${r.inv.nombre}</td>
+      <td class="c mono">${f(r.Pdc_stc,2)}</td>
+      <td class="c mono">${f(r.inv.pac,1)}</td>
+      <td class="c mono">${f(ci.P_dc_Treal,2)}</td>
+      <td class="c mono">${f(ci.P_ac_ent,2)}</td>
+      <td class="c mono ${ci.P_clip_T>0?'warn':'ok'}">${f(ci.P_clip_T,2)}</td>
+      <td class="c mono">${f(ci.ratio_real_clip,3)}</td>
+    </tr>`;
+  });
+
+  document.getElementById('print-area').innerHTML=`
+<div>
+  <div class="pr-h1">⚡ MEMORIA TÉCNICA — CAMPO SOLAR FOTOVOLTAICO</div>
+  <div class="pr-meta">App.Cal_FV 26 v5.0 · INF-20260410-08 v1.0 · ${now}<br>
+  Normativa: REBT ITC-BT-40 · IEC 62548 · UNE-HD 60364-7-712</div>
+
+  <div class="pr-h2">MÓDULO FV (común a toda la planta)</div>
+  <table class="pr-tbl"><thead><tr><th>Parámetro</th><th>Valor</th><th>Parámetro</th><th>Valor</th></tr></thead>
+  <tbody>
+    <tr><td>Pmax STC</td><td class="mono">${f(p.panel.pmax,0)} Wp</td><td>Voc STC</td><td class="mono">${f(p.panel.voc_stc,1)} V</td></tr>
+    <tr><td>Vmpp STC</td><td class="mono">${f(p.panel.vmpp_stc,1)} V</td><td>Isc STC</td><td class="mono">${f(p.panel.isc,2)} A</td></tr>
+    <tr><td>βVoc</td><td class="mono">${f(p.panel.beta_voc,2)} %/°C</td><td>αIsc</td><td class="mono">${f(p.panel.alpha_isc,3)} %/°C</td></tr>
+    <tr><td>βPmpp</td><td class="mono">${f(p.panel.bpmpp,2)} %/°C</td><td>T_cell_hot</td><td class="mono">${T.t_cell_hot} °C</td></tr>
+    <tr><td>V_max/mód</td><td class="mono err">${f(T.v_max_u,3)} V</td><td>V_min/mód</td><td class="mono">${f(T.v_min_u,3)} V</td></tr>
+    <tr><td>Isc_max</td><td class="mono warn">${f(CI.Isc_max,3)} A</td><td>I_diseño DC</td><td class="mono">${f(I_dis,2)} A</td></tr>
+    <tr><td>P_real/módulo</td><td class="mono">${f(CP.P_real_mod,2)} W</td><td>Derating térmico</td><td class="mono">${f((1-CP.P_real_mod/p.panel.pmax)*100,1)} %</td></tr>
+  </tbody></table>
+
+  <div class="pr-h2">RESUMEN GLOBAL DE PLANTA</div>
+  <div class="pr-plant-box">
+    Inversores: ${p.invResults.length} · Módulos totales: ${p.N_mod_total} ·
+    Pdc total: ${f(p.Pdc_total,2)} kWp · Pac total: ${f(p.Pac_total,1)} kW ·
+    P_DC_Treal total: ${f(cl.P_dc_total,2)} kW ·
+    Ratio Real Global: ${f(cl.ratio_real_clip_planta,3)} ${stCl.label} ·
+    E baja: ${f(p.Pdc_total*1.6,1)} MWh/año · E alta: ${f(p.Pdc_total*1.85,1)} MWh/año
+  </div>
+  <table class="pr-tbl"><thead><tr>
+    <th>ID</th><th>Nombre</th><th class="c">Mód.</th>
+    <th class="c">Pdc (kWp)</th><th class="c">Pac (kW)</th>
+    <th class="c">Ratio STC</th><th class="c">P_DC_Treal (kW)</th><th class="c">Ratio Real</th>
+  </tr></thead><tbody>${globalRows}</tbody>
+  <tfoot><tr class="total-row">
+    <td colspan="2"><strong>TOTAL PLANTA</strong></td>
+    <td class="c mono"><strong>${p.N_mod_total}</strong></td>
+    <td class="c mono"><strong>${f(p.Pdc_total,2)}</strong></td>
+    <td class="c mono"><strong>${f(p.Pac_total,1)}</strong></td>
+    <td class="c mono"><strong>${f(p.ratio_global,3)}</strong></td>
+    <td class="c mono"><strong>${f(cl.P_dc_total,2)}</strong></td>
+    <td class="c mono ${stCl.cls === 'ok' ? 'ok' : 'err'}"><strong>${f(cl.ratio_real_clip_planta,3)}</strong></td>
+  </tr></tfoot></table>
+
+  ${invSections}
+
+  <div class="pr-h2 pr-break">ANÁLISIS DE CLIPPING REAL</div>
+  <div class="pr-box">
+    <strong>Condiciones de cálculo (v5.0):</strong>
+    P_real_mod (derating por T_cell_hot) · f_loss_DC = ${f(cl.f_loss_dc,2)} · HSP = ${cl.hsp_anual} h/año<br>
+    P_DC_Treal = (P_real_mod × N) × f_loss_DC · Ratio Real = P_DC_Treal / Pac
+  </div>
+  <table class="pr-tbl"><thead><tr>
+    <th>ID</th><th>Nombre</th>
+    <th class="c">Pdc STC (kWp)</th><th class="c">Pac (kW)</th>
+    <th class="c">P_DC_Treal (kW)</th><th class="c">P_AC ent. (kW)</th>
+    <th class="c">P_clip_T (kW)</th><th class="c">Ratio Real</th>
+  </tr></thead><tbody>${clipInvRows}</tbody>
+  <tfoot><tr class="total-row">
+    <td colspan="2"><strong>PLANTA TOTAL</strong></td>
+    <td class="c mono"><strong>${f(p.Pdc_total,2)}</strong></td>
+    <td class="c mono"><strong>${f(p.Pac_total,1)}</strong></td>
+    <td class="c mono"><strong>${f(cl.P_dc_total,2)}</strong></td>
+    <td class="c mono"><strong>${f(cl.P_ac_total,2)}</strong></td>
+    <td class="c mono ${cl.P_clip_total>0?'warn':'ok'}"><strong>${f(cl.P_clip_total,2)}</strong></td>
+    <td class="c mono"><strong>${f(cl.ratio_real_clip_planta,3)}  ${stCl.label}</strong></td>
+  </tr></tfoot></table>
+  <table class="pr-tbl" style="margin-top:8px"><thead><tr>
+    <th>Indicador energético</th><th class="c">Valor</th><th>Descripción</th>
+  </tr></thead><tbody>
+    <tr><td>E_DC total anual</td><td class="c mono">${f(cl.E_dc_total,2)} MWh/año</td><td>P_DC_Treal × HSP</td></tr>
+    <tr><td>E_AC entregada anual</td><td class="c mono ok">${f(cl.E_ac,2)} MWh/año</td><td>P_AC × HSP</td></tr>
+    <tr><td>E_clip anual</td><td class="c mono ${cl.ratio_real_clip_planta>=1.25?'err':cl.ratio_real_clip_planta>=1.15?'warn':'ok'}">${f(cl.E_clip,3)} MWh/año</td><td>P_clip_T × HSP</td></tr>
+    <tr><td><strong>Ratio Real DC/AC</strong></td><td class="c mono ${cl.ratio_real_clip_planta>=1.25?'err':cl.ratio_real_clip_planta>=1.15?'warn':'ok'}"><strong>${f(cl.ratio_real_clip_planta,3)}</strong></td><td>${stCl.label}</td></tr>
+  </tbody></table>
+  <div class="pr-box" style="margin-top:8px;font-style:italic">
+    ${clipTextoNormativo(cl.ratio_real_clip_planta, f(cl.ratio_real_clip_planta,3), cl.pct_clip_info).replace(/\n\n/g,'<br><br>')}
+  </div>
+
+  <div class="pr-h2 pr-break">REFERENCIAS NORMATIVAS</div>
+  <div class="pr-norm">
+    · <strong>REBT ITC-BT-40:</strong> Instalaciones generadoras de baja tensión.<br>
+    · <strong>REBT ITC-BT-23:</strong> Protección contra sobretensiones.<br>
+    · <strong>IEC 62548 / UNE-HD 60364-7-712:</strong> I_diseño = 1,25 × Isc_max. Cableado DC.<br>
+    · <strong>UNE-EN 61643:</strong> SPD Tipos I, II y III.<br>
+    · <strong>IEC 61215 / IEC 61730:</strong> Módulos fotovoltaicos.<br>
+    · <strong>IEC 60364-5-52 / UNE-EN 60228:</strong> ρ_Cu = 0,024 Ω·mm²/m (exterior, conservador).<br>
+    · <strong>Clipping (Escala 7 tramos):</strong> &lt;1.05 Excelente · 1.05-1.10 Óptimo · 1.10-1.15 Aceptable · 1.15-1.25 Justificar · &gt;1.25 Excesivo (Alarma CLP-01).
+  </div>
+  <div class="pr-footer">App.Cal_FV 26 v5.0 · INF-20260410-08 v1.0 · ${now}<br>
+  Cálculos orientativos (Condición Derating Térmico). Para análisis preciso usar datos TMY + PVsyst.</div>
+</div>`;
+  window.print();
+}
+
+// ═══════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════
+function recCB(I){for(const s of [10,16,20,25,32,40,50,63,80,100,125])if(s>=I)return s;return Math.ceil(I/10)*10;}
+
+function resetAll(){
+  localStorage.removeItem(S_KEY); // Limpiar Storage en v5.0
+  [['pmax',460],['voc_stc',52.1],['vmpp_stc',43.5],['isc',11.20],['impp',10.58],
+   ['ifus',25],['beta_voc',-0.24],['alpha_isc',0.04],['bpmpp',-0.30],
+   ['t_amb_min',-5],['t_amb_max',40],
+   ['f_loss_dc',0.95],['hsp_anual',1700]
+  ].forEach(([id,v])=>{const e=document.getElementById(id);if(e)e.value=v;});
+  document.getElementById('v_red').value='400';
+  invDefs=[]; cfgArr=[]; ccData={}; P=null; Tglobal=null; CIglobal=null; CPglobal=null;
+  window._sumTxt='';
+  initInvs();
+  document.getElementById('ph').style.display='flex';
+  const res=document.getElementById('res');
+  res.style.display='none';res.innerHTML='';
+  const ph=document.getElementById('cc-ph'),cc=document.getElementById('cc-content');
+  if(ph)ph.style.display='flex';
+  if(cc){cc.style.display='none';cc.innerHTML='';}
+  document.getElementById('print-area').innerHTML='';
+  document.getElementById('storage-status').style.display = 'none';
+}
+
+// ARRANQUE APLICACIÓN v5.0
+window.onload = () => {
+  if (loadState()) {
+    document.getElementById('n_inv_input').value = invDefs.length;
+    renderInvList();
+  } else {
+    initInvs();
+  }
+};
+</script>
+</body>
+</html>
