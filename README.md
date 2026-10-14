@@ -15,7 +15,7 @@
 * [APP_Cálculo Batería de Condensadores](./APP_9.Calc.BT.Bateria_Condensadores/)
 * [APP_Cálculo Condiciones Rociadores](./APP_10.Cal.PCI.SPK_Rociadores/)
 * [APP_Cálculo Caudales agua AA](./APP_11.Calc.AA_Caudales_Agua/)
-* [APP_Cálculo Fotovoltáico](./APP_12.Cal.FV_Fotovoltaica/)
+* [APP_Cálculo Fotovoltáico](./APP_12.Calc.FV_Fotovoltaica/)
 
 ---
 
